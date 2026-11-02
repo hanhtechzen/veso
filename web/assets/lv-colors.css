@@ -1,0 +1,62 @@
+/* LuckyVision: bảng màu rực rỡ dùng chung cho trang Trực tiếp, Dự báo và AI, Quản trị */
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+body{--acc:#FF6B00;--acc2:#FF2D87;--gold:#FFC233;--night:#1A1446;--red:var(--acc)}
+body[data-region="mb"]{--acc:#D7263D;--acc2:#FF9F1C}
+body[data-region="mn"]{--acc:#0FA37F;--acc2:#00B4D8}
+body[data-region="mt"]{--acc:#7B3FE4;--acc2:#E040A0}
+body[data-region="admin"]{--acc:#5E35B1;--acc2:#E040A0}
+body{background:
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='60' viewBox='0 0 160 60'%3E%3Cg fill='none' stroke='%231A1446' stroke-opacity='.05'%3E%3Cpath d='M0 30 Q20 0 40 30 T80 30 T120 30 T160 30'/%3E%3Cpath d='M0 30 Q20 60 40 30 T80 30 T120 30 T160 30'/%3E%3Cpath d='M0 15 Q20 45 40 15 T80 15 T120 15 T160 15'/%3E%3Cpath d='M0 45 Q20 15 40 45 T80 45 T120 45 T160 45'/%3E%3C/g%3E%3C/svg%3E"),
+  #F5F4FB!important}
+@media (prefers-color-scheme:dark){
+  body{background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='60' viewBox='0 0 160 60'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.04'%3E%3Cpath d='M0 30 Q20 0 40 30 T80 30 T120 30 T160 30'/%3E%3Cpath d='M0 30 Q20 60 40 30 T80 30 T120 30 T160 30'/%3E%3Cpath d='M0 15 Q20 45 40 15 T80 15 T120 15 T160 15'/%3E%3Cpath d='M0 45 Q20 15 40 45 T80 45 T120 45 T160 45'/%3E%3C/g%3E%3C/svg%3E"),
+    #0E0B24!important;--surface:#17123A;--surface-2:#211A4D;--line:#2E2766}
+}
+header{background:
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.12'%3E%3Cpath d='M0 20 Q15 0 30 20 T60 20 T90 20 T120 20'/%3E%3Cpath d='M0 20 Q15 40 30 20 T60 20 T90 20 T120 20'/%3E%3C/g%3E%3C/svg%3E"),
+  linear-gradient(115deg,var(--acc) 0%,color-mix(in srgb,var(--acc) 55%,var(--night)) 55%,var(--acc2) 115%)!important;
+  box-shadow:0 10px 30px -16px color-mix(in srgb,var(--acc) 80%,#000)}
+h1{position:relative;padding-bottom:12px}
+h1::after{content:"";position:absolute;left:0;bottom:0;width:72px;height:6px;border-radius:6px;background:linear-gradient(90deg,var(--acc),var(--acc2),var(--gold))}
+.login h1::after,.center h1::after{display:none}
+.card{background:linear-gradient(90deg,var(--acc),var(--acc2)) top/100% 4px no-repeat,var(--surface)!important;
+  border-color:color-mix(in srgb,var(--acc) 14%,var(--line))!important}
+.btn{background:linear-gradient(135deg,var(--acc),var(--acc2))!important;box-shadow:0 8px 18px -8px color-mix(in srgb,var(--acc) 85%,#000)}
+.btn.ghost{background:transparent!important;box-shadow:none}
+.btn.good{background:linear-gradient(135deg,#0FA37F,#2EAD4B)!important}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 20%,transparent)}
+.pill.live{background:linear-gradient(135deg,var(--acc),var(--acc2))!important;color:#fff!important}
+
+/* bóng số theo hàng chục */
+.ball[data-d="0"]{--b:#E53935;--b-lt:#FF8A80;--b-dk:#8E1414}
+.ball[data-d="1"]{--b:#FB8C00;--b-lt:#FFCC80;--b-dk:#A04A00}
+.ball[data-d="2"]{--b:#F9C80E;--b-lt:#FFF0A0;--b-dk:#9A7300}
+.ball[data-d="3"]{--b:#2EAD4B;--b-lt:#9BE7A9;--b-dk:#126628}
+.ball[data-d="4"]{--b:#00ACC1;--b-lt:#8EE8F2;--b-dk:#00606D}
+.ball[data-d="5"]{--b:#1E7BE5;--b-lt:#9CC8FF;--b-dk:#0B3F86}
+.ball[data-d="6"]{--b:#5E35B1;--b-lt:#B39DDB;--b-dk:#2E1468}
+.ball[data-d="7"]{--b:#A12BC2;--b-lt:#E1A6F0;--b-dk:#560F6B}
+.ball[data-d="8"]{--b:#E91E78;--b-lt:#FF9EC6;--b-dk:#82093E}
+.ball[data-d="9"]{--b:#7A5236;--b-lt:#D1B49B;--b-dk:#3E2614}
+.ball[data-d]{background:radial-gradient(circle at 50% 52%,#fff 0 46%,rgba(255,255,255,0) 47%),
+  radial-gradient(circle at 32% 24%,var(--b-lt) 0,var(--b) 45%,var(--b-dk) 100%)!important;color:#141B2D!important}
+.ball.sp{background:radial-gradient(circle at 50% 52%,#fff 0 46%,transparent 47%),radial-gradient(circle at 32% 24%,#FFF0A8,#FFC233 45%,#A06A00)!important;
+  box-shadow:0 0 0 3px rgba(255,194,51,.35),0 0 18px rgba(255,194,51,.6),inset -2px -3px 5px rgba(0,0,0,.3)!important}
+
+/* trang Trực tiếp: số mới về nổi bật, giải đặc biệt chuyển màu */
+.num.new{background:linear-gradient(135deg,var(--gold),#FFE08A)!important;color:#141B2D!important;box-shadow:0 0 16px color-mix(in srgb,var(--gold) 70%,transparent)}
+tr.db .num.set{background:linear-gradient(90deg,var(--acc),var(--acc2));color:#fff!important}
+.dot.on{background:#3DDC84}
+
+/* trang Quản trị: thanh bên chuyển màu đêm */
+.side{background:linear-gradient(180deg,#1A1446 0%,#2A1460 60%,color-mix(in srgb,var(--acc2) 35%,#1A1446) 100%)!important}
+.side nav a[aria-current]{background:linear-gradient(90deg,var(--acc),var(--acc2))!important;color:#fff!important}
+.login{border:2px solid transparent!important;
+  background:linear-gradient(var(--surface),var(--surface)) padding-box,conic-gradient(from var(--ang),var(--acc),var(--gold),var(--acc2),var(--acc)) border-box!important;
+  animation:neon 6s linear infinite}
+@keyframes neon{to{--ang:360deg}}
+
+/* trang Dự báo: bản đồ nhiệt */
+.cell.sel{outline-color:var(--gold)!important}
+@media (prefers-reduced-motion:reduce){.login{animation:none!important}}

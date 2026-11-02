@@ -1,0 +1,16 @@
+{
+  "note": "Tệp mẫu cho phát triển và kiểm thử, không phải nguồn dữ liệu chính thức.",
+  "prizes": {
+    "main": [
+      "09",
+      "29",
+      "33",
+      "38",
+      "45",
+      "46"
+    ],
+    "special": [
+      "53"
+    ]
+  }
+}

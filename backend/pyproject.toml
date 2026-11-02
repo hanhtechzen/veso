@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "luckyvision"
+version = "0.1.0"
+description = "LuckyVision: bộ thu thập kết quả xổ số, API và luồng realtime"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "psycopg[binary,pool]>=3.2",
+  "redis>=5.0",
+  "httpx>=0.27",
+  "apscheduler>=3.10,<4",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "tzdata>=2024.1",
+  "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[tool.setuptools.packages.find]
+include = ["luckyvision*"]
+
+[tool.setuptools.package-data]
+luckyvision = ["migrations/*.sql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

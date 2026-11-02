@@ -1,0 +1,14 @@
+# Bổ sung cho VPS: dùng Cloudflare Tunnel nên KHÔNG mở cổng 80/443 ra Internet.
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+services:
+  caddy:
+    ports: !reset []
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?Đặt CLOUDFLARE_TUNNEL_TOKEN trong .env}
+    depends_on:
+      - caddy
