@@ -1,0 +1,17 @@
+{% macro game_result(g, d, big=true) -%}
+{% if g.kind == 'pick' %}
+  <div class="balls{% if g.main_count > 8 %} many{% endif %}">{% for n in d.prizes.get('main', []) %}<span class="ball">{{ n }}</span>{% endfor %}{% for n in d.prizes.get('special', []) %}<span class="plus" aria-hidden="true">+</span><span class="ball sp" title="Số đặc biệt">{{ n }}</span>{% endfor %}</div>
+  {% if g.code == 'keno' %}{% set k = keno_stats(d) %}<p class="hint center">Nhỏ (01–40): {{ k.small }} số · Lớn (41–80): {{ k.big }} số · Chẵn: {{ k.even }} · Lẻ: {{ k.odd }}</p>{% endif %}
+{% elif g.kind == 'dice' %}
+  {% set nums = d.prizes.get('main', []) %}
+  <div class="dice">{% for n in nums %}<span class="die" data-v="{{ n }}" aria-label="{{ n }}">{{ n }}</span>{% endfor %}<span class="dice-sum">Tổng {{ nums | map('int') | sum }}</span></div>
+{% else %}
+  {% if g.prizes|length == 1 %}
+    <div class="bignum">{{ d.prizes.get(g.prizes[0][0], ['?'])[0] }}</div>
+  {% else %}
+    <div class="tablewrap"><table class="kq mini"><tbody>
+    {% for code, name, cnt, w in g.prizes %}<tr class="g-{{ code }}"><th scope="row">{{ name }}</th><td>{% for n in d.prizes.get(code, []) %}<span class="n inl"><b>{{ n }}</b></span>{% endfor %}</td></tr>{% endfor %}
+    </tbody></table></div>
+  {% endif %}
+{% endif %}
+{%- endmacro %}

@@ -121,6 +121,17 @@ class Worker:
         except Exception:  # noqa: BLE001
             log.exception("Lỗi khi chấm dự báo")
 
+    async def feeds(self) -> None:
+        from .collector.feed import in_hours, run_feed
+        if not in_hours():
+            return
+        try:
+            res = await run_feed(self.ctx)
+            if any(n for n, _ in res.values()):
+                log.info("Kết quả mới: %s", {k: v[0] for k, v in res.items() if v[0]})
+        except Exception:  # noqa: BLE001
+            log.exception("Lỗi khi đọc kết quả theo dòng")
+
     async def beat(self) -> None:
         await heartbeat(self.settings, self.ctx.http)
         await flush_alerts(self.ctx)
@@ -139,11 +150,16 @@ class Worker:
         s.add_job(self.overdue, "interval", minutes=1, id="overdue")
         s.add_job(self.beat, "interval", minutes=1, id="heartbeat")
         s.add_job(self.forecasts, "interval", minutes=30, id="forecasts")
+        s.add_job(self.feeds, "interval", minutes=1, id="feeds")
         s.add_job(self.evaluate, "interval", minutes=3, id="evaluate")
         s.add_job(self.source_health, "cron", hour="8-23", minute="*/15", id="source-health")
         s.start()
         await self.plan()
-        relay = asyncio.create_task(relay_loop(self.pool, self.redis, self.stop))
+        from .notify import on_events
+
+        async def after(rows):
+            await on_events(self.pool, self.ctx.http, self.settings, rows)
+        relay = asyncio.create_task(relay_loop(self.pool, self.redis, self.stop, on_rows=after))
         log.info("Worker đã chạy (APP_ENV=%s)", self.settings.app_env)
         await self.stop.wait()
         s.shutdown(wait=False)

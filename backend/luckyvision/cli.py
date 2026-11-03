@@ -13,6 +13,8 @@
   backfill --region mn --days 120 Tải bù kết quả các ngày đã qua từ các nguồn đang bật
   forecast                        Tạo dự báo cho các kỳ sắp quay và chấm các dự báo đã có kết quả
   doctor                          Tự kiểm tra cấu hình, dữ liệu và bảo mật
+  feed [--game keno] [--pages 1]  Đọc kết quả theo dòng (Keno, Bingo18, Lotto 5/35, Max 3D); nhiều trang để tải bù
+  probe-feed GAME                 Thử đọc một trang kết quả của trò chơi, KHÔNG lưu gì
   backtest --region mb [--province mb] [--last 365] [--k 10]
                                   Kiểm thử lùi các mô hình trên dữ liệu trong cơ sở dữ liệu
 """
@@ -229,14 +231,15 @@ async def cmd_backtest(region: str, province: str | None, last: int, k: int | No
 
     from .forecast.service import K_VALUES, backtest, load_history
 
-    province = province or {"mb": "mb", "vl": "power655"}.get(region)
+    from .domain.games import REGION_PROVINCE
+    province = province or REGION_PROVINCE.get(region)
     if not province:
         print("Cần --province cho miền này (ví dụ --province tp-hcm)"); return
 
     async def run(ctx):
         async with ctx.pool.connection() as conn:
             days, draws, game = await load_history(conn, province, _d(9999, 1, 1))
-        kk = k or (6 if game == "power655" else 10)
+        kk = k or (K_VALUES[game][0] if len(K_VALUES[game]) == 1 else 10)
         if kk not in K_VALUES[game]:
             print(f"k phải là một trong {K_VALUES[game]}"); return
         print(f"{province}: {len(draws)} kỳ trong cơ sở dữ liệu, kiểm thử {min(last, len(draws) - 1)} kỳ gần nhất, K = {kk}")
@@ -267,6 +270,33 @@ async def cmd_doctor() -> int:
     return await _with_ctx(run)
 
 
+async def cmd_feed(game: str | None, pages: int) -> None:
+    from .collector.feed import run_feed
+
+    async def run(ctx):
+        res = await run_feed(ctx, game, pages=pages, force=True)
+        if not res:
+            print("Không có nguồn theo dòng nào đang bật. Bật bằng: source-enable vietlott-keno (hoặc vietlott-lotto535...).")
+        for g, (n, k) in res.items():
+            print(f"{g}: {n} kỳ mới, {k} kỳ đã có")
+    await _with_ctx(run)
+
+
+async def cmd_probe_feed(game: str) -> None:
+    from .sources.vietlott_feed import VietlottFeedAdapter
+
+    async def run(ctx):
+        ad = VietlottFeedAdapter(f"probe-{game}", {"game": game, "respect_robots": True}, ctx.settings)
+        try:
+            res, rows = await ad.fetch_page(ctx.http, 0)
+        except Exception as e:  # noqa: BLE001
+            print(f"LỖI: {type(e).__name__}: {e}"); return
+        print(f"URL:  {res.url}\nHTTP: {res.status}\nĐọc được {len(rows)} kỳ")
+        for r in rows[:5]:
+            print(f"  {r.day:%d/%m/%Y} kỳ {r.seq}: " + "; ".join(f"{k}={' '.join(v)}" for k, v in r.prizes.items()))
+    await _with_ctx(run)
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     p = argparse.ArgumentParser(prog="luckyvision")
@@ -281,11 +311,13 @@ def main() -> None:
     sd = sub.add_parser("source-disable"); sd.add_argument("code")
     sa = sub.add_parser("create-admin"); sa.add_argument("--username", required=True); sa.add_argument("--name", required=True)
     sa.add_argument("--role", default="admin", choices=["viewer", "editor", "admin"]); sa.add_argument("--password")
-    sb = sub.add_parser("backfill"); sb.add_argument("--region", required=True, choices=["mb", "mn", "mt", "vl"])
+    sb = sub.add_parser("backfill"); sb.add_argument("--region", required=True, choices=["mb", "mn", "mt", "vl", "mega"])
     sb.add_argument("--days", type=int, default=60)
     sub.add_parser("forecast")
     sub.add_parser("doctor")
-    st = sub.add_parser("backtest"); st.add_argument("--region", required=True, choices=["mb", "mn", "mt", "vl"])
+    sf = sub.add_parser("feed"); sf.add_argument("--game"); sf.add_argument("--pages", type=int, default=1)
+    spf = sub.add_parser("probe-feed"); spf.add_argument("game", choices=["lotto535", "keno", "max3d", "max3dpro", "bingo18"])
+    st = sub.add_parser("backtest"); st.add_argument("--region", required=True, choices=["mb", "mn", "mt", "vl", "mega"])
     st.add_argument("--province"); st.add_argument("--last", type=int, default=365); st.add_argument("--k", type=int)
     a = p.parse_args()
     if a.cmd == "migrate":
@@ -307,6 +339,10 @@ def main() -> None:
         asyncio.run(cmd_create_admin(a.username.lower(), a.name, a.role, a.password))
     elif a.cmd == "backfill":
         asyncio.run(cmd_backfill(a.region, a.days))
+    elif a.cmd == "feed":
+        asyncio.run(cmd_feed(a.game, a.pages))
+    elif a.cmd == "probe-feed":
+        asyncio.run(cmd_probe_feed(a.game))
     elif a.cmd == "doctor":
         raise SystemExit(asyncio.run(cmd_doctor()))
     elif a.cmd == "forecast":

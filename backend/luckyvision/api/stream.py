@@ -8,6 +8,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
 from ..events import CHANNEL
+from ..domain.games import ALL_REGIONS
 from .errors import ApiError
 
 router = APIRouter(prefix="/v1", tags=["live"])
@@ -20,7 +21,7 @@ def _frame(event_id: int, topic: str, data: dict) -> str:
 
 @router.get("/live/stream")
 async def stream(request: Request, region: str = "all", last_event_id: int | None = None):
-    if region not in {"all", "mb", "mn", "mt", "vl"}:
+    if region not in ({"all"} | ALL_REGIONS):
         raise ApiError(400, "invalid_param", "region phải là all, mb, mn, mt hoặc vl")
     header_id = request.headers.get("last-event-id")
     since = int(header_id) if header_id and header_id.isdigit() else last_event_id

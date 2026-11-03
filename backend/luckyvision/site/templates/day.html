@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% from "macros.html" import result_table, loto_table %}
+{% block content %}
+<h1>{{ h1 }}</h1>
+<p class="lead">{{ summary }}</p>
+<div class="bar">
+  <div class="daynav">
+    {% if prev %}<a class="btn ghost" href="{{ prev_url }}" rel="prev" aria-label="Ngày quay trước {{ prev_label }}">‹<span class="hide-m"> {{ prev_label }}</span></a>{% endif %}
+    <form class="jump" action="/chon-ngay" method="get"><input type="hidden" name="mien" value="{{ slug }}"><label class="sr" for="ngay">Chọn ngày</label><input type="date" id="ngay" name="ngay" value="{{ iso }}"><noscript><button class="btn">Xem</button></noscript></form>
+    {% if next %}<a class="btn ghost" href="{{ next_url }}" rel="next" aria-label="Ngày quay sau {{ next_label }}"><span class="hide-m">{{ next_label }} </span>›</a>{% endif %}
+  </div>
+  <button class="btn ghost print-hide" type="button" data-print>In bảng dò vé</button>
+</div>
+{{ result_table(region, draws, display, short) }}
+<div class="card">{{ loto_table(draws) }}</div>
+<div class="grid2 print-hide">
+  <section class="card"><h2>Xem thêm</h2>
+    <ul class="links">
+      {% if region != 'mb' %}{% for d in draws %}<li><a href="/xs-{{ d.province_code }}">Xổ số {{ d.pname }} các kỳ trước</a></li>{% endfor %}{% endif %}
+      <li><a href="/so-ket-qua-{{ slug }}-30-ngay">Sổ kết quả {{ region_name }} 30 ngày</a></li>
+      <li><a href="/thong-ke-{{ slug }}">Thống kê lô gan, tần suất {{ region_name }}</a></li>
+      <li><a href="/cong-cu/#kq">Dò vé số theo ngày</a></li>
+    </ul></section>
+  <section class="card"><h2>Dò vé số</h2><p class="hint">Nhập số trên vé để biết trúng giải nào, đài nào, bao nhiêu tiền.</p>
+    <p><a class="btn" href="/cong-cu/#do-ve">Mở công cụ dò vé</a></p></section>
+</div>
+{% endblock %}

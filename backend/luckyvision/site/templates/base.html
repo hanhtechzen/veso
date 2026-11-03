@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{ title }}</title>
+<meta name="description" content="{{ description }}">
+<link rel="canonical" href="{{ canonical }}">
+{% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:image" content="{{ site_url }}/icons/og.png">
+<meta name="theme-color" content="#D7263D">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/lv-date.css">
+<script type="application/ld+json">{{ jsonld|safe }}</script>
+</head>
+<body data-region="{{ region or 'power' }}">
+<a class="skip" href="#main">Bỏ qua điều hướng</a>
+<header class="top">
+  <div class="in">
+    <a class="brand" href="/"><span class="brand-ball" aria-hidden="true">LV</span>LuckyVision</a>
+    <form class="search" action="/tim-kiem" method="get" role="search"><label class="sr" for="q">Tìm kiếm</label><input id="q" name="q" placeholder="Tìm: xsmn 26/10, lô 27, power kỳ 1417…" autocomplete="off"></form>
+    <a class="acct" id="acct" href="/dang-nhap">Đăng nhập</a>
+    <nav class="main" aria-label="Mục chính">
+      {% for href, label, key in nav %}<a href="{{ href }}"{% if key == section %} aria-current="page"{% endif %}>{{ label|replace(" 6/55", "<span class=\"hide-m\"> 6/55</span>")|safe }}</a>{% endfor %}
+    </nav>
+  </div>
+  <nav class="sub" aria-label="Mục con">
+    {% for href, label, key in subnav %}<a href="{{ href }}"{% if key == sub_active %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}
+  </nav>
+</header>
+{% if breadcrumbs %}
+<nav class="crumbs wrap" aria-label="Đường dẫn">
+  {% for href, label in breadcrumbs %}{% if not loop.last %}<a href="{{ href }}">{{ label }}</a><span aria-hidden="true">/</span>{% else %}<span aria-current="page">{{ label }}</span>{% endif %}{% endfor %}
+</nav>
+{% endif %}
+<main id="main" class="wrap">
+{% block content %}{% endblock %}
+</main>
+<footer class="foot">
+  <div class="wrap cols4">
+    <div><b>Kết quả</b><a href="/xsmb">Xổ số miền Bắc</a><a href="/xsmn">Xổ số miền Nam</a><a href="/xsmt">Xổ số miền Trung</a><a href="/vietlott-power-655">Power 6/55</a><a href="/vietlott-mega-645">Mega 6/45</a></div>
+    <div><b>Sổ kết quả</b><a href="/so-ket-qua-xsmb-30-ngay">XSMB 30 ngày</a><a href="/so-ket-qua-xsmn-30-ngay">XSMN 30 ngày</a><a href="/so-ket-qua-xsmt-30-ngay">XSMT 30 ngày</a></div>
+    <div><b>Thống kê</b><a href="/thong-ke-xsmb">Lô gan miền Bắc</a><a href="/thong-ke-xsmn">Lô gan miền Nam</a><a href="/thong-ke-xsmt">Lô gan miền Trung</a></div>
+    <div><b>Công cụ</b><a href="/cong-cu/#kq">Dò vé, máy thời gian</a><a href="/du-doan.html">Dự báo, xác suất, trợ lý AI</a><a href="/live.html">Tường thuật trực tiếp</a><a href="/lien-he">Liên hệ</a></div>
+  </div>
+  <p class="wrap note">LuckyVision là trang tra cứu và thống kê; không bán vé, không nhận đặt cược. Kết quả được đối chiếu nhiều nguồn trước khi công bố, nhưng hãy so với công ty xổ số trước khi lĩnh thưởng. Mỗi kỳ quay là ngẫu nhiên; không phương pháp nào đoán trước được kết quả. Hãy chơi trong mức chi tiêu đã định.</p>
+</footer>
+<script src="/assets/lv-date.js" defer></script>
+<script src="/assets/lv-track.js" defer></script>
+<script src="/assets/lv-account.js" defer></script>
+<script>
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+document.addEventListener('change', e => { if (e.target.matches('form.jump input[type=date]')) e.target.form.requestSubmit(); });
+document.addEventListener('click', e => { if (e.target.closest('[data-print]')) window.print(); });
+</script>
+</body>
+</html>

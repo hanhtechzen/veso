@@ -1,8 +1,11 @@
 """Lập danh sách kỳ quay dự kiến của một ngày (mục 3 tài liệu thiết kế)."""
 from __future__ import annotations
 
+import re
+
 from datetime import date, datetime
 
+from ..domain.games import GAMES
 from ..config import VN_TZ, WINDOWS
 
 
@@ -10,13 +13,20 @@ def make_draw_id(region: str, province: str, day: date) -> str:
     return f"{region}-{province}-{day.isoformat()}"
 
 
+DRAW_ID_RE = re.compile(r"^(?P<region>[a-z0-9]+)-(?P<province>[a-z0-9-]+?)-(?P<day>\d{4}-\d{2}-\d{2})(?:-(?P<seq>\d+))?$")
+
+
 def parse_draw_id(draw_id: str) -> tuple[str, str, date]:
-    """'mn-tp-hcm-2026-10-26' -> ('mn', 'tp-hcm', date(2026, 10, 26))."""
-    region, rest = draw_id.split("-", 1)
-    province, day = rest[:-11], date.fromisoformat(rest[-10:])
-    if not province or rest[-11] != "-":
+    """'mn-tp-hcm-2026-10-26' -> ('mn', 'tp-hcm', date(2026, 10, 26)).
+    Trò chơi quay nhiều kỳ mỗi ngày có thêm số kỳ ở cuối: 'keno-keno-2026-11-03-0301574'."""
+    m = DRAW_ID_RE.match(draw_id or "")
+    if not m:
         raise ValueError(draw_id)
-    return region, province, day
+    return m["region"], m["province"], date.fromisoformat(m["day"])
+
+
+def make_seq_draw_id(region: str, province: str, day: date, seq: int, width: int = 5) -> str:
+    return f"{region}-{province}-{day.isoformat()}-{seq:0{width}d}"
 
 
 async def plan_day(conn, day: date) -> int:
@@ -33,7 +43,7 @@ async def plan_day(conn, day: date) -> int:
         region = r["region_code"]
         w = WINDOWS.get(region)
         seq = None
-        if r["game"] == "power655":
+        if r["game"] in GAMES:
             c2 = await conn.execute(
                 "SELECT max(draw_seq) AS s FROM lottery_draws WHERE province_code = %s AND draw_date < %s",
                 (r["province_code"], day))
@@ -43,7 +53,7 @@ async def plan_day(conn, day: date) -> int:
             """INSERT INTO lottery_draws (id, game, region_code, province_code, draw_date, draw_seq,
                                           scheduled_at, warn_at, critical_at)
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-               ON CONFLICT (province_code, draw_date) DO NOTHING""",
+               ON CONFLICT DO NOTHING""",
             (make_draw_id(region, r["province_code"], day), r["game"], region, r["province_code"], day, seq,
              datetime.combine(day, r["draw_time"], VN_TZ),
              datetime.combine(day, w.warn, VN_TZ) if w else None,

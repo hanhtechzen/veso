@@ -103,3 +103,10 @@ Sau khi cài trên máy bạn hoặc VPS, chạy lệnh sau để tự kiểm tr
 ```powershell
 docker compose exec api python -m luckyvision.cli doctor
 ```
+
+## 6. Bổ sung 03/11/2026: thêm trò chơi
+
+- Vietlott Lotto 5/35, Keno, Max 3D, Max 3D Pro, Bingo18: luật kiểm tra riêng, mã kỳ có số kỳ cho trò quay nhiều lần mỗi ngày,
+  bộ đọc trang vietlott.vn theo dự án mã nguồn mở. Đã kiểm thử bộ đọc với HTML mẫu; **chưa chạy với trang thật** (dùng `probe-feed`).
+- Xổ số điện toán 1*2*3, Thần Tài 4, 6x36: luật và trang hiển thị; **chưa có nguồn tự động**, nhập tay trong trang quản trị.
+- Cơ sở dữ liệu: bỏ ràng buộc "mỗi đài một kỳ mỗi ngày" cho Lotto 5/35, Keno, Bingo18; giữ nguyên cho các loại khác.

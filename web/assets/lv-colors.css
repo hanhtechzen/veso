@@ -4,6 +4,7 @@ body{--acc:#FF6B00;--acc2:#FF2D87;--gold:#FFC233;--night:#1A1446;--red:var(--acc
 body[data-region="mb"]{--acc:#D7263D;--acc2:#FF9F1C}
 body[data-region="mn"]{--acc:#0FA37F;--acc2:#00B4D8}
 body[data-region="mt"]{--acc:#7B3FE4;--acc2:#E040A0}
+body[data-region="mega"]{--acc:#C2185B;--acc2:#F06292}
 body[data-region="admin"]{--acc:#5E35B1;--acc2:#E040A0}
 body{background:
   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='60' viewBox='0 0 160 60'%3E%3Cg fill='none' stroke='%231A1446' stroke-opacity='.05'%3E%3Cpath d='M0 30 Q20 0 40 30 T80 30 T120 30 T160 30'/%3E%3Cpath d='M0 30 Q20 60 40 30 T80 30 T120 30 T160 30'/%3E%3Cpath d='M0 15 Q20 45 40 15 T80 15 T120 15 T160 15'/%3E%3Cpath d='M0 45 Q20 15 40 45 T80 45 T120 45 T160 45'/%3E%3C/g%3E%3C/svg%3E"),

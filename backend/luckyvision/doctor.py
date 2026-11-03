@@ -89,8 +89,8 @@ async def run_checks(ctx) -> list[tuple[str, str, str]]:
         add(OK if fc else WARN, "Dự báo", f"{fc} dự báo cho các kỳ sắp quay, {ev} dự báo đã chấm" if fc else
             "Chưa có dự báo cho kỳ sắp quay (thiếu lịch sử hoặc worker chưa chạy)")
 
-    add(OK if s.anthropic_api_key else WARN, "AI",
-        f"Đã bật, mô hình {s.ai_model}" if s.anthropic_api_key else "Chưa đặt ANTHROPIC_API_KEY: trợ lý AI và AI chọn số đang tắt")
+    add(OK if s.ai_enabled else WARN, "AI",
+        f"Đã bật: {s.ai_provider}, mô hình {s.ai_model_name}" if s.ai_enabled else "Chưa đặt AI_API_KEY: trợ lý AI và AI chọn số đang tắt")
     if s.healthchecks_url or s.telegram_bot_token or s.slack_webhook_url:
         add(OK, "Cảnh báo", "Đã cấu hình kênh cảnh báo")
     else:

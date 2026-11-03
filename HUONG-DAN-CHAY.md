@@ -4,6 +4,36 @@ Tài liệu này hướng dẫn từng bước: chạy thử trên máy Windows,
 
 ---
 
+## Tóm tắt: 5 bước từ máy tính đến trang web chạy thật
+
+| Bước | Làm gì | Mục |
+| --- | --- | --- |
+| 1 | Cài Docker Desktop, giải nén `Luckey.zip` vào `C:\Luckey`, chạy `.\start.ps1` | 1–3 |
+| 2 | Mở http://localhost/admin.html, đăng nhập `admin` bằng mật khẩu tạm, đổi mật khẩu, bật xác thực hai lớp | 7 |
+| 3 | Chạy thử và bật nguồn dữ liệu, sửa `.env` (`APP_ENV=prod`...), **tải bù lịch sử** bằng `backfill` và `feed` | 6, 7b |
+| 4 | Tùy chọn: AI (`AI_API_KEY`), Telegram, `SUPPORT_CONTACT` cho người quên mật khẩu | 7b, 7c, 8 |
+| 5 | Thuê VPS, đưa lên chạy 24/7, gắn tên miền, khai báo Google Search Console | 10, 7c |
+
+Sau mỗi bước, chạy `docker compose exec api python -m luckyvision.cli doctor` để tự kiểm tra.
+
+**Sau bước 1, trang mới có dữ liệu mẫu 2 ngày** (1 kỳ Power 6/55, miền Bắc 29/10, TP. Hồ Chí Minh 26/10). Nhiều trang sẽ hiện
+"Chưa có kết quả" hoặc "Chưa đủ dữ liệu" (ví dụ Đấu trường cần ít nhất 110 kỳ Power). Đó là bình thường;
+sau bước 3 mọi trang sẽ đầy đủ.
+
+**Các địa chỉ chính:**
+
+| Địa chỉ | Dành cho |
+| --- | --- |
+| `/` | Trang kết quả công khai (tối ưu Google), tìm kiếm, so sánh số, lịch quay, sổ kết quả, thống kê |
+| `/cong-cu/` | Công cụ: Power 6/55, ba miền, dò vé, máy thời gian, tạo bộ số, sổ dự đoán, đấu trường |
+| `/live.html` | Tường thuật trực tiếp giờ quay |
+| `/du-doan.html` | Dự báo, xác suất từng số, trợ lý AI |
+| `/dang-ky`, `/tai-khoan` | Thành viên: tỉnh và bộ số yêu thích, tự dò |
+| `/lien-he` | Form liên hệ |
+| `/admin.html` | Quản trị: hàng chờ, truy cập, liên hệ, thành viên, kỳ quay, nhập kết quả, nguồn, tài khoản, nhật ký |
+
+---
+
 ## 1. Chuẩn bị
 
 | Cần có | Ghi chú |
@@ -69,7 +99,9 @@ Mở trình duyệt:
 
 | Địa chỉ | Thấy gì |
 | --- | --- |
-| http://localhost | Giao diện LuckyVision |
+| http://localhost | Trang chủ công khai: kết quả ba miền và Vietlott (máy chủ tạo sẵn, tối ưu tìm kiếm Google) |
+| http://localhost/xsmb, /xsmn-26-10-2026, /xs-tp-hcm | Trang kết quả theo miền, theo ngày, theo đài |
+| http://localhost/cong-cu/ | Công cụ tương tác: dò vé, máy thời gian, tạo bộ số, sổ dự đoán, đấu trường, thống kê và dự báo ba miền. **Lấy dữ liệu thật từ máy chủ**, tự cập nhật mỗi 5 phút |
 | http://localhost/live.html | Trang tường thuật trực tiếp, nối với API thật |
 | http://localhost/du-doan.html | Dự báo kỳ tới, hiệu quả các mô hình, trợ lý AI |
 | http://localhost/admin.html | Trang quản trị (đăng nhập bằng tài khoản `admin`) |
@@ -138,6 +170,8 @@ docker compose exec api python -m luckyvision.cli sources
 | `vietlott-web` | vietlott.vn | Power 6/55 |
 | `minhngoc-web` | minhngoc.net | Miền Nam (21 đài) |
 | `xoso-com-vn` | xoso.com.vn | Miền Bắc, Miền Nam, Miền Trung (14 đài) |
+| `vietlott-mega` | vietlott.vn | Mega 6/45 |
+| `vietlott-lotto535`, `vietlott-keno`, `vietlott-max3d`, `vietlott-max3dpro`, `vietlott-bingo18` | vietlott.vn | Lotto 5/35, Keno, Max 3D, Max 3D Pro, Bingo18 (xem mục 6.5) |
 
 Cả ba mặc định **tắt**. Trước khi bật, hãy đọc điều khoản sử dụng của từng trang.
 
@@ -173,6 +207,7 @@ Nếu thấy `robots.txt ... không cho phép`, `Trang chặn truy cập tự đ
 
 ```powershell
 docker compose exec api python -m luckyvision.cli source-enable vietlott-web
+docker compose exec api python -m luckyvision.cli source-enable vietlott-mega
 docker compose exec api python -m luckyvision.cli source-enable minhngoc-web
 docker compose exec api python -m luckyvision.cli source-enable xoso-com-vn
 ```
@@ -183,7 +218,7 @@ Tắt lại khi cần: `source-disable <mã nguồn>`.
 
 ```
 APP_ENV=prod
-MIN_SOURCES_BY_REGION=vl:1,mn:1,mb:1,mt:1
+MIN_SOURCES_BY_REGION=vl:1,mega:1,mn:1,mb:1,mt:1
 ```
 
 - `APP_ENV=prod` tắt các nguồn dữ liệu mẫu.
@@ -197,6 +232,47 @@ MIN_SOURCES_BY_REGION=vl:1,mn:1,mb:1,mt:1
 ```powershell
 docker compose up -d
 ```
+
+### 6.5. Lotto 5/35, Keno, Max 3D, Max 3D Pro, Bingo18
+
+Các trò chơi này được lấy **theo dòng kết quả mới nhất** trên vietlott.vn, không cần lập lịch trước.
+Worker tự đọc lại trang kết quả: Keno và Bingo18 mỗi 5 phút, Lotto 5/35 mỗi 15 phút, Max 3D mỗi 30 phút
+(từ 6:00 đến 23:30). Kết quả từ trang chính thức được tự công bố.
+
+Chạy thử trước khi bật (chỉ đọc, không lưu):
+
+```powershell
+docker compose exec api python -m luckyvision.cli probe-feed lotto535
+docker compose exec api python -m luckyvision.cli probe-feed keno
+docker compose exec api python -m luckyvision.cli probe-feed max3d
+docker compose exec api python -m luckyvision.cli probe-feed max3dpro
+docker compose exec api python -m luckyvision.cli probe-feed bingo18
+```
+
+Kết quả đúng in ra vài kỳ gần nhất. Bật nguồn nào chạy ổn:
+
+```powershell
+docker compose exec api python -m luckyvision.cli source-enable vietlott-keno
+```
+
+Tải bù lịch sử (mỗi trang khoảng 5–10 kỳ; Keno có hàng trăm kỳ mỗi ngày nên tải bù chậm):
+
+```powershell
+docker compose exec api python -m luckyvision.cli feed --game lotto535 --pages 100
+docker compose exec api python -m luckyvision.cli feed --game max3d --pages 200
+```
+
+Lưu ý: yêu cầu gửi tới Vietlott dùng một "khóa" lấy từ dự án mã nguồn mở; nếu `probe-feed` báo lỗi hoặc đọc được 0 kỳ,
+có thể Vietlott đã đổi khóa hoặc giao diện. Khi đó đừng bật nguồn và gửi nội dung lỗi để chỉnh lại.
+
+### 6.6. Xổ số điện toán miền Bắc (1*2*3, Thần Tài 4, 6x36)
+
+Chưa có nguồn tự động được kiểm chứng, nên kết quả **nhập tay** trong trang quản trị:
+vào **Nhập kết quả**, chọn loại (Điện toán 1*2*3, Thần Tài 4, Điện toán 6x36), ngày quay, nhập số rồi duyệt.
+Hệ thống kiểm tra đúng luật (ví dụ 6x36 chỉ nhận số 01–36, không trùng; Thần Tài 4 đúng 4 chữ số).
+
+Nếu bạn mua được API dữ liệu của nhà cung cấp, khai báo nguồn `http_json` (README mục 5) với `regions` là
+`{dt123}`, `{tt4}` hoặc `{dt6x36}` để lấy tự động.
 
 ### Lịch tự động của worker (giờ Việt Nam)
 
@@ -303,23 +379,115 @@ API tương ứng: `GET /v1/probabilities?region=mb&days=365` và `GET /v1/forec
 
 ### Trợ lý AI và AI chọn số (tùy chọn)
 
-Cần khóa Claude API:
+Dùng được **Claude hoặc bất kỳ dịch vụ nào theo chuẩn API của OpenAI** (OpenAI, Google Gemini, DeepSeek, Groq, OpenRouter,
+hoặc mô hình chạy ngay trên máy bằng Ollama). Điền vào `.env` theo một trong các mẫu:
 
-1. Tạo khóa tại https://console.anthropic.com
-2. Thêm vào `.env`:
-   ```
-   ANTHROPIC_API_KEY=sk-ant-...
-   AI_MODEL=claude-haiku-5-5
-   AI_REQUESTS_PER_MINUTE=6
-   ```
-3. `docker compose up -d`
+| Dịch vụ | Cấu hình |
+| --- | --- |
+| Claude | `AI_PROVIDER=anthropic`, `AI_API_KEY=sk-ant-...` |
+| OpenAI | `AI_PROVIDER=openai`, `AI_API_KEY=sk-...`, `AI_MODEL=gpt-4o-mini` |
+| Google Gemini | `AI_PROVIDER=openai`, `AI_API_KEY=...`, `AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`, `AI_MODEL=gemini-2.0-flash` |
+| DeepSeek | `AI_PROVIDER=openai`, `AI_API_KEY=...`, `AI_BASE_URL=https://api.deepseek.com/v1`, `AI_MODEL=deepseek-chat` |
+| Ollama trên máy | `AI_PROVIDER=openai`, `AI_BASE_URL=http://host.docker.internal:11434/v1`, `AI_MODEL=qwen2.5` (không cần khóa) |
+
+Tên cũ `ANTHROPIC_API_KEY` vẫn dùng được. Sau khi sửa, chạy `docker compose up -d`, rồi mở http://localhost/v1/ai/status:
+thấy `"enabled": true` và tên dịch vụ là xong. Tên mô hình cụ thể của từng dịch vụ có thể thay đổi; xem trang tài liệu của dịch vụ đó.
 
 Trên trang http://localhost/du-doan.html sẽ có thêm:
 
 - **Trợ lý AI:** trả lời câu hỏi bằng số liệu thật của hệ thống, ví dụ "lô nào lâu chưa về nhất?".
 - **AI chọn số cho vui:** nhập mong muốn (ngày sinh, số yêu thích...), AI tạo bộ số kèm giải thích. Mọi bộ số đều được kiểm tra lại theo luật trò chơi.
 
-Mỗi địa chỉ IP chỉ gọi được `AI_REQUESTS_PER_MINUTE` lần mỗi phút để giới hạn chi phí API.
+Mỗi địa chỉ IP chỉ gọi được `AI_REQUESTS_PER_MINUTE` lần mỗi phút để giới hạn chi phí.
+
+### Tìm kiếm thông minh, so sánh số, lịch quay, tài khoản người dùng
+
+- **Tìm kiếm** (ô trên đầu mọi trang): gõ tự nhiên, ví dụ `xsmn 26/10`, `xổ số đà nẵng thứ 7`, `xsmb hôm qua`, `lô 27 tp hcm`,
+  `27 72 xsmb`, `power kỳ 1417`, `max 3d pro`, `vé 472899 hcm` (dò vé trong 7 ngày gần nhất), `lô gan miền trung`, `lịch quay`.
+- **So sánh các con số** (`/so-sanh`): đặt 2–4 số cạnh nhau theo miền, theo đài hoặc theo trò Vietlott: số kỳ có về, tỉ lệ so với
+  lý thuyết, lần về gần nhất, số kỳ chưa về, lâu nhất chưa về, khoảng cách trung bình, số hay về cùng, dải 40 kỳ gần nhất.
+- **Lịch quay** (`/lich-quay-xo-so`): bảng 7 ngày theo miền, hôm nay được tô màu, lịch Vietlott, câu hỏi thường gặp (có dữ liệu cấu trúc FAQ cho Google).
+- **Tài khoản người dùng** (`/dang-ky`, `/dang-nhap`, `/tai-khoan`): miễn phí, đăng ký bằng email và mật khẩu.
+  - Lưu **tỉnh/đài yêu thích** (nút "☆ Lưu đài này" trên trang đài, trang Vietlott) và xem kết quả mới nhất của chúng ở một chỗ.
+  - Lưu **bộ số yêu thích**: số lô (theo miền hoặc đài), số vé ba miền, bộ số Power/Mega/Lotto. Mỗi lần mở "Trang của tôi", hệ thống tự dò với kỳ mới nhất và tô vàng số trúng.
+  - Đổi mật khẩu, đăng xuất, xóa tài khoản (xóa luôn dữ liệu đã lưu).
+  - Bảo mật: mật khẩu băm scrypt, cookie httpOnly, chống giả mạo yêu cầu, giới hạn số lần đăng ký và đăng nhập theo IP, khóa tạm khi sai nhiều lần.
+  - **Quên mật khẩu:** trang đăng nhập hướng dẫn liên hệ quản trị theo `SUPPORT_CONTACT` trong `.env`. Quản trị vào
+    **Quản trị, Thành viên**, tìm theo email, bấm **Đặt lại mật khẩu** và gửi mật khẩu tạm cho thành viên (chỉ hiện một lần).
+    Thành viên đăng nhập bằng mật khẩu tạm sẽ được nhắc đặt mật khẩu mới; dữ liệu đã lưu giữ nguyên.
+    Hãy xác nhận đúng chủ tài khoản trước khi cấp mật khẩu (ví dụ yêu cầu nhắn từ chính email đã đăng ký).
+  - Mục **Thành viên** còn cho khóa, mở khóa, xóa tài khoản; mọi thao tác được ghi vào Nhật ký.
+- **Form liên hệ** (`/lien-he`, có liên kết ở chân mọi trang và ở trang đăng nhập): chủ đề Quên mật khẩu, Báo sai kết quả, Góp ý,
+  Hợp tác, Khác. Tin gửi về mục **Quản trị, Liên hệ** (menu có huy hiệu số tin mới) và báo qua Telegram nếu đã cài `TELEGRAM_CHAT_ID`.
+  - Mỗi tin: trả lời qua email (bấm vào địa chỉ), ghi chú nội bộ, đánh dấu Đang xử lý, Đã xong hoặc Thư rác.
+  - Tin "Quên mật khẩu" có nút **Mở Thành viên** để cấp mật khẩu tạm ngay.
+  - Chống thư rác: ô bẫy ẩn, phải mở form ít nhất 3 giây mới gửi được, mỗi địa chỉ tối đa 5 tin mỗi giờ, giới hạn số đường dẫn trong tin.
+
+### Trang Công cụ dùng dữ liệu thật
+
+Trang `/cong-cu/` không còn nhúng dữ liệu cũ: khi mở, trang tải toàn bộ kết quả Power 6/55 và 3 năm gần nhất của ba miền
+từ máy chủ (`/v1/export/tools`, khoảng 130 KB khi nén, có lưu đệm), rồi tự tải lại mỗi 5 phút khi trang đang mở.
+Kết quả vừa được công bố hiện ngay ở lần tải kế tiếp.
+
+**Sổ dự đoán** gắn với tài khoản thành viên: đăng nhập rồi khóa dự đoán Power hoặc số lô, sổ được lưu trên máy chủ và
+tên hiển thị xuất hiện trên **bảng xếp hạng chung**. Máy chủ chỉ cho thêm dự đoán của kỳ chưa quay; dự đoán của kỳ đã quay
+bị khóa, không sửa hay xóa được. Chưa đăng nhập thì sổ lưu trên trình duyệt như trước.
+
+Lưu ý: trang Công cụ cần dữ liệu lịch sử để thống kê và dự báo có ý nghĩa; hãy chạy `backfill` sau khi bật nguồn.
+
+### Thống kê truy cập (trang Quản trị, mục "Truy cập")
+
+- Lượt xem và số khách mỗi ngày (biểu đồ; bấm một cột để xem riêng ngày đó), so với hôm trước.
+- Trang xem nhiều nhất, theo nhóm trang (ví dụ mọi trang "XSMN theo ngày" gộp lại), nguồn khách (Google, Facebook, Zalo, vào trực tiếp...), thiết bị.
+- Chọn hôm nay, 7, 30, 90 ngày hoặc khoảng ngày tùy ý; nút **Tải CSV** để phân tích thêm bằng Excel.
+
+Cách đếm tôn trọng quyền riêng tư: không cookie, không lưu IP; khách được nhận diện trong ngày bằng mã băm với "muối" đổi mỗi ngày
+và tự xóa sau 2 ngày, nên không thể truy ngược. Bot và người dùng bật "Không theo dõi" không bị đếm.
+Nếu bật Cloudflare lưu đệm trang, lượt xem vẫn được đếm vì việc đếm chạy trên trình duyệt.
+
+---
+
+## 7c. Trang công khai, SEO, ứng dụng điện thoại, kênh Telegram
+
+### Trang công khai cho Google
+
+Trang chủ và các trang kết quả do máy chủ tạo sẵn HTML (không cần JavaScript để đọc), mỗi trang có tiêu đề, mô tả,
+đường dẫn chuẩn (canonical), dữ liệu cấu trúc và liên kết qua lại:
+
+| Đường dẫn | Nội dung |
+| --- | --- |
+| `/` | Kết quả mới nhất ba miền, Power 6/55, Mega 6/45 |
+| `/xsmb`, `/xsmn`, `/xsmt` | Kết quả mới nhất từng miền |
+| `/xsmb-29-10-2026` | Kết quả một ngày, kèm lô tô, ngày trước và sau, nút in bảng dò vé |
+| `/xs-tp-hcm`, `/xs-da-nang`... | Trang từng đài: lịch quay, 10 kỳ gần nhất |
+| `/vietlott` | Kết quả mới nhất mọi trò chơi Vietlott |
+| `/vietlott-power-655`, `/vietlott-mega-645`, `/vietlott-lotto-535`, `/vietlott-keno`, `/vietlott-max-3d`, `/vietlott-max-3d-pro`, `/vietlott-bingo18` | Kỳ mới nhất và các kỳ gần đây; thêm `-29-10-2026` để xem một ngày (Keno, Bingo18, Lotto 5/35: mọi kỳ trong ngày) |
+| `/xs-dien-toan`, `/xs-dien-toan-123`, `/xs-than-tai-4`, `/xs-dien-toan-6x36` | Xổ số điện toán miền Bắc |
+| `/so-ket-qua-xsmb-30-ngay` (30, 60, 90) | Sổ kết quả, in được |
+| `/thong-ke-xsmb`, `/thong-ke-xs-da-nang` | Lô gan, lô về nhiều, về ít |
+| `/sitemap.xml`, `/robots.txt` | Tự cập nhật theo dữ liệu |
+
+Khi đưa lên tên miền thật:
+
+1. Trong `.env`, đặt `SITE_URL=https://ten-mien-cua-ban.vn` (không có dấu `/` cuối), rồi `docker compose up -d`.
+2. Vào **Google Search Console**, thêm tên miền, xác minh bằng bản ghi DNS (làm trên Cloudflare).
+3. Trong Search Console, mục **Sitemaps**, gửi `https://ten-mien-cua-ban.vn/sitemap.xml`.
+4. Bật Cloudflare **Cache Everything** cho các trang ngày cũ nếu muốn nhanh hơn (trang đã gửi sẵn `Cache-Control`).
+
+### Cài như ứng dụng trên điện thoại
+
+Trang có sẵn biểu tượng và chế độ ngoại tuyến. Trên điện thoại:
+- **Android (Chrome):** mở trang, bấm menu ⋮, chọn **Cài đặt ứng dụng** hoặc **Thêm vào màn hình chính**.
+- **iPhone (Safari):** bấm nút Chia sẻ, chọn **Thêm vào Màn hình chính**.
+
+Khi mất mạng, các trang đã xem vẫn mở được.
+
+### Kênh Telegram nhận kết quả
+
+1. Tạo kênh Telegram công khai (ví dụ `@luckyvision_kq`), thêm bot (mục 8) làm quản trị kênh.
+2. Trong `.env`: `TELEGRAM_RESULTS_CHAT_ID=@luckyvision_kq`, rồi `docker compose up -d`.
+
+Mỗi khi một kỳ được công bố lần đầu, kênh nhận tin gồm giải đặc biệt, giải nhất, lô tô và đường dẫn tới trang kết quả.
 
 ---
 
@@ -397,13 +565,14 @@ Tóm tắt; chi tiết ở `README.md`, mục 6.
 | `api` không lên `healthy` | Xem `docker compose logs api`. Thường do sai `POSTGRES_PASSWORD` sau khi đã tạo dữ liệu: chạy `docker compose down -v` rồi `docker compose up -d --build` |
 | Trang quản trị báo sai mật khẩu nhiều lần, bị khóa | Chờ 15 phút, hoặc đặt lại bằng lệnh `create-admin` ở mục 7 |
 | Mất điện thoại có ứng dụng xác thực | Admin khác vào **Tài khoản** bấm **Tắt 2 lớp**; hoặc chạy lệnh `create-admin` ở mục 7 |
-| Trang dự báo báo "Tính năng AI chưa bật" | Chưa đặt `ANTHROPIC_API_KEY` trong `.env` (mục 7b) |
+| Trang dự báo báo "Tính năng AI chưa bật" | Chưa đặt `AI_API_KEY` trong `.env` (mục 7b) |
 | Dự báo kỳ tới trống | Đài chưa đủ lịch sử. Chạy `backfill` (mục 7b) |
 | `probe-source` báo `robots.txt ... không cho phép` | Trang không cho phép tải tự động. Không bật nguồn này |
 | `probe-source` báo `Trang chặn truy cập tự động` | Trang bật chống bot. Không bật nguồn này; dùng nguồn khác |
 | `probe-source` báo `Không tìm thấy kết quả của ngày này` | Ngày đó không có kỳ quay, hoặc trang đã đổi cấu trúc. Thử một ngày khác; nếu vẫn lỗi, gửi kết quả để chỉnh bộ cào |
 | Kỳ quay báo "Quá giờ" dù đã qua giờ quay | Chưa bật nguồn thật (mục 6), hoặc nguồn đang lỗi: xem `docker compose logs worker` |
-| Trang http://localhost không cập nhật kết quả mới | Trang chính hiện dùng dữ liệu nhúng sẵn. Kết quả mới xem ở http://localhost/live.html và qua API |
+| Trang báo "Chưa có kết quả" hoặc "Chưa đủ dữ liệu" | Cơ sở dữ liệu mới có dữ liệu mẫu. Bật nguồn và chạy `backfill`, `feed` (mục 6, 7b) |
+| Trang Công cụ báo "Chưa tải được dữ liệu" | API chưa chạy hoặc cơ sở dữ liệu trống: xem `docker compose ps`, `docker compose logs api`, rồi chạy `backfill` (mục 7b) |
 
 ---
 
@@ -419,4 +588,4 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-Kết quả mong đợi: `47 passed`.
+Kết quả mong đợi: `71 passed`.

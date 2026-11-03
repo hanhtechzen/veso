@@ -5,6 +5,7 @@ from datetime import date
 
 from fastapi import APIRouter, Query, Request, Response
 
+from ..domain.games import game_of_region
 from ..forecast.models import MODELS
 from ..forecast.service import K_VALUES, summarize
 from .errors import ApiError
@@ -92,7 +93,7 @@ async def next_forecasts(request: Request, response: Response, region: str, prov
 @router.get("/forecasts/performance")
 async def performance(request: Request, response: Response, region: str, province: str | None = None,
                       k: int | None = None, days: int = Query(365, ge=7, le=3650)):
-    game = "power655" if region == "vl" else "xs"
+    game = game_of_region(region)
     k = k or K_VALUES[game][min(1, len(K_VALUES[game]) - 1)]
     if str(k) not in {str(x) for x in K_VALUES[game]}:
         raise ApiError(400, "invalid_param", f"k phải là một trong {K_VALUES[game]}")

@@ -12,6 +12,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ..domain.games import GAMES
+
 
 @dataclass(frozen=True)
 class ModelInfo:
@@ -41,13 +43,14 @@ REGION_PARAMS = {
     "mn": {"W": 8, "H": 6, "S": 4, "alpha": 30},
     "mt": {"W": 8, "H": 6, "S": 4, "alpha": 30},
     "vl": {"W": 30, "H": 20, "S": 7, "alpha": 30},
+    "mega": {"W": 30, "H": 20, "S": 7, "alpha": 30},
 }
 MIN_HISTORY = {"freq": 4, "roll": 4, "dist": 4, "logreg": 40, "rand": 0}
 
 
 def universe(game: str) -> tuple[int, int]:
     """(số lượng số, số nhỏ nhất)."""
-    return (55, 1) if game == "power655" else (100, 0)
+    return (GAMES[game].main_max, 1) if game in GAMES else (100, 0)
 
 
 def label(game: str, idx: int) -> str:

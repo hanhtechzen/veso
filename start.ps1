@@ -36,8 +36,12 @@ if ($firstRun) {
 docker compose exec -T api python -m luckyvision.cli forecast
 
 Write-Host ""
-Write-Host "Trang web:        http://localhost" -ForegroundColor Green
+Write-Host "Trang kết quả:    http://localhost" -ForegroundColor Green
+Write-Host "Công cụ:          http://localhost/cong-cu/" -ForegroundColor Green
 Write-Host "Trực tiếp:        http://localhost/live.html" -ForegroundColor Green
 Write-Host "Dự báo và AI:     http://localhost/du-doan.html" -ForegroundColor Green
 Write-Host "Quản trị:         http://localhost/admin.html  (tên đăng nhập: admin)" -ForegroundColor Green
 Write-Host "Tài liệu API:     http://localhost/v1/docs" -ForegroundColor Green
+Write-Host ""
+Write-Host "Hiện mới có dữ liệu mẫu 2 ngày. Bước tiếp theo: xem mục 6 trong HUONG-DAN-CHAY.md để bật nguồn và tải lịch sử." -ForegroundColor Yellow
+Write-Host "Tự kiểm tra cấu hình: docker compose exec api python -m luckyvision.cli doctor" -ForegroundColor Yellow

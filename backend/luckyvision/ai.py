@@ -13,6 +13,7 @@ from collections import defaultdict, deque
 import httpx
 
 from .config import Settings
+from .domain.games import GAMES, game_of_region
 
 
 
@@ -38,17 +39,40 @@ class RateLimiter:
 LIMITER = RateLimiter()
 
 
-async def complete(settings: Settings, http: httpx.AsyncClient, system: str, user: str, max_tokens: int = 900) -> str:
-    if not settings.anthropic_api_key:
-        raise AiError("disabled")
-    r = await http.post(settings.ai_base_url.rstrip("/") + "/v1/messages", timeout=60, headers={
-        "x-api-key": settings.anthropic_api_key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-        json={"model": settings.ai_model, "max_tokens": max_tokens, "system": system,
-              "messages": [{"role": "user", "content": user}]})
-    if r.status_code != 200:
-        raise AiError(f"Claude API trả lỗi HTTP {r.status_code}: {r.text[:300]}")
-    data = r.json()
+def build_request(settings: Settings, system: str, user: str, max_tokens: int) -> tuple[str, dict, dict]:
+    """(địa chỉ, header, nội dung) theo nhà cung cấp đã chọn."""
+    if settings.ai_provider == "openai":
+        headers = {"content-type": "application/json"}
+        if settings.ai_key:
+            headers["authorization"] = f"Bearer {settings.ai_key}"
+        return (settings.ai_url + "/chat/completions", headers,
+                {"model": settings.ai_model_name, "max_tokens": max_tokens,
+                 "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]})
+    return (settings.ai_url + "/v1/messages",
+            {"x-api-key": settings.ai_key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+            {"model": settings.ai_model_name, "max_tokens": max_tokens, "system": system,
+             "messages": [{"role": "user", "content": user}]})
+
+
+def read_response(provider: str, data: dict) -> str:
+    if provider == "openai":
+        choices = data.get("choices") or [{}]
+        msg = (choices[0] or {}).get("message") or {}
+        content = msg.get("content") or ""
+        if isinstance(content, list):  # một số dịch vụ trả về danh sách đoạn
+            content = "".join(c.get("text", "") for c in content if isinstance(c, dict))
+        return content.strip()
     return "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text").strip()
+
+
+async def complete(settings: Settings, http: httpx.AsyncClient, system: str, user: str, max_tokens: int = 900) -> str:
+    if not settings.ai_enabled:
+        raise AiError("disabled")
+    url, headers, body = build_request(settings, system, user, max_tokens)
+    r = await http.post(url, timeout=60, headers=headers, json=body)
+    if r.status_code != 200:
+        raise AiError(f"Dịch vụ AI ({settings.ai_provider}) trả lỗi HTTP {r.status_code}: {r.text[:300]}")
+    return read_response(settings.ai_provider, r.json())
 
 
 async def stats_context(conn, region: str, province: str | None) -> dict:
@@ -68,10 +92,10 @@ async def stats_context(conn, region: str, province: str | None) -> dict:
                                        "game": r["game"], "prizes": {}})
         d["prizes"].setdefault(r["prize_code"], []).append(r["number"])
     items = list(draws.values())
-    game = items[0]["game"] if items else ("power655" if region == "vl" else "xs")
+    game = items[0]["game"] if items else game_of_region(region)
 
     def nums(d):
-        if game == "power655":
+        if game in GAMES:
             return [int(n) for n in d["prizes"].get("main", [])]
         return [int(n[-2:]) for v in d["prizes"].values() for n in v]
 
@@ -80,7 +104,7 @@ async def stats_context(conn, region: str, province: str | None) -> dict:
     for d in recent:
         for n in nums(d):
             counts[n] += 1
-    universe = range(1, 56) if game == "power655" else range(100)
+    universe = range(1, GAMES[game].main_max + 1) if game in GAMES else range(100)
     order = sorted(universe, key=lambda n: (-counts[n], n))
     last_seen: dict[int, int] = {}
     for i, d in enumerate(items):
@@ -90,13 +114,14 @@ async def stats_context(conn, region: str, province: str | None) -> dict:
     fmt = (lambda n: f"{n:02d}")
     perf = await (await conn.execute(
         """SELECT f.model, count(*) AS n,
-                  avg((e.hits->>(CASE WHEN p.game = 'power655' THEN '6' ELSE '10' END))::float) AS avg_hits,
-                  avg((e.baseline->>(CASE WHEN p.game = 'power655' THEN '6' ELSE '10' END))::float) AS avg_base
+                  avg((e.hits->>(CASE WHEN p.game IN ('power655', 'mega645') THEN '6' ELSE '10' END))::float) AS avg_hits,
+                  avg((e.baseline->>(CASE WHEN p.game IN ('power655', 'mega645') THEN '6' ELSE '10' END))::float) AS avg_base
              FROM forecast_evaluations e JOIN forecasts f ON f.id = e.forecast_id
              JOIN lottery_draws d ON d.id = f.draw_id JOIN provinces p ON p.code = d.province_code
             WHERE d.region_code = %s GROUP BY f.model""", (region,))).fetchall()
     return {
-        "game": "Power 6/55 (6 số từ 01–55)" if game == "power655" else "Xổ số truyền thống, lô tô 00–99",
+        "game": (f"{GAMES[game].name} ({GAMES[game].main_count} số từ 01–{GAMES[game].main_max})" if game in GAMES
+                 else "Xổ số truyền thống, lô tô 00–99"),
         "region": region, "province": province, "draws_analyzed": len(items),
         "latest_draws": [{"date": d["date"], "province": d["province"],
                           "numbers": " ".join(fmt(n) for n in nums(d))} for d in items[-5:]],
@@ -122,8 +147,9 @@ Luật: {rule}. Không lặp số trong cùng một bộ. Không khẳng định
 
 
 def pick_rule(game: str, size: int) -> str:
-    if game == "power655":
-        return "mỗi bộ gồm đúng 6 số khác nhau từ 01 đến 55, viết 2 chữ số"
+    if game in GAMES:
+        g = GAMES[game]
+        return f"mỗi bộ gồm đúng {g.main_count} số khác nhau từ 01 đến {g.main_max}, viết 2 chữ số"
     return f"mỗi bộ gồm đúng {size} số lô khác nhau từ 00 đến 99, viết 2 chữ số"
 
 
@@ -135,7 +161,7 @@ def parse_pick(text: str, game: str, size: int, count: int) -> list[dict]:
         data = json.loads(m.group(0))
     except json.JSONDecodeError as e:
         raise AiError(f"JSON không hợp lệ: {e}") from e
-    lo, hi, need = (1, 55, 6) if game == "power655" else (0, 99, size)
+    lo, hi, need = (1, GAMES[game].main_max, GAMES[game].main_count) if game in GAMES else (0, 99, size)
     out = []
     for s in data.get("sets", [])[:count]:
         try:

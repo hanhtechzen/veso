@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ h1 }}</h1>
+<p class="lead">Phân tích {{ draws }} kỳ gần nhất. Mỗi số có {{ ('%.1f' % (theory * 100)).replace('.', ',') }}% khả năng nằm trong bộ số trúng của một kỳ, như nhau cho mọi số; trong {{ recent }} kỳ, mỗi số kỳ vọng về khoảng {{ (expected|string).replace('.', ',') }} lần.</p>
+<section class="card"><h2>Tần suất từng số trong {{ recent }} kỳ gần nhất</h2>
+  <div class="freq">{% for k, c in rf.items() %}<div class="fc" title="Số {{ '%02d' % k }}: {{ c }} lần"><span class="track"><span class="bar" style="height:{{ (c / mx * 100) | round(1) }}%"></span></span><b>{{ '%02d' % k }}</b><small>{{ c }}</small></div>{% endfor %}</div>
+</section>
+<div class="grid2">
+  <section class="card"><h2>Số lâu chưa về</h2><p class="hint">Số kỳ liên tiếp chưa có trong bộ số chính.</p>
+    <div class="tablewrap"><table class="list"><thead><tr><th>Số</th><th>Số kỳ chưa về</th></tr></thead><tbody>{% for n, k in gan %}<tr><td class="mono"><b>{{ '%02d' % n }}</b></td><td>{{ k }}</td></tr>{% endfor %}</tbody></table></div></section>
+  <section class="card"><h2>Về nhiều và về ít ({{ recent }} kỳ)</h2>
+    <h3>Về nhiều nhất</h3><p class="mono">{% for n, c in hot %}<b>{{ '%02d' % n }}</b> ({{ c }}){% if not loop.last %}, {% endif %}{% endfor %}</p>
+    <h3>Về ít nhất</h3><p class="mono">{% for n, c in cold %}<b>{{ '%02d' % n }}</b> ({{ c }}){% if not loop.last %}, {% endif %}{% endfor %}</p>
+    <p class="hint">Số về nhiều hay lâu chưa về chỉ mô tả quá khứ, không làm thay đổi cơ hội ở kỳ tới. Xem <a href="/cong-cu/#dau-truong">Đấu trường</a>: các chiến lược theo số nóng, số gan đều được chấm điểm so với chọn ngẫu nhiên.</p></section>
+</div>
+{% endblock %}

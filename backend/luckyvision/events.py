@@ -18,7 +18,7 @@ async def emit(conn, topic: str, region: str, payload: dict) -> None:
     )
 
 
-async def relay_once(pool, redis, batch: int = 200) -> int:
+async def relay_once(pool, redis, batch: int = 200, on_rows=None) -> int:
     """Gửi các sự kiện chưa gửi sang Redis. Trả về số sự kiện đã gửi."""
     async with pool.connection() as conn:
         cur = await conn.execute(
@@ -35,13 +35,18 @@ async def relay_once(pool, redis, batch: int = 200) -> int:
         if rows:
             await conn.execute("UPDATE outbox_events SET published_at = now() WHERE id = ANY(%s)",
                                ([r["id"] for r in rows],))
-        return len(rows)
+    if rows and on_rows:
+        try:
+            await on_rows(rows)
+        except Exception:  # noqa: BLE001
+            log.exception("Lỗi khi xử lý sự kiện sau khi chuyển")
+    return len(rows)
 
 
-async def relay_loop(pool, redis, stop: asyncio.Event, idle_s: float = 0.5) -> None:
+async def relay_loop(pool, redis, stop: asyncio.Event, idle_s: float = 0.5, on_rows=None) -> None:
     while not stop.is_set():
         try:
-            n = await relay_once(pool, redis)
+            n = await relay_once(pool, redis, on_rows=on_rows)
         except Exception:  # noqa: BLE001 - không để vòng lặp chết vì một lỗi tạm thời
             log.exception("Lỗi khi chuyển sự kiện sang Redis")
             n = 0

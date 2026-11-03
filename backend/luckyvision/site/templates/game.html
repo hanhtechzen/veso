@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% from "macros_game.html" import game_result %}
+{% block content %}
+<h1>{{ h1 }}</h1>
+<p class="lead">{{ summary }}{% if g.schedule %} {{ g.schedule }}.{% endif %}</p>
+<p class="print-hide"><button class="btn ghost" type="button" data-fav-province="{{ g.code }}">☆ Theo dõi {{ g.name.replace("Vietlott ", "") }}</button>{% if g.kind == "pick" and g.code != "keno" %} <a class="btn ghost" href="/so-sanh?pham-vi={{ g.code }}">So sánh các con số</a>{% endif %}</p>
+{% if day_draws %}
+<div class="card"><h2>Tất cả kỳ quay trong ngày ({{ day_draws|length }} kỳ)</h2>
+  <div class="tablewrap"><table class="list"><thead><tr><th>Kỳ</th><th>Kết quả</th></tr></thead><tbody>
+  {% for d in day_draws %}<tr><td class="mono">{{ '%0*d' % (g.seq_width, d.draw_seq) if d.draw_seq else '–' }}</td><td class="mono">{{ compact(g, d) }}</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% elif main %}
+<section class="card center">
+  <p class="hint">{% if main.draw_seq %}Kỳ {{ '%0*d' % (g.seq_width, main.draw_seq) }}, {% endif %}{{ weekday(main.draw_date) }} {{ main.draw_date.strftime('%d/%m/%Y') }}</p>
+  {{ game_result(g, main) }}
+  {% if odds_text %}<p class="hint">{{ odds_text }}</p>{% endif %}
+  {% if g.code in ('power655', 'mega645') %}<p class="print-hide"><a class="btn" href="/cong-cu/#do-ve">Dò vé</a> <a class="btn ghost" href="/cong-cu/#may-thoi-gian">Máy thời gian</a></p>{% endif %}
+</section>
+{% endif %}
+{% if recent %}
+<div class="card"><h2>Các kỳ gần đây</h2>
+  <div class="tablewrap"><table class="list"><thead><tr><th>Kỳ</th><th>Ngày quay</th><th>Kết quả</th></tr></thead><tbody>
+  {% for d in recent %}<tr><td class="mono">{{ '%0*d' % (g.seq_width, d.draw_seq) if d.draw_seq else '–' }}</td><td><a href="/{{ slug }}-{{ d.draw_date.strftime('%d-%m-%Y') }}">{{ weekday(d.draw_date) }} {{ d.draw_date.strftime('%d/%m/%Y') }}</a></td><td class="mono">{{ compact(g, d) }}</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endif %}
+{% endblock %}

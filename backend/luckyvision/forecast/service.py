@@ -8,10 +8,11 @@ from datetime import date
 import numpy as np
 from psycopg.types.json import Jsonb
 
+from ..domain.games import GAMES
 from .models import MODELS, counts_matrix, label, normalize, rank, run_model, universe
 
 log = logging.getLogger(__name__)
-K_VALUES = {"xs": (5, 10, 20), "power655": (6,)}
+K_VALUES = {"xs": (5, 10, 20), "power655": (6,), "mega645": (6,)}
 MIN_EVAL = 20  # dưới số kỳ này chưa kết luận tốt hay kém hơn ngẫu nhiên
 
 
@@ -28,7 +29,7 @@ async def load_history(conn, province: str, before: date, limit: int = 1500) -> 
             ORDER BY ds.draw_date""", (province, before, limit))).fetchall()
     by_day: dict[date, list[int]] = {}
     for r in rows:
-        if game == "power655":
+        if game in GAMES:
             if r["prize_code"] == "main":
                 by_day.setdefault(r["draw_date"], []).append(int(r["number"]))
         else:
@@ -38,7 +39,7 @@ async def load_history(conn, province: str, before: date, limit: int = 1500) -> 
 
 
 def truth_numbers(game: str, prizes: dict[str, list[str]]) -> set[int]:
-    if game == "power655":
+    if game in GAMES:
         return {int(n) for n in prizes.get("main", [])}
     return {int(n[-2:]) for nums in prizes.values() for n in nums}
 
@@ -100,7 +101,7 @@ def score_forecast(game: str, ranking: list[str], probs: list[float] | None, par
     if probs:
         y = np.array([1.0 if n in truth else 0.0 for n in nums])
         pr = np.array(probs)
-        if game == "power655":
+        if game in GAMES:
             pr = np.clip(pr, 0, 1)
         brier = float(np.mean((pr - y) ** 2))
         q = float(params.get("q", len(truth) / size))

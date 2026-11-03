@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="accountApp" data-provinces='{{ provs|tojson }}' data-games='{{ games|map(attribute="code")|list|tojson }}'>
+  <h1>Trang của tôi</h1>
+  <p class="lead" id="accHello">Đang tải…</p>
+  <div class="card mustchange" id="mustChange" hidden><h2>Hãy đặt mật khẩu mới</h2><p class="hint">Bạn đang dùng mật khẩu tạm do quản trị cấp. Nhập mật khẩu tạm và mật khẩu mới ở mục "Tài khoản" bên dưới.</p></div>
+  <section class="card"><h2>Tỉnh yêu thích</h2><p class="hint">Kết quả mới nhất của các đài bạn theo dõi.</p><div id="favProvs" class="grid2"></div>
+    <div class="row3 addrow"><label>Thêm đài<select id="addProv"></select></label><button class="btn ghost" type="button" id="addProvBtn">Thêm</button></div></section>
+  <section class="card"><h2>Bộ số yêu thích</h2><p class="hint">Tự dò với kỳ quay mới nhất mỗi khi bạn mở trang.</p><div id="favSets"></div>
+    <div class="row3 addrow">
+      <label>Loại<select id="setKind"><option value="lo">Số lô (2 số cuối)</option><option value="ticket">Số vé ba miền</option><option value="pick">Bộ số Vietlott</option></select></label>
+      <label>Phạm vi<select id="setScope"></select></label>
+      <label>Các số<input id="setNums" placeholder="vd: 27 72 08" inputmode="numeric"></label>
+      <label>Ghi chú<input id="setLabel" maxlength="60" placeholder="vd: ngày sinh"></label>
+      <button class="btn" type="button" id="addSetBtn">Lưu</button>
+    </div><p class="msg" id="setMsg" role="status"></p></section>
+  <section class="card"><h2>Tài khoản</h2>
+    <div class="row3"><label>Mật khẩu hiện tại<input id="curPw" type="password" autocomplete="current-password"></label>
+      <label>Mật khẩu mới<input id="newPw" type="password" autocomplete="new-password"></label><button class="btn ghost" type="button" id="pwBtn">Đổi mật khẩu</button></div>
+    <p class="msg" id="pwMsg" role="status"></p>
+    <p><button class="btn ghost" type="button" id="logoutBtn">Đăng xuất</button> <button class="btn ghost danger" type="button" id="delBtn">Xóa tài khoản</button></p>
+  </section>
+</div>
+{% endblock %}

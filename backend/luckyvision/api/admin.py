@@ -9,7 +9,9 @@ import asyncio
 import hmac
 from dataclasses import dataclass
 
-from fastapi import APIRouter, Depends, Header, Request
+from datetime import date
+
+from fastapi import APIRouter, Depends, Header, Query, Request
 from pydantic import BaseModel, Field
 from psycopg.types.json import Jsonb
 
@@ -22,6 +24,7 @@ from ..db import load_structure
 from ..domain.prizes import is_complete, normalize, ordered, validate
 from ..domain.reconcile import diff
 from .auth import check_csrf, current_user
+from ..domain.games import GAMES
 from .errors import ApiError
 from .serialize import iso
 
@@ -181,7 +184,7 @@ async def put_results(request: Request, draw_id: str, body: ResultsIn, who: Admi
             raise ApiError(400, "invalid_param", "Sửa kết quả đã công bố cần ghi lý do (reason)")
         structure = await load_structure(conn, d["region_code"], d["draw_date"])
         prizes = normalize(body.prizes)
-        if structure.game == "power655":  # cho phép gõ 9 thay vì 09
+        if structure.game in GAMES and GAMES[structure.game].kind == "pick":  # cho phép gõ 9 thay vì 09
             prizes = {k: [n.zfill(2) if n.isdigit() else n for n in v] for k, v in prizes.items()}
         prizes = ordered(structure, prizes)
         errs = validate(structure, prizes)
@@ -363,3 +366,174 @@ async def probe_source(request: Request, code: str, draw_id: str, _: Admin = Dep
     """Thử tải và đọc một kỳ từ nguồn, không lưu gì."""
     from ..collector.probe import probe
     return await probe(request.app.state.collector, code, draw_id)
+
+
+# ===================== Thống kê truy cập =====================
+def _range(days: int | None, start: date | None, end: date | None) -> tuple[date, date]:
+    from datetime import datetime as _dt, timedelta as _td
+    from ..config import VN_TZ
+    today = _dt.now(VN_TZ).date()
+    end = end or today
+    start = start or (end - _td(days=(days or 30) - 1))
+    if start > end:
+        start, end = end, start
+    if (end - start).days > 730:
+        raise ApiError(400, "invalid_param", "Khoảng thời gian tối đa 2 năm")
+    return start, end
+
+
+@router.get("/analytics")
+async def analytics(request: Request, days: int | None = Query(None, ge=1, le=730), start: date | None = Query(None, alias="from"),
+                    end: date | None = Query(None, alias="to"), _: Admin = Depends(require("viewer"))):
+    from datetime import timedelta as _td
+    from ..analytics import page_group
+    a, b = _range(days, start, end)
+    async with request.app.state.pool.connection() as conn:
+        views = {r["day"]: r["v"] for r in await (await conn.execute(
+            "SELECT day, sum(views) AS v FROM page_views_daily WHERE day BETWEEN %s AND %s GROUP BY day", (a, b))).fetchall()}
+        visitors = {r["day"]: r["n"] for r in await (await conn.execute(
+            "SELECT day, count(*) AS n FROM visitors_daily WHERE day BETWEEN %s AND %s GROUP BY day", (a, b))).fetchall()}
+        pages = await (await conn.execute(
+            "SELECT path, sum(views) AS v FROM page_views_daily WHERE day BETWEEN %s AND %s GROUP BY path ORDER BY v DESC", (a, b))).fetchall()
+        refs = await (await conn.execute(
+            "SELECT source, sum(views) AS v FROM referrers_daily WHERE day BETWEEN %s AND %s GROUP BY source ORDER BY v DESC LIMIT 20", (a, b))).fetchall()
+        devs = await (await conn.execute(
+            "SELECT device, count(*) AS n FROM visitors_daily WHERE day BETWEEN %s AND %s GROUP BY device ORDER BY n DESC", (a, b))).fetchall()
+        depth = await (await conn.execute(
+            "SELECT avg(pages)::float AS p FROM visitors_daily WHERE day BETWEEN %s AND %s", (a, b))).fetchone()
+    daily, d = [], a
+    while d <= b:
+        daily.append({"day": d.isoformat(), "views": int(views.get(d, 0)), "visitors": int(visitors.get(d, 0))})
+        d += _td(days=1)
+    total_v = sum(x["views"] for x in daily)
+    groups: dict[str, int] = {}
+    for r in pages:
+        g = page_group(r["path"])
+        groups[g] = groups.get(g, 0) + int(r["v"])
+    return {
+        "from": a.isoformat(), "to": b.isoformat(),
+        "totals": {"views": total_v, "visitors": sum(x["visitors"] for x in daily),
+                   "pages_per_visitor": round(depth["p"] or 0, 2)},
+        "daily": daily,
+        "top_pages": [{"path": r["path"], "group": page_group(r["path"]), "views": int(r["v"])} for r in pages[:50]],
+        "groups": sorted(({"group": k, "views": v} for k, v in groups.items()), key=lambda x: -x["views"]),
+        "referrers": [{"source": r["source"], "views": int(r["v"])} for r in refs],
+        "devices": [{"device": r["device"], "visitors": int(r["n"])} for r in devs],
+    }
+
+
+@router.get("/analytics.csv")
+async def analytics_csv(request: Request, days: int | None = Query(None, ge=1, le=730), start: date | None = Query(None, alias="from"),
+                        end: date | None = Query(None, alias="to"), _: Admin = Depends(require("viewer"))):
+    from fastapi.responses import Response as _R
+    from ..analytics import page_group
+    a, b = _range(days, start, end)
+    async with request.app.state.pool.connection() as conn:
+        rows = await (await conn.execute(
+            "SELECT day, path, views FROM page_views_daily WHERE day BETWEEN %s AND %s ORDER BY day, views DESC", (a, b))).fetchall()
+    lines = ["ngay,duong_dan,nhom_trang,luot_xem"] + [f"{r['day'].isoformat()},{r['path']},\"{page_group(r['path'])}\",{r['views']}" for r in rows]
+    return _R("\ufeff" + "\n".join(lines), media_type="text/csv; charset=utf-8",
+              headers={"Content-Disposition": f"attachment; filename=truy-cap-{a}-{b}.csv"})
+
+
+# ===================== Thành viên (tài khoản người dùng công khai) =====================
+def _member(r: dict) -> dict:
+    return {"id": r["id"], "email": r["email"], "display_name": r["display_name"], "disabled": r["disabled"],
+            "must_change_password": r["must_change_pw"],
+            "locked": bool(r["locked_until"] and r["locked_until"].timestamp() > __import__("time").time()),
+            "created_at": iso(r["created_at"]), "last_login_at": iso(r["last_login_at"]),
+            "provinces": r.get("provinces", 0), "sets": r.get("sets", 0)}
+
+
+@router.get("/members")
+async def list_members(request: Request, q: str = "", limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0),
+                       _: Admin = Depends(require("editor"))):
+    like = f"%{q.strip().lower()}%"
+    async with request.app.state.pool.connection() as conn:
+        rows = await (await conn.execute(
+            """SELECT u.*, (SELECT count(*) FROM user_fav_provinces f WHERE f.user_id = u.id) AS provinces,
+                      (SELECT count(*) FROM user_fav_sets s WHERE s.user_id = u.id) AS sets
+                 FROM users u WHERE (%s = '%%%%' OR lower(u.email) LIKE %s OR lower(u.display_name) LIKE %s)
+                ORDER BY u.created_at DESC LIMIT %s OFFSET %s""", (like, like, like, limit, offset))).fetchall()
+        total = (await (await conn.execute("SELECT count(*) AS n FROM users")).fetchone())["n"]
+    return {"items": [_member(r) for r in rows], "total": total}
+
+
+class MemberPatch(BaseModel):
+    reset_password: bool = False
+    disabled: bool | None = None
+
+
+@router.patch("/members/{member_id}")
+async def patch_member(request: Request, member_id: int, body: MemberPatch, who: Admin = Depends(require("admin"))):
+    import secrets
+    from ..auth import hash_password
+    async with request.app.state.pool.connection() as conn:
+        u = await (await conn.execute("SELECT * FROM users WHERE id = %s FOR UPDATE", (member_id,))).fetchone()
+        if not u:
+            raise ApiError(404, "member_not_found", "Không có thành viên này")
+        temp, changes = None, {}
+        if body.reset_password:
+            temp = "lv-" + secrets.token_urlsafe(6) + "9"
+            await conn.execute("""UPDATE users SET password_hash = %s, must_change_pw = true, failed_logins = 0, locked_until = NULL
+                                  WHERE id = %s""", (hash_password(temp), member_id))
+            changes["reset_password"] = True
+        if body.disabled is not None:
+            await conn.execute("UPDATE users SET disabled = %s WHERE id = %s", (body.disabled, member_id))
+            changes["disabled"] = body.disabled
+        if body.reset_password or body.disabled:
+            await conn.execute("UPDATE user_sessions SET revoked = true WHERE user_id = %s", (member_id,))
+        await audit(conn, who.actor, "update_member", "users", str(member_id), {"email": u["email"]}, changes)
+        u2 = await (await conn.execute("SELECT * FROM users WHERE id = %s", (member_id,))).fetchone()
+    out = {"member": _member(u2)}
+    if temp:
+        out["temporary_password"] = temp
+    return out
+
+
+@router.delete("/members/{member_id}")
+async def delete_member(request: Request, member_id: int, who: Admin = Depends(require("admin"))):
+    async with request.app.state.pool.connection() as conn:
+        u = await (await conn.execute("SELECT email FROM users WHERE id = %s", (member_id,))).fetchone()
+        if not u:
+            raise ApiError(404, "member_not_found", "Không có thành viên này")
+        await conn.execute("DELETE FROM users WHERE id = %s", (member_id,))
+        await audit(conn, who.actor, "delete_member", "users", str(member_id), {"email": u["email"]}, None)
+    return {"ok": True}
+
+
+# ===================== Tin nhắn liên hệ =====================
+@router.get("/contacts")
+async def list_contacts(request: Request, status: str = "", q: str = "", limit: int = Query(100, ge=1, le=300),
+                        _: Admin = Depends(require("editor"))):
+    cond, args = ["true"], []
+    if status in ("new", "doing", "done", "spam"):
+        cond.append("status = %s"); args.append(status)
+    if q.strip():
+        cond.append("(lower(email) LIKE %s OR lower(name) LIKE %s OR lower(message) LIKE %s)")
+        like = f"%{q.strip().lower()}%"; args += [like, like, like]
+    async with request.app.state.pool.connection() as conn:
+        rows = await (await conn.execute(f"SELECT * FROM contact_messages WHERE {' AND '.join(cond)} ORDER BY created_at DESC LIMIT %s",
+                                          (*args, limit))).fetchall()
+        counts = {r["status"]: r["n"] for r in await (await conn.execute(
+            "SELECT status, count(*) AS n FROM contact_messages GROUP BY status")).fetchall()}
+    return {"items": [{**{k: r[k] for k in ("id", "name", "email", "phone", "topic", "message", "page", "user_id", "status", "admin_note", "handled_by")},
+                       "created_at": iso(r["created_at"]), "handled_at": iso(r["handled_at"])} for r in rows], "counts": counts}
+
+
+class ContactPatch(BaseModel):
+    status: str | None = Field(None, pattern=r"^(new|doing|done|spam)$")
+    admin_note: str | None = Field(None, max_length=2000)
+
+
+@router.patch("/contacts/{cid}")
+async def patch_contact(request: Request, cid: int, body: ContactPatch, who: Admin = Depends(require("editor"))):
+    async with request.app.state.pool.connection() as conn:
+        r = await (await conn.execute("SELECT * FROM contact_messages WHERE id = %s FOR UPDATE", (cid,))).fetchone()
+        if not r:
+            raise ApiError(404, "not_found", "Không có tin nhắn này")
+        await conn.execute("""UPDATE contact_messages SET status = coalesce(%s, status), admin_note = coalesce(%s, admin_note),
+                              handled_by = %s, handled_at = now() WHERE id = %s""", (body.status, body.admin_note, who.actor, cid))
+        await audit(conn, who.actor, "update_contact", "contact_messages", str(cid), {"status": r["status"]},
+                    {k: v for k, v in body.model_dump().items() if v is not None})
+    return {"ok": True}

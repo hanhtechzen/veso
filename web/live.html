@@ -52,15 +52,17 @@ tr.db .num.wait{color:transparent}
 .ball.wait{background:var(--bg);box-shadow:none;border:2px dashed var(--line);color:transparent}
 .ball.new{animation:pop .6s cubic-bezier(.3,1.5,.6,1)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+.lvd,.lvd-btn{width:100%}
 </style>
 <link rel="stylesheet" href="/assets/lv-colors.css">
+<link rel="stylesheet" href="/assets/lv-date.css">
 </head>
 <body>
 <header><div class="in"><b>LuckyVision</b><span>Tường thuật trực tiếp</span><span class="conn"><span class="dot" id="dot"></span><span id="connText">Đang kết nối…</span></span></div></header>
 <main>
   <aside class="card">
     <h2>Lịch quay</h2>
-    <input type="date" id="day" style="width:100%;font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin-bottom:8px">
+    <label class="sr" for="day" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Ngày</label><div style="margin-bottom:10px"><input type="date" id="day"></div>
     <div class="sched" id="sched"><p class="muted">Đang tải…</p></div>
   </aside>
   <section>
@@ -158,5 +160,7 @@ const today = new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Ho_Chi_Minh'
 if (qs.get('draw')) loadDraw(qs.get('draw')); else { $('#day').value = today; loadSchedule(); connect('all'); }
 </script>
 <script src="/assets/lv-colors.js"></script>
+<script src="/assets/lv-date.js"></script>
+<script src="/assets/lv-track.js" defer></script>
 </body>
 </html>

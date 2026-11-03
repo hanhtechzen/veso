@@ -1,0 +1,21 @@
+{
+  "name": "LuckyVision: kết quả xổ số, thống kê minh bạch",
+  "short_name": "LuckyVision",
+  "description": "Kết quả xổ số ba miền và Vietlott, dò vé, thống kê và dự báo được chấm điểm công khai.",
+  "lang": "vi",
+  "start_url": "/?nguon=app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F5F4FB",
+  "theme_color": "#D7263D",
+  "icons": [
+    {"src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "shortcuts": [
+    {"name": "Kết quả miền Bắc", "url": "/xsmb"},
+    {"name": "Kết quả miền Nam", "url": "/xsmn"},
+    {"name": "Dò vé", "url": "/cong-cu/#do-ve"}
+  ]
+}

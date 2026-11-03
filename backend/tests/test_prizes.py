@@ -70,3 +70,13 @@ def test_checksum_ignores_key_order():
 def test_new_numbers():
     assert new_numbers(None, {"g8": ["74"]}) == [("g8", 0, "74")]
     assert new_numbers({"g6": ["3452"]}, {"g6": ["3452", "9687"]}) == [("g6", 1, "9687")]
+
+
+def test_mega645_rules():
+    from luckyvision.domain.games import GAMES
+    s = DEFAULT_STRUCTURES["mega"]
+    assert s.game == "mega645" and GAMES["mega645"].jackpot_odds == 8145060
+    assert validate(s, {"main": ["05", "09", "17", "18", "34", "36"]}) == []
+    errs = validate(s, {"main": ["05", "09", "17", "18", "34", "46"]})
+    assert any("01–45" in e for e in errs)
+    assert any("trùng" in e for e in validate(s, {"main": ["05", "05", "17", "18", "34", "36"]}))

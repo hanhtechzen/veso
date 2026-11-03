@@ -81,7 +81,7 @@ details summary{cursor:pointer;font-weight:600;margin:12px 0 6px}
     mỗi kỳ quay là ngẫu nhiên và không mô hình nào được chứng minh là tốt hơn chọn ngẫu nhiên.</p>
 
   <div class="card"><div class="row">
-    <div><label for="region">Loại xổ số</label><select id="region"><option value="mb">Miền Bắc</option><option value="mn">Miền Nam</option><option value="mt">Miền Trung</option><option value="vl">Power 6/55</option></select></div>
+    <div><label for="region">Loại xổ số</label><select id="region"><option value="mb">Miền Bắc</option><option value="mn">Miền Nam</option><option value="mt">Miền Trung</option><option value="vl">Power 6/55</option><option value="mega">Mega 6/45</option></select></div>
     <div id="provWrap"><label for="province">Tỉnh/đài</label><select id="province"></select></div>
   </div></div>
 
@@ -151,7 +151,7 @@ function fillProv() {
   const r = $('#region').value, list = PROVS.filter(p => p.region === r);
   $('#provWrap').hidden = list.length <= 1;
   $('#province').innerHTML = list.map(p => `<option value="${p.code}">${esc(p.name)}</option>`).join('');
-  $('#k').innerHTML = (r === 'vl' ? [6] : [5, 10, 20]).map(k => `<option ${k === 10 ? 'selected' : ''}>${k}</option>`).join('');
+  $('#k').innerHTML = (r === 'vl' || r === 'mega' ? [6] : [5, 10, 20]).map(k => `<option ${k === 10 ? 'selected' : ''}>${k}</option>`).join('');
 }
 const prov = () => $('#provWrap').hidden ? '' : $('#province').value;
 
@@ -159,7 +159,7 @@ async function loadNext() {
   const r = $('#region').value, p = prov();
   $('#next').innerHTML = '<div class="card">Đang tải…</div>';
   try {
-    const d = await get(`/v1/forecasts/next?region=${r}${p ? '&province=' + p : ''}&top=${r === 'vl' ? 6 : 10}`);
+    const d = await get(`/v1/forecasts/next?region=${r}${p ? '&province=' + p : ''}&top=${r === 'vl' || r === 'mega' ? 6 : 10}`);
     if (!d.items.length) { $('#next').innerHTML = '<div class="card">Chưa có kỳ quay sắp tới trong lịch.</div>'; $('#nextInfo').textContent = ''; return; }
     const it = d.items[0];
     $('#nextInfo').textContent = `${it.draw.province.name || it.draw.province.code}, kỳ ${new Date(it.draw.draw_time).toLocaleString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh'})}.`;
@@ -290,5 +290,6 @@ $('#pick').addEventListener('click', async () => {
 })();
 </script>
 <script src="/assets/lv-colors.js"></script>
+<script src="/assets/lv-track.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="authbox card">
+  {% if mode == 'register' %}
+  <h1>Tạo tài khoản</h1>
+  <p class="hint">Miễn phí. Lưu tỉnh và bộ số yêu thích, tự dò mỗi khi có kết quả mới.</p>
+  <form id="registerForm" autocomplete="on">
+    <label>Tên hiển thị<input name="display_name" required maxlength="60" autocomplete="nickname"></label>
+    <label>Email<input name="email" type="email" required autocomplete="email"></label>
+    <label>Mật khẩu (ít nhất 8 ký tự, có chữ và số)<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+    <button class="btn" type="submit">Tạo tài khoản</button>
+    <p class="msg" role="alert"></p>
+  </form>
+  <p class="hint">Đã có tài khoản? <a href="/dang-nhap">Đăng nhập</a></p>
+  {% else %}
+  <h1>Đăng nhập</h1>
+  <form id="loginForm" autocomplete="on">
+    <label>Email<input name="email" type="email" required autocomplete="email"></label>
+    <label>Mật khẩu<input name="password" type="password" required autocomplete="current-password"></label>
+    <button class="btn" type="submit">Đăng nhập</button>
+    <p class="msg" role="alert"></p>
+  </form>
+  <p class="hint">Chưa có tài khoản? <a href="/dang-ky">Tạo tài khoản miễn phí</a></p>
+  <p class="hint"><b>Quên mật khẩu?</b> <a href="/lien-he?chu-de=quen-mat-khau" id="forgotLink">Gửi yêu cầu cho quản trị</a>{% if support_contact %} hoặc liên hệ {{ support_contact }}{% endif %}. Quản trị sẽ cấp mật khẩu tạm; bạn đăng nhập rồi đặt mật khẩu mới.</p>
+  <script>(function(){var l=document.getElementById('forgotLink'),e=document.querySelector('#loginForm input[name=email]');if(l&&e)l.addEventListener('click',function(){if(e.value)l.href='/lien-he?chu-de=quen-mat-khau&email='+encodeURIComponent(e.value);});})();</script>
+  {% endif %}
+</div>
+{% endblock %}

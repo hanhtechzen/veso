@@ -11,6 +11,7 @@ from datetime import date, datetime
 from ..config import VN_TZ
 from ..db import load_structure
 from .models import counts_matrix, label, run_model, universe
+from ..domain.games import GAMES, REGION_PROVINCE
 from .service import load_history, truth_numbers
 
 
@@ -20,8 +21,8 @@ def theory_prob(game: str, numbers_per_draw: int) -> float:
     Lô tô: mỗi giải độc lập có 2 chữ số cuối đều từ 00–99, nên P = 1 - (99/100)^L.
     Power 6/55: 6 số khác nhau rút từ 55, nên P = 6/55.
     """
-    if game == "power655":
-        return 6 / 55
+    if game in GAMES:
+        return GAMES[game].main_count / GAMES[game].main_max
     return 1 - (1 - 1 / 100) ** numbers_per_draw
 
 
@@ -53,14 +54,14 @@ def calibration_bins(pairs: list[tuple[float, int]], bins: int = 10) -> list[dic
 
 
 def default_province(region: str) -> str | None:
-    return {"mb": "mb", "vl": "power655"}.get(region)
+    return REGION_PROVINCE.get(region)
 
 
 async def number_probabilities(conn, region: str, province: str, days: int) -> dict:
     today = datetime.now(VN_TZ).date()
     structure = await load_structure(conn, region, today)
     game = structure.game
-    per_draw = structure.total_numbers if game == "xs" else 6
+    per_draw = structure.total_numbers if game == "xs" else GAMES[game].main_count
     theory = theory_prob(game, per_draw)
     size, lo = universe(game)
 
@@ -111,7 +112,7 @@ async def number_probabilities(conn, region: str, province: str, days: int) -> d
         "region": region, "province": province, "game": game, "draws": n,
         "from": window[0][0].isoformat() if window else None, "to": window[-1][0].isoformat() if window else None,
         "theory": round(theory, 5), "numbers_per_draw": per_draw,
-        "jackpot_odds": 28989675 if game == "power655" else None,
+        "jackpot_odds": GAMES[game].jackpot_odds if game in GAMES else None,
         "outside_ci": outside, "expected_outside_by_chance": round(size * 0.05, 1),
         "model_source": source, "items": items,
     }
@@ -178,7 +179,7 @@ async def calibration_backtest(conn, region: str, province: str, model: str, las
             if len(_CAL_CACHE) > 50:
                 _CAL_CACHE.clear()
             _CAL_CACHE[key] = {
-                "points": total, "bins": b, "draws": total // (55 if game == "power655" else 100),
+                "points": total, "bins": b, "draws": total // universe(game)[0],
                 "mean_predicted": round(sum(p for p, _ in pairs) / total, 5) if total else None,
                 "mean_observed": round(sum(y for _, y in pairs) / total, 5) if total else None,
                 "max_gap": round(max((abs(x["predicted"] - x["observed"]) for x in b), default=0), 5)}

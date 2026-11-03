@@ -124,3 +124,15 @@ def test_province_name_matching():
     assert province_code("TP. HCM") == "tphcm" and province_code("Đắk Lắk") == "daklak"
     assert province_code("Đà Lạt") == "dalat" == province_code("Lâm Đồng")
     assert province_code("Bà Rịa - Vũng Tàu") == "vungtau"
+
+
+MEGA = """<table><tbody><tr><td>01/11/2026</td><td>01583</td><td><span>5</span><span>9</span><span>17</span><span>18</span><span>34</span><span>36</span></td></tr></tbody></table>"""
+
+
+def test_vietlott_mega645_parse():
+    from luckyvision.sources.vietlott import VietlottMega645Adapter
+    ad = VietlottMega645Adapter("v", {}, Settings())
+    ref = DrawRef("mega-mega645-2026-11-01", "mega645", "mega", "mega645", date(2026, 11, 1))
+    p = ad.parse(FetchResult("u", 200, MEGA.encode()), ref)
+    assert p.prizes == {"main": ["05", "09", "17", "18", "34", "36"]} and p.meta == {"draw_seq": 1583}
+    assert validate(DEFAULT_STRUCTURES["mega"], p.prizes) == []

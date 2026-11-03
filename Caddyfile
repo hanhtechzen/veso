@@ -11,10 +11,18 @@
 		}
 	}
 
-	handle {
+	# Tệp tĩnh: công cụ tương tác, trang trực tiếp, dự báo, quản trị, ứng dụng cài đặt (PWA)
+	@static path /assets/* /icons/* /cong-cu /cong-cu/* /live.html /du-doan.html /admin.html /sw.js /manifest.webmanifest /offline.html
+	handle @static {
 		root * /srv/web
-		try_files {path} /index.html
+		@sw path /sw.js
+		header @sw Cache-Control "no-cache"
 		file_server
+	}
+
+	# Mọi trang còn lại (trang chủ, /xsmb, /xsmn-29-10-2026, /xs-tp-hcm, sitemap...) do máy chủ tạo sẵn HTML
+	handle {
+		reverse_proxy api:8000
 	}
 
 	header {
@@ -23,7 +31,7 @@
 		Referrer-Policy strict-origin-when-cross-origin
 		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
 		Strict-Transport-Security "max-age=15552000; includeSubDomains"
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 		-Server
 	}
 

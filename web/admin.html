@@ -63,8 +63,35 @@ th{color:var(--muted);font-size:.8rem;font-weight:600;white-space:nowrap}
 .secret{font:700 1.05rem "IBM Plex Mono",monospace;letter-spacing:.08em;background:var(--surface-2);padding:8px 12px;border-radius:8px;display:inline-block;word-break:break-all}
 #qr{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin:8px 0}
 .temp{background:var(--gold-soft);border:1px solid var(--gold);border-radius:10px;padding:12px;margin-top:10px}
+
+/* Thống kê truy cập */
+.seg{display:inline-flex;gap:3px;background:var(--surface-2);border:1.5px solid var(--line);border-radius:999px;padding:3px;flex-wrap:wrap}
+.seg button{border:none;background:none;padding:6px 12px;border-radius:999px;font-weight:600;cursor:pointer;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--red);color:#fff}
+.stats4{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat b{display:block;font-size:1.7rem;letter-spacing:-.02em}
+.stat span{font-size:.84rem;color:var(--muted)}
+.stat em{font-style:normal;font-size:.8rem;font-weight:700}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 16px}
+.hb{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,2fr) 118px;gap:8px;align-items:center;font-size:.88rem;margin:6px 0}
+.hb span:last-child{text-align:right;white-space:nowrap}
+.hb .tr{height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.hb .tr i{display:block;height:100%;background:linear-gradient(90deg,var(--acc,#C62828),var(--acc2,#F2B01E));border-radius:6px}
+.hb span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+svg.an{width:100%;height:auto;display:block}
+svg.an rect.bar{cursor:pointer}
+svg.an rect.bar:hover{opacity:.8}
+.legend{display:flex;gap:16px;font-size:.84rem;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:999px;background:#F2B01E;color:#141B2D;font-size:.75rem;font-weight:800;text-align:center;margin-left:4px}
+.ct{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--surface)}
+.ct-h{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:baseline}
+.ct-msg{white-space:pre-wrap;margin:10px 0;padding:10px 12px;background:var(--surface-2);border-radius:10px}
+.ct textarea{width:100%;min-height:60px;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink);font:inherit}
 </style>
 <link rel="stylesheet" href="/assets/lv-colors.css">
+<link rel="stylesheet" href="/assets/lv-date.css">
 </head>
 <body>
 
@@ -100,10 +127,13 @@ th{color:var(--muted);font-size:.8rem;font-weight:600;white-space:nowrap}
     <div class="brand"><span class="ball">LV</span>Quản trị</div>
     <nav id="nav">
       <a href="#queue">Hàng chờ</a>
+      <a href="#stats">Truy cập</a>
+      <a href="#contacts">Liên hệ <span class="badge" id="ctBadge" hidden></span></a>
       <a href="#draw">Kỳ quay</a>
       <a href="#entry" data-role="editor">Nhập kết quả</a>
       <a href="#sources">Nguồn dữ liệu</a>
-      <a href="#users" data-role="admin">Tài khoản</a>
+      <a href="#members" data-role="editor">Thành viên</a>
+      <a href="#users" data-role="admin">Tài khoản quản trị</a>
       <a href="#audit">Nhật ký</a>
       <a href="#me">Tài khoản của tôi</a>
     </nav>
@@ -116,6 +146,55 @@ th{color:var(--muted);font-size:.8rem;font-weight:600;white-space:nowrap}
       <h1>Hàng chờ xử lý</h1>
       <p class="lead">Kỳ quay cần người xem: nguồn lệch nhau, kiểm tra thất bại, đủ giải nhưng chờ duyệt, hoặc quá giờ chưa có kết quả.</p>
       <div class="card"><div class="tw"><table><thead><tr><th>Kỳ quay</th><th>Giờ quay</th><th>Trạng thái</th><th></th></tr></thead><tbody id="qBody"></tbody></table></div></div>
+    </section>
+
+
+    <!-- Thống kê truy cập -->
+    <section data-v="stats" hidden>
+      <h1>Thống kê truy cập</h1>
+      <p class="lead">Mỗi ngày có bao nhiêu lượt xem, bao nhiêu khách, trang nào được xem nhiều nhất và khách đến từ đâu. Không dùng cookie, không lưu địa chỉ IP; khách bật "Không theo dõi" sẽ không bị đếm.</p>
+      <div class="card"><div class="row">
+        <div style="flex:none"><label>Khoảng thời gian</label><div class="seg" id="anRange"><button type="button" data-d="1">Hôm nay</button><button type="button" data-d="7">7 ngày</button><button type="button" data-d="30" aria-pressed="true">30 ngày</button><button type="button" data-d="90">90 ngày</button></div></div>
+        <div><label for="anFrom">Từ ngày</label><input type="date" id="anFrom"></div>
+        <div><label for="anTo">Đến ngày</label><input type="date" id="anTo"></div>
+        <div style="flex:none"><button class="btn ghost" type="button" id="anGo">Xem</button> <a class="btn ghost" id="anCsv" href="#">Tải CSV</a></div>
+      </div><p class="msg" id="anMsg"></p></div>
+      <div class="stats4" id="anCards"></div>
+      <div class="card"><h2>Lượt xem và khách theo ngày</h2><p class="lead" style="margin:0 0 8px;font-size:.88rem">Bấm vào một cột để xem riêng ngày đó.</p><div id="anChart"></div>
+        <div class="legend"><span><i style="background:var(--red)"></i>Lượt xem</span><span><i style="background:#2356C9"></i>Khách</span></div></div>
+      <div class="grid2">
+        <div class="card"><h2>Trang xem nhiều nhất</h2><div class="tw"><table><thead><tr><th>#</th><th>Trang</th><th>Nhóm</th><th>Lượt xem</th><th>Tỉ lệ</th></tr></thead><tbody id="anPages"></tbody></table></div></div>
+        <div>
+          <div class="card"><h2>Theo nhóm trang</h2><div id="anGroups"></div></div>
+          <div class="card"><h2>Khách đến từ đâu</h2><p class="lead" style="margin:0 0 6px;font-size:.84rem">Tính theo trang đầu tiên mỗi khách mở trong ngày.</p><div id="anRefs"></div></div>
+          <div class="card"><h2>Thiết bị</h2><div id="anDevs"></div></div>
+        </div>
+      </div>
+    </section>
+
+
+
+    <!-- Liên hệ -->
+    <section data-v="contacts" hidden>
+      <h1>Tin nhắn liên hệ</h1>
+      <p class="lead">Tin gửi từ trang <a href="/lien-he" target="_blank" rel="noopener">Liên hệ</a>: quên mật khẩu, báo sai kết quả, góp ý, hợp tác. Đánh dấu trạng thái và ghi chú để cả nhóm cùng theo dõi.</p>
+      <div class="card"><div class="row">
+        <div style="flex:none"><label>Trạng thái</label><div class="seg" id="ctStatus"><button type="button" data-s="new" aria-pressed="true">Mới</button><button type="button" data-s="doing">Đang xử lý</button><button type="button" data-s="done">Đã xong</button><button type="button" data-s="spam">Thư rác</button><button type="button" data-s="">Tất cả</button></div></div>
+        <div><label for="ctQ">Tìm theo email, tên, nội dung</label><input type="text" id="ctQ"></div>
+        <div style="flex:none"><button class="btn ghost" type="button" id="ctGo">Tìm</button></div>
+      </div></div>
+      <div id="ctList"></div>
+    </section>
+
+    <!-- Thành viên -->
+    <section data-v="members" hidden>
+      <h1>Thành viên</h1>
+      <p class="lead">Tài khoản người dùng của trang công khai. Khi thành viên báo quên mật khẩu: tìm theo email, bấm <b>Đặt lại mật khẩu</b>, rồi gửi mật khẩu tạm cho họ qua kênh liên hệ. Hãy xác nhận đúng chủ tài khoản trước (ví dụ yêu cầu họ nhắn từ chính email đã đăng ký).</p>
+      <div class="card"><div class="row"><div><label for="mbQ">Tìm theo email hoặc tên</label><input type="text" id="mbQ" placeholder="vd: an@gmail.com"></div>
+        <div style="flex:none"><button class="btn ghost" type="button" id="mbGo">Tìm</button></div></div>
+        <p class="msg" id="mbMsg" role="status"></p><div id="mbTemp"></div></div>
+      <div class="card"><div class="tw"><table><thead><tr><th>Thành viên</th><th>Trạng thái</th><th>Đã lưu</th><th>Ngày tạo</th><th>Đăng nhập gần nhất</th><th></th></tr></thead><tbody id="mbBody"></tbody></table></div>
+        <p class="lead" id="mbTotal" style="margin:10px 0 0;font-size:.88rem"></p></div>
     </section>
 
     <!-- Kỳ quay -->
@@ -133,7 +212,7 @@ th{color:var(--muted);font-size:.8rem;font-weight:600;white-space:nowrap}
       <p class="lead">Kết quả nhập tay luôn ở trạng thái chờ xác minh. Sửa kỳ đã công bố bắt buộc ghi lý do và sẽ tạo phiên bản mới.</p>
       <div class="card">
         <div class="row">
-          <div><label for="eRegion">Loại</label><select id="eRegion"><option value="mb">Miền Bắc</option><option value="mn">Miền Nam</option><option value="mt">Miền Trung</option><option value="vl">Power 6/55</option></select></div>
+          <div><label for="eRegion">Loại</label><select id="eRegion"><option value="mb">Miền Bắc</option><option value="mn">Miền Nam</option><option value="mt">Miền Trung</option><option value="vl">Power 6/55</option><option value="mega">Mega 6/45</option><option value="max3d">Max 3D</option><option value="max3dpro">Max 3D Pro</option><option value="dt123">Điện toán 1*2*3</option><option value="tt4">Thần Tài 4</option><option value="dt6x36">Điện toán 6x36</option></select></div>
           <div><label for="eProv">Tỉnh/đài</label><select id="eProv"></select></div>
           <div><label for="eDate">Ngày quay</label><input type="date" id="eDate"></div>
         </div>
@@ -194,6 +273,7 @@ th{color:var(--muted);font-size:.8rem;font-weight:600;white-space:nowrap}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const RANK = {viewer:0, editor:1, admin:2};
 let ME = null, PROVS = [];
@@ -203,6 +283,11 @@ const STRUCT = {
   vl: [['main','Bộ số chính',6,2],['special','Số đặc biệt',1,2]],
 };
 STRUCT.mt = STRUCT.mn;
+STRUCT.mega = [['main','Bộ số trúng thưởng',6,2]];
+STRUCT.max3d = STRUCT.max3dpro = [['db','Giải Đặc biệt',2,3],['g1','Giải Nhất',4,3],['g2','Giải Nhì',6,3],['g3','Giải Ba',8,3]];
+STRUCT.dt123 = [['g1','Số 1 chữ số',1,1],['g2','Số 2 chữ số',1,2],['g3','Số 3 chữ số',1,3]];
+STRUCT.tt4 = [['db','Số trúng thưởng',1,4]];
+STRUCT.dt6x36 = [['main','Bộ số trúng thưởng',6,2]];
 const STATUS = {scheduled:['Chờ quay',''], collected:['Đang thu thập','warn'], validated:['Đủ giải, chờ duyệt','warn'], verified:['Đã khớp nguồn','warn'], published:['Đã công bố','good'], needs_review:['Cần xử lý','bad']};
 const fmtTime = s => s ? new Date(s).toLocaleString('vi-VN', {timeZone:'Asia/Ho_Chi_Minh'}) : '–';
 
@@ -254,17 +339,18 @@ async function boot(user) {
   document.querySelectorAll('#nav a[data-role]').forEach(a => a.hidden = RANK[user.role] < RANK[a.dataset.role]);
   if (!PROVS.length) { try { PROVS = (await api('GET', '/v1/provinces')).items; } catch (e) {} }
   show('app'); route();
+  api('GET', '/v1/admin/contacts?status=new&limit=1').then(d => ctBadge(d.counts)).catch(() => {});
 }
 
 // ---------- Điều hướng ----------
-const VIEWS = ['queue','draw','entry','sources','users','audit','me'];
+const VIEWS = ['queue','stats','contacts','members','draw','entry','sources','users','audit','me'];
 function route() {
   if (!ME) return;
   const [v, arg] = (location.hash.slice(1) || 'queue').split('/');
   const view = VIEWS.includes(v) ? v : 'queue';
   document.querySelectorAll('main section').forEach(s => s.hidden = s.dataset.v !== view);
   document.querySelectorAll('#nav a').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + view));
-  ({queue: loadQueue, draw: () => { if (arg) { $('#dId').value = decodeURIComponent(arg); loadDraw(); } },
+  ({queue: loadQueue, stats: loadStats, contacts: loadContacts, members: loadMembers, draw: () => { if (arg) { $('#dId').value = decodeURIComponent(arg); loadDraw(); } },
     entry: initEntry, sources: loadSources, users: loadUsers, audit: loadAudit, me: loadMe})[view]?.();
 }
 window.addEventListener('hashchange', route);
@@ -428,7 +514,7 @@ $('#uCreate').addEventListener('click', async () => {
 // ---------- Nhật ký ----------
 const ACTION = {login:'Đăng nhập', logout:'Đăng xuất', login_failed:'Đăng nhập thất bại', publish:'Công bố', manual_entry:'Nhập tay',
   needs_review:'Chuyển cần kiểm tra', collect:'Tải lại', update_source:'Đổi cấu hình nguồn', enable_source:'Bật nguồn', disable_source:'Tắt nguồn',
-  create_user:'Tạo tài khoản', update_user:'Sửa tài khoản', reset_user:'Đặt lại tài khoản', change_password:'Đổi mật khẩu',
+  create_user:'Tạo tài khoản', update_contact:'Xử lý liên hệ', update_member:'Sửa thành viên', delete_member:'Xóa thành viên', update_user:'Sửa tài khoản', reset_user:'Đặt lại tài khoản', change_password:'Đổi mật khẩu',
   enable_totp:'Bật 2 lớp', disable_totp:'Tắt 2 lớp', sources_conflict:'Nguồn lệch nhau', validation_failed:'Sai cơ cấu giải', differs_from_published:'Khác bản đã công bố'};
 $('#aGo').addEventListener('click', loadAudit);
 async function loadAudit() {
@@ -476,6 +562,120 @@ async function loadMe() {
   }
 }
 
+
+// ---------- Thống kê truy cập ----------
+const AN = {days: 30, from: null, to: null};
+const fmtN = n => Number(n || 0).toLocaleString('vi-VN');
+const dmyIso = s => s ? s.split('-').reverse().join('/') : '';
+function anQuery() { return AN.from ? `from=${AN.from}&to=${AN.to || AN.from}` : `days=${AN.days}`; }
+$('#anRange').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; AN.days = +b.dataset.d; AN.from = AN.to = null; $('#anFrom').value = ''; $('#anTo').value = ''; loadStats(); });
+$('#anGo').addEventListener('click', () => { if (!$('#anFrom').value) return; AN.from = $('#anFrom').value; AN.to = $('#anTo').value || AN.from; loadStats(); });
+function bars(el, rows, label, val, total) {
+  const max = Math.max(1, ...rows.map(r => r[val]));
+  el.innerHTML = rows.length ? rows.map(r => `<div class="hb"><span title="${esc(r[label])}">${esc(r[label])}</span><div class="tr"><i style="width:${(r[val] / max * 100).toFixed(1)}%"></i></div><span>${fmtN(r[val])}${total ? ` (${(r[val] / total * 100).toFixed(1).replace('.', ',')}%)` : ''}</span></div>`).join('') : '<p class="lead" style="margin:0">Chưa có dữ liệu.</p>';
+}
+async function loadStats() {
+  $$('#anRange button').forEach(b => b.setAttribute('aria-pressed', String(!AN.from && +b.dataset.d === AN.days)));
+  $('#anCsv').href = '/v1/admin/analytics.csv?' + anQuery();
+  let d; try { d = await api('GET', '/v1/admin/analytics?' + anQuery()); msg($('#anMsg'), ''); } catch (e) { msg($('#anMsg'), e.message, false); return; }
+  const t = d.totals, n = d.daily.length, today = d.daily[n - 1], yest = d.daily[n - 2];
+  const diff = (a, b) => b ? (a >= b ? `<em style="color:var(--good)">▲ ${fmtN(a - b)} so với hôm trước</em>` : `<em style="color:var(--red)">▼ ${fmtN(b - a)} so với hôm trước</em>`) : '';
+  const range = d.from === d.to ? dmyIso(d.from) : `${dmyIso(d.from)} – ${dmyIso(d.to)}`;
+  $('#anCards').innerHTML = `<div class="stat"><span>Lượt xem (${range})</span><b>${fmtN(t.views)}</b></div>
+    <div class="stat"><span>Khách (theo từng ngày)</span><b>${fmtN(t.visitors)}</b></div>
+    <div class="stat"><span>Trang mỗi khách</span><b>${String(t.pages_per_visitor).replace('.', ',')}</b></div>
+    <div class="stat"><span>Ngày cuối (${dmyIso(today.day)})</span><b>${fmtN(today.views)}</b>${n > 1 ? diff(today.views, yest.views) : ''}</div>`;
+  // biểu đồ cột lượt xem + đường số khách
+  const W = 900, H = 240, L = 46, B = 30, T = 10, max = Math.max(1, ...d.daily.map(x => x.views));
+  const step = (W - L) / n, bw = Math.max(2, step * 0.7);
+  const Y = v => H - B - v / max * (H - B - T);
+  const ticks = [0, .25, .5, .75, 1].map(f => Math.round(max * f));
+  const every = Math.max(1, Math.ceil(n / 10));
+  const line = d.daily.map((x, i) => `${(L + i * step + step / 2).toFixed(1)},${Y(x.visitors).toFixed(1)}`).join(' ');
+  $('#anChart').innerHTML = `<svg class="an" viewBox="0 0 ${W} ${H}" role="img" aria-label="Lượt xem theo ngày">
+    ${ticks.map(v => `<line x1="${L}" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(v) + 4}" font-size="11" text-anchor="end" fill="var(--muted)">${fmtN(v)}</text>`).join('')}
+    ${d.daily.map((x, i) => `<rect class="bar" data-day="${x.day}" x="${(L + i * step + (step - bw) / 2).toFixed(1)}" y="${Y(x.views).toFixed(1)}" width="${bw.toFixed(1)}" height="${(H - B - Y(x.views)).toFixed(1)}" rx="2" fill="var(--red)"><title>${dmyIso(x.day)}: ${fmtN(x.views)} lượt xem, ${fmtN(x.visitors)} khách</title></rect>
+      ${i % every === 0 ? `<text x="${(L + i * step + step / 2).toFixed(1)}" y="${H - 10}" font-size="11" text-anchor="middle" fill="var(--muted)">${x.day.slice(8, 10)}/${x.day.slice(5, 7)}</text>` : ''}`).join('')}
+    <polyline points="${line}" fill="none" stroke="#2356C9" stroke-width="2.5"/></svg>`;
+  $$('#anChart rect.bar').forEach(r => r.addEventListener('click', () => { AN.from = AN.to = r.dataset.day; $('#anFrom').value = r.dataset.day; $('#anTo').value = r.dataset.day; loadStats(); }));
+  $('#anPages').innerHTML = d.top_pages.length ? d.top_pages.map((p, i) => `<tr><td>${i + 1}</td><td class="mono" style="font-size:.84rem;word-break:break-all"><a href="${esc(p.path)}" target="_blank" rel="noopener">${esc(p.path)}</a></td><td>${esc(p.group)}</td><td>${fmtN(p.views)}</td><td>${t.views ? (p.views / t.views * 100).toFixed(1).replace('.', ',') : 0}%</td></tr>`).join('') : '<tr><td colspan="5">Chưa có lượt xem nào trong khoảng này.</td></tr>';
+  bars($('#anGroups'), d.groups, 'group', 'views', t.views);
+  bars($('#anRefs'), d.referrers, 'source', 'views', 0);
+  bars($('#anDevs'), d.devices, 'device', 'visitors', t.visitors);
+}
+
+
+// ---------- Thành viên ----------
+$('#mbGo').addEventListener('click', loadMembers);
+$('#mbQ').addEventListener('keydown', e => { if (e.key === 'Enter') loadMembers(); });
+async function loadMembers() {
+  const tb = $('#mbBody'), admin = RANK[ME.role] >= 2;
+  try {
+    const d = await api('GET', '/v1/admin/members?q=' + encodeURIComponent($('#mbQ').value.trim()));
+    $('#mbTotal').textContent = `Tổng ${d.total.toLocaleString('vi-VN')} thành viên` + ($('#mbQ').value.trim() ? `, khớp tìm kiếm: ${d.items.length}` : '');
+    tb.innerHTML = d.items.map(m => `<tr><td><b>${esc(m.display_name)}</b><br><span class="mono" style="font-size:.84rem">${esc(m.email)}</span></td>
+      <td>${m.disabled ? '<span class="pill bad">Đã khóa</span>' : m.locked ? '<span class="pill warn">Khóa tạm (sai mật khẩu)</span>' : m.must_change_password ? '<span class="pill warn">Đang dùng mật khẩu tạm</span>' : '<span class="pill good">Hoạt động</span>'}</td>
+      <td>${m.provinces} đài, ${m.sets} bộ số</td><td>${fmtTime(m.created_at)}</td><td>${fmtTime(m.last_login_at)}</td>
+      <td style="white-space:nowrap">${admin ? `<button class="btn ghost small" data-mreset="${m.id}" data-email="${esc(m.email)}">Đặt lại mật khẩu</button>
+        <button class="btn ghost small" data-mlock="${m.id}" data-to="${m.disabled ? 0 : 1}">${m.disabled ? 'Mở khóa' : 'Khóa'}</button>
+        <button class="btn ghost small" data-mdel="${m.id}" data-email="${esc(m.email)}">Xóa</button>` : '<span class="lead" style="font-size:.8rem">Cần quyền admin</span>'}</td></tr>`).join('') || '<tr><td colspan="6">Không có thành viên nào.</td></tr>';
+  } catch (e) { tb.innerHTML = `<tr><td colspan="6" class="msg bad">${esc(e.message)}</td></tr>`; }
+}
+$('#mbBody').addEventListener('click', async e => {
+  const r = e.target.closest('[data-mreset]'), l = e.target.closest('[data-mlock]'), x = e.target.closest('[data-mdel]');
+  try {
+    if (r) {
+      if (!confirm(`Tạo mật khẩu tạm cho ${r.dataset.email}? Mọi phiên đăng nhập của thành viên này sẽ bị đăng xuất.`)) return;
+      const d = await api('PATCH', `/v1/admin/members/${r.dataset.mreset}`, {reset_password: true});
+      $('#mbTemp').innerHTML = `<div class="temp">Mật khẩu tạm của <b>${esc(d.member.email)}</b>: <span class="secret">${esc(d.temporary_password)}</span><br>
+        Gửi riêng cho thành viên. Mật khẩu này chỉ hiện một lần; khi đăng nhập, họ sẽ được nhắc đặt mật khẩu mới.</div>`;
+    }
+    if (l) await api('PATCH', `/v1/admin/members/${l.dataset.mlock}`, {disabled: l.dataset.to === '1'});
+    if (x) { if (!confirm(`Xóa vĩnh viễn tài khoản ${x.dataset.email} cùng dữ liệu đã lưu?`)) return; await api('DELETE', `/v1/admin/members/${x.dataset.mdel}`); }
+    if (r || l || x) loadMembers();
+  } catch (er) { msg($('#mbMsg'), er.message, false); }
+});
+
+
+// ---------- Liên hệ ----------
+const CT_TOPIC = {'quen-mat-khau': 'Quên mật khẩu', 'sai-ket-qua': 'Báo sai kết quả', 'gop-y': 'Góp ý', 'hop-tac': 'Hợp tác, quảng cáo', 'khac': 'Khác'};
+const CT_STATUS = {new: ['Mới', 'warn'], doing: ['Đang xử lý', ''], done: ['Đã xong', 'good'], spam: ['Thư rác', 'bad']};
+let ctFilter = 'new';
+$('#ctStatus').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; ctFilter = b.dataset.s; loadContacts(); });
+$('#ctGo').addEventListener('click', loadContacts);
+$('#ctQ').addEventListener('keydown', e => { if (e.key === 'Enter') loadContacts(); });
+function ctBadge(counts) { const n = (counts || {}).new || 0; $('#ctBadge').hidden = !n; $('#ctBadge').textContent = n; }
+async function loadContacts() {
+  $$('#ctStatus button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.s === ctFilter)));
+  const box = $('#ctList');
+  try {
+    const d = await api('GET', `/v1/admin/contacts?status=${ctFilter}&q=${encodeURIComponent($('#ctQ').value.trim())}`);
+    ctBadge(d.counts);
+    box.innerHTML = d.items.length ? d.items.map(c => {
+      const [st, cls] = CT_STATUS[c.status];
+      const subject = encodeURIComponent('LuckyVision: ' + CT_TOPIC[c.topic]);
+      return `<div class="ct" data-id="${c.id}"><div class="ct-h"><div><b>${esc(c.name)}</b> · <a href="mailto:${esc(c.email)}?subject=${subject}">${esc(c.email)}</a>${c.phone ? ' · ' + esc(c.phone) : ''}${c.user_id ? ' · <span class="pill">Có tài khoản</span>' : ''}</div>
+        <div><span class="pill">${CT_TOPIC[c.topic]}</span> <span class="pill ${cls}">${st}</span> <span class="lead" style="font-size:.8rem">#${c.id}, ${fmtTime(c.created_at)}</span></div></div>
+        <div class="ct-msg">${esc(c.message)}</div>${c.page ? `<p class="lead" style="font-size:.82rem;margin:0 0 8px">Gửi từ trang: <span class="mono">${esc(c.page)}</span></p>` : ''}
+        <textarea placeholder="Ghi chú nội bộ (người gửi không thấy)" data-note>${esc(c.admin_note)}</textarea>
+        <div class="row" style="margin-top:8px">${c.topic === 'quen-mat-khau' ? `<button class="btn small" type="button" data-member="${esc(c.email)}">Mở Thành viên để cấp mật khẩu tạm</button>` : ''}
+          <button class="btn ghost small" type="button" data-st="doing">Đang xử lý</button><button class="btn ghost small" type="button" data-st="done">Đã xong</button>
+          <button class="btn ghost small" type="button" data-st="spam">Thư rác</button><button class="btn ghost small" type="button" data-save>Lưu ghi chú</button>
+          ${c.handled_by ? `<span class="lead" style="font-size:.8rem">Xử lý: ${esc(c.handled_by)}, ${fmtTime(c.handled_at)}</span>` : ''}</div></div>`;
+    }).join('') : '<div class="card">Không có tin nhắn nào.</div>';
+  } catch (e) { box.innerHTML = `<div class="card msg bad">${esc(e.message)}</div>`; }
+}
+$('#ctList').addEventListener('click', async e => {
+  const card = e.target.closest('.ct'); if (!card) return;
+  const id = card.dataset.id, note = card.querySelector('[data-note]').value;
+  const m = e.target.closest('[data-member]');
+  if (m) { await api('PATCH', `/v1/admin/contacts/${id}`, {status: 'doing', admin_note: note}); $('#mbQ').value = m.dataset.member; location.hash = 'members'; return; }
+  const s = e.target.closest('[data-st]'), sv = e.target.closest('[data-save]');
+  if (!s && !sv) return;
+  try { await api('PATCH', `/v1/admin/contacts/${id}`, s ? {status: s.dataset.st, admin_note: note} : {admin_note: note}); loadContacts(); }
+  catch (er) { alert(er.message); }
+});
+
 // ---------- Khởi động ----------
 (async () => {
   try { const d = await api('GET', '/v1/auth/me'); await boot(d.user); }
@@ -483,5 +683,6 @@ async function loadMe() {
 })();
 </script>
 <script src="/assets/lv-colors.js"></script>
+<script src="/assets/lv-date.js"></script>
 </body>
 </html>

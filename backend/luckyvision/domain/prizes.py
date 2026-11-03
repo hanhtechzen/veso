@@ -8,6 +8,8 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 
+from .games import GAMES
+
 Prizes = dict[str, list[str]]
 
 
@@ -23,7 +25,7 @@ class PrizeSpec:
 @dataclass(frozen=True)
 class Structure:
     region: str
-    game: str  # 'xs' hoặc 'power655'
+    game: str  # 'xs', 'power655', 'mega645'
     prizes: tuple[PrizeSpec, ...] = field(default_factory=tuple)
 
     @property
@@ -52,8 +54,27 @@ DEFAULT_STRUCTURES: dict[str, Structure] = {
         ("g4", "Giải tư", 7, 5), ("g3", "Giải ba", 2, 5), ("g2", "Giải nhì", 1, 5), ("g1", "Giải nhất", 1, 5),
         ("db", "Đặc biệt", 1, 6)])),
     "vl": Structure("vl", "power655", _spec_list([("main", "Bộ số chính", 6, 2), ("special", "Số đặc biệt", 1, 2)])),
+    "mega": Structure("mega", "mega645", _spec_list([("main", "Bộ số trúng thưởng", 6, 2)])),
 }
 DEFAULT_STRUCTURES["mt"] = Structure("mt", "xs", DEFAULT_STRUCTURES["mn"].prizes)
+
+
+def _game_structures() -> dict[str, Structure]:
+    out = {}
+    for g in GAMES.values():
+        if g.region in ("vl", "mega"):
+            continue
+        if g.kind == "pick":
+            rows = [("main", "Bộ số trúng thưởng", g.main_count, 2)] + ([("special", "Số đặc biệt", 1, 2)] if g.special_max else [])
+        elif g.kind == "dice":
+            rows = [("main", "Kết quả", g.main_count, 1)]
+        else:
+            rows = [(c, n, k, d) for c, n, k, d in g.prizes]
+        out[g.region] = Structure(g.region, g.code, _spec_list(rows))
+    return out
+
+
+DEFAULT_STRUCTURES.update(_game_structures())
 
 
 def normalize(raw: dict[str, list[object]], prize_map: dict[str, str] | None = None) -> Prizes:
@@ -92,21 +113,32 @@ def validate(structure: Structure, prizes: Prizes, *, partial: bool = False) -> 
                 errors.append(f"{spec.name} số thứ {i} ({n}) không phải chữ số")
             elif len(n) != spec.digits:
                 errors.append(f"{spec.name} số thứ {i} ({n}) cần {spec.digits} chữ số")
-    if structure.game == "power655":
-        errors.extend(_validate_power(prizes, partial=partial))
+    if structure.game in GAMES:
+        errors.extend(_validate_pick(GAMES[structure.game], prizes, partial=partial))
     return errors
 
 
-def _validate_power(prizes: Prizes, *, partial: bool) -> list[str]:
+def _validate_pick(game, prizes: Prizes, *, partial: bool) -> list[str]:
     errors = []
+    if game.kind == "dice":
+        for n in prizes.get("main", []):
+            if not n.isdigit() or not 1 <= int(n) <= 6:
+                errors.append(f"Xúc xắc chỉ có giá trị từ 1 đến 6, không có {n}")
+        return errors
+    if game.kind != "pick":
+        return errors  # dãy chữ số: độ dài đã được kiểm tra theo cơ cấu giải
     main = [n for n in prizes.get("main", []) if n.isdigit()]
     special = [n for n in prizes.get("special", []) if n.isdigit()]
-    for n in main + special:
-        if not 1 <= int(n) <= 55:
-            errors.append(f"Số {n} nằm ngoài khoảng 01–55")
+    for n in main:
+        if not 1 <= int(n) <= game.main_max:
+            errors.append(f"Số {n} nằm ngoài khoảng 01–{game.main_max:02d}")
+    smax = game.main_max if game.special_same_drum else game.special_max
+    for n in special:
+        if not 1 <= int(n) <= smax:
+            errors.append(f"Số đặc biệt {n} nằm ngoài khoảng 01–{smax:02d}")
     if len(set(main)) != len(main):
         errors.append("Bộ số chính có số trùng nhau")
-    if special and special[0] in main:
+    if game.special_same_drum and special and special[0] in main:
         errors.append("Số đặc biệt trùng với bộ số chính")
     return errors
 
@@ -120,7 +152,7 @@ def ordered(structure: Structure, prizes: Prizes) -> Prizes:
     out: Prizes = {}
     for spec in sorted(structure.prizes, key=lambda p: p.sort_order):
         nums = list(prizes.get(spec.code, []))
-        if structure.game == "power655" and spec.code == "main":
+        if structure.game in GAMES and GAMES[structure.game].kind == "pick" and spec.code == "main":
             nums.sort(key=int)
         if nums:
             out[spec.code] = nums

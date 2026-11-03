@@ -6,7 +6,8 @@ from .base import Adapter
 from .fixture import FixtureAdapter
 from .http_json import HttpJsonAdapter
 from .minhngoc import MinhNgocAdapter
-from .vietlott import VietlottPower655Adapter
+from .vietlott import VietlottMega645Adapter, VietlottPower655Adapter
+from .vietlott_feed import VietlottFeedAdapter
 from .xosocomvn import XosoComVnAdapter
 
 ADAPTERS: dict[str, type[Adapter]] = {
@@ -15,6 +16,8 @@ ADAPTERS: dict[str, type[Adapter]] = {
     "minhngoc": MinhNgocAdapter,
     "xosocomvn": XosoComVnAdapter,
     "vietlott_655": VietlottPower655Adapter,
+    "vietlott_645": VietlottMega645Adapter,
+    "vietlott_feed": VietlottFeedAdapter,
 }
 
 

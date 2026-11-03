@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ h1 }}</h1>
+<p class="lead">{{ summary }}</p>
+{% if provinces %}<nav class="chips print-hide" aria-label="Chọn đài">{% for p in provinces %}<a href="/thong-ke-xs-{{ p.code }}"{% if p.code == current %} aria-current="page"{% endif %}>{{ p.name }}</a>{% endfor %}</nav>{% endif %}
+{% if st %}
+<div class="grid2">
+  <section class="card"><h2>Lô gan lâu nhất</h2><p class="hint">Số kỳ liên tiếp chưa về, tính trên {{ st.draws }} kỳ gần nhất.</p>
+    <div class="tablewrap"><table class="list"><thead><tr><th>Lô</th><th>Số kỳ chưa về</th></tr></thead><tbody>{% for n, g in st.gan %}<tr><td class="mono"><b>{{ '%02d' % n }}</b></td><td>{{ g }}</td></tr>{% endfor %}</tbody></table></div></section>
+  <section class="card"><h2>Tần suất {{ st.recent }} kỳ gần nhất</h2>
+    <h3>Về nhiều nhất</h3><p class="mono">{% for n, c in st.hot %}<b>{{ '%02d' % n }}</b> ({{ c }}){% if not loop.last %}, {% endif %}{% endfor %}</p>
+    <h3>Về ít nhất</h3><p class="mono">{% for n, c in st.cold %}<b>{{ '%02d' % n }}</b> ({{ c }}){% if not loop.last %}, {% endif %}{% endfor %}</p>
+    <p class="hint">Mỗi số có khả năng xuất hiện như nhau trong mỗi kỳ. Lô gan hay lô về nhiều chỉ mô tả quá khứ, không làm tăng hay giảm cơ hội ở kỳ tới. Xem <a href="/du-doan.html">xác suất từng số và độ tin cậy của mô hình</a>.</p></section>
+</div>
+{% else %}<p>Chưa đủ dữ liệu.</p>{% endif %}
+{% endblock %}

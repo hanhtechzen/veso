@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Tìm kiếm</h1>
+<form class="card bigsearch" action="/tim-kiem" method="get" role="search">
+  <label class="sr" for="q2">Từ khóa</label><input id="q2" name="q" value="{{ q }}" placeholder="vd: xsmn 26/10, lô 27 tp hcm, power kỳ 1417, vé 472899" autocomplete="off">
+  <button class="btn" type="submit">Tìm</button>
+</form>
+{% if note %}<p class="hint">{{ note }}</p>{% endif %}
+{% if answers %}<div class="card"><ul class="results">{% for a in answers %}<li><a href="{{ a.url }}"><b>{{ a.title }}</b></a><br><span class="hint">{{ a.desc }}</span></li>{% endfor %}</ul></div>{% endif %}
+<section class="card"><h2>Bạn có thể gõ</h2>
+  <ul class="links">
+    <li><a href="/tim-kiem?q=xsmn+26%2F10">xsmn 26/10</a>: kết quả miền Nam ngày 26/10</li>
+    <li><a href="/tim-kiem?q=xổ+số+đà+nẵng+thứ+7">xổ số đà nẵng thứ 7</a>: kết quả Đà Nẵng thứ Bảy gần nhất</li>
+    <li><a href="/tim-kiem?q=xsmb+hôm+qua">xsmb hôm qua</a>, <a href="/tim-kiem?q=xsmt+hôm+nay">xsmt hôm nay</a></li>
+    <li><a href="/tim-kiem?q=lô+27+tp+hcm">lô 27 tp hcm</a>, <a href="/tim-kiem?q=27+72+xsmb">27 72 xsmb</a>: so sánh các con số</li>
+    <li><a href="/tim-kiem?q=power+kỳ+1417">power kỳ 1417</a>, <a href="/tim-kiem?q=mega+1%2F11">mega 1/11</a>, <a href="/tim-kiem?q=max+3d+pro">max 3d pro</a></li>
+    <li><a href="/tim-kiem?q=vé+472899+hcm">vé 472899 hcm</a>: dò vé trong 7 ngày gần nhất</li>
+    <li><a href="/tim-kiem?q=lô+gan+miền+trung">lô gan miền trung</a>, <a href="/tim-kiem?q=lịch+quay">lịch quay</a></li>
+  </ul></section>
+{% endblock %}

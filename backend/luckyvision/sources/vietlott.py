@@ -24,8 +24,8 @@ TD_RE = re.compile(r"<td[^>]*>([\s\S]*?)</td>", re.I)
 SPAN_RE = re.compile(r"<span[^>]*>([\s\S]*?)</span>", re.I)
 
 
-def parse_rows(html_content: str) -> list[dict]:
-    """[{date, seq, main: [6 số], special: số}] cho mỗi dòng trong bảng kết quả."""
+def parse_rows(html_content: str, main_count: int = 6, has_special: bool = True) -> list[dict]:
+    """[{date, seq, main: [...], special: số hoặc None}] cho mỗi dòng trong bảng kết quả."""
     rows = []
     for tr in ROW_RE.findall(html_content):
         tds = TD_RE.findall(tr)
@@ -38,49 +38,70 @@ def parse_rows(html_content: str) -> list[dict]:
         seq_txt = re.sub(r"\D", "", strip_tags(tds[1]))
         nums = [re.sub(r"\D", "", strip_tags(s)) for s in SPAN_RE.findall(tds[2])]
         nums = [n.zfill(2) for n in nums if n]
-        if len(nums) != 7:
+        if len(nums) != main_count + (1 if has_special else 0):
             continue
-        rows.append({"date": d, "seq": int(seq_txt) if seq_txt else None, "main": nums[:6], "special": nums[6]})
+        rows.append({"date": d, "seq": int(seq_txt) if seq_txt else None, "main": nums[:main_count],
+                     "special": nums[main_count] if has_special else None})
     return rows
 
 
 class VietlottPower655Adapter(ScrapeAdapter):
+    URL = URL
+    KEY = "23bbd667"
+    ROWS = 5
+    MAIN = 6
+    SPECIAL = True
+    PAGE = "winning-number-655"
+
     @property
     def user_agent(self) -> str:
         # Endpoint AJAX của Vietlott từ chối User-Agent lạ; mặc định giả lập trình duyệt như dự án gốc.
         return self.config.get("user_agent") or BROWSER_UA
 
     async def fetch(self, http, draw: DrawRef) -> FetchResult:
-        await self.guard(http, URL)
+        await self.guard(http, self.URL)
         headers = self.headers({
             "Accept": "*/*", "Content-Type": "text/plain; charset=utf-8",
             "X-AjaxPro-Method": "ServerSideDrawResult", "X-Requested-With": "XMLHttpRequest",
             "Origin": "https://vietlott.vn",
-            "Referer": "https://vietlott.vn/vi/trung-thuong/ket-qua-trung-thuong/winning-number-655",
+            "Referer": "https://vietlott.vn/vi/trung-thuong/ket-qua-trung-thuong/" + self.PAGE,
         })
         max_pages = int(self.config.get("max_pages", 10))
         last: FetchResult | None = None
         for page in range(max_pages):
-            body = {"ORenderInfo": ORENDER, "Key": self.config.get("key", "23bbd667"), "GameDrawId": "",
-                    "ArrayNumbers": [["" for _ in range(18)] for _ in range(5)], "CheckMulti": False,
+            body = {"ORenderInfo": ORENDER, "Key": self.config.get("key", self.KEY), "GameDrawId": "",
+                    "ArrayNumbers": [["" for _ in range(18)] for _ in range(self.ROWS)], "CheckMulti": False,
                     "PageIndex": page}
-            r = await http.post(URL, content=json.dumps(body), headers=headers)
+            r = await http.post(self.URL, content=json.dumps(body), headers=headers)
             self.check_blocked(r)
             if r.status_code != 200:
-                return FetchResult(URL, r.status_code, b"")
+                return FetchResult(self.URL, r.status_code, b"")
             try:
                 content = r.json()["value"]["HtmlContent"]
             except (ValueError, KeyError, TypeError) as e:
                 raise ParseError(f"Vietlott trả dữ liệu không như mong đợi: {e}") from e
-            rows = parse_rows(content)
-            last = FetchResult(f"{URL}#page={page}", 200, content.encode("utf-8"), "text/html")
+            rows = parse_rows(content, self.MAIN, self.SPECIAL)
+            last = FetchResult(f"{self.URL}#page={page}", 200, content.encode("utf-8"), "text/html")
             if not rows or any(x["date"] == draw.draw_date for x in rows) or min(x["date"] for x in rows) < draw.draw_date:
                 return last
-        return last or FetchResult(URL, 404, b"")
+        return last or FetchResult(self.URL, 404, b"")
 
     def parse(self, result: FetchResult, draw: DrawRef) -> Parsed:
-        for row in parse_rows(result.body.decode("utf-8", errors="replace")):
+        for row in parse_rows(result.body.decode("utf-8", errors="replace"), self.MAIN, self.SPECIAL):
             if row["date"] == draw.draw_date:
-                return Parsed(prizes={"main": row["main"], "special": [row["special"]]}, complete=True,
-                              meta={"draw_seq": row["seq"]})
+                prizes = {"main": row["main"]}
+                if self.SPECIAL:
+                    prizes["special"] = [row["special"]]
+                return Parsed(prizes=prizes, complete=True, meta={"draw_seq": row["seq"]})
         return Parsed(prizes={})
+
+
+class VietlottMega645Adapter(VietlottPower655Adapter):
+    """Mega 6/45: cùng cấu trúc bảng với Power 6/55, chỉ có 6 số, không có số đặc biệt
+    (theo dự án mã nguồn mở vietvudanh/vietlott-data)."""
+    URL = "https://vietlott.vn/ajaxpro/Vietlott.PlugIn.WebParts.Game645CompareWebPart,Vietlott.PlugIn.WebParts.ashx"
+    KEY = "8290fce2"
+    ROWS = 6
+    MAIN = 6
+    SPECIAL = False
+    PAGE = "winning-number-645"

@@ -26,4 +26,5 @@ class FixtureAdapter(Adapter):
                 raise TypeError("prizes phải là object")
         except (ValueError, KeyError, TypeError) as e:
             raise ParseError(f"Tệp mẫu sai định dạng: {e}") from e
-        return Parsed(prizes={k: [str(x) for x in v] for k, v in prizes.items()}, complete=data.get("complete"))
+        meta = {"draw_seq": int(data["draw_seq"])} if str(data.get("draw_seq", "")).isdigit() else None
+        return Parsed(prizes={k: [str(x) for x in v] for k, v in prizes.items()}, complete=data.get("complete"), meta=meta)

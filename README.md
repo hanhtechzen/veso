@@ -11,13 +11,15 @@ Luckey/
 │  │  ├─ sources/           Bộ chuyển đổi nguồn: fixture (tệp mẫu), http_json (nhà cung cấp)
 │  │  ├─ collector/         Tải, lưu bản gốc, xử lý, lập lịch kỳ quay, theo dõi trực tiếp
 │  │  ├─ api/               REST /v1, SSE, /v1/auth (đăng nhập), /v1/admin, /v1/forecasts, /v1/ai
+│  │  ├─ site/              Trang công khai tạo sẵn HTML cho SEO (Jinja2), sitemap, robots
 │  │  ├─ forecast/          5 mô hình dự báo (gồm hồi quy logistic), tạo trước giờ quay, chấm điểm, kiểm thử lùi
 │  │  ├─ migrations/        Lược đồ PostgreSQL + dữ liệu danh mục
 │  │  ├─ worker.py          Tiến trình nền (APScheduler, giờ Việt Nam)
 │  │  └─ cli.py             Lệnh quản trị
 │  ├─ fixtures/             Kết quả mẫu để chạy thử
 │  └─ tests/                Kiểm thử (pytest)
-├─ web/index.html           Giao diện LuckyVision (bản thử nghiệm, dữ liệu nhúng sẵn)
+├─ web/cong-cu/index.html   Công cụ tương tác (dò vé, máy thời gian, tạo bộ số, sổ dự đoán, đấu trường), lấy dữ liệu từ máy chủ
+├─ web/sw.js, manifest      Ứng dụng cài được trên điện thoại (PWA), chạy ngoại tuyến
 ├─ web/live.html            Tường thuật trực tiếp: lịch quay + bảng kết quả nhận qua SSE
 ├─ web/du-doan.html         Dự báo kỳ tới, hiệu quả mô hình, trợ lý AI, AI chọn số
 ├─ web/admin.html           Trang quản trị: đăng nhập, xác thực hai lớp, duyệt, nhập, nguồn, tài khoản, nhật ký
@@ -196,7 +198,7 @@ pytest -q
 
 ## 8. Chưa làm trong bản này
 
-- Trang chính `web/index.html` vẫn dùng dữ liệu nhúng sẵn; các trang `live.html`, `du-doan.html`, `admin.html` đã nối API thật.
+- Mọi trang đã dùng dữ liệu thật từ máy chủ, kể cả trang Công cụ `/cong-cu/` (tải qua `/v1/export/tools`).
 - Bộ cào chưa được chạy thử với trang thật (môi trường phát triển không truy cập được các trang này): dùng lệnh `probe-source` để kiểm tra trước khi bật.
 - Miền Bắc và miền Trung mới có một nguồn (xoso.com.vn); miền Nam có hai nguồn để tự đối chiếu.
 - Sao lưu liên tục bằng WAL-G (hiện là `pg_dump` hằng đêm), Ansible playbook, Sentry.

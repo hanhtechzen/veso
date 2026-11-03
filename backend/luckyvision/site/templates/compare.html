@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>So sánh các con số</h1>
+<p class="lead">Nhập 2–4 số để đặt cạnh nhau: số lần về, số kỳ chưa về, khoảng cách giữa các lần về, và những số hay về cùng.</p>
+<form class="card cmpform" action="/so-sanh" method="get">
+  <div class="row3">
+    <label>Các số<input name="so" value="{{ so }}" placeholder="vd: 27 72" inputmode="numeric" autocomplete="off"></label>
+    <label>Phạm vi<select name="pham-vi">
+      <optgroup label="Xổ số ba miền">
+        <option value="mb"{% if pham_vi in ('mb','xsmb') %} selected{% endif %}>Miền Bắc</option>
+        <option value="mn"{% if pham_vi in ('mn','xsmn') %} selected{% endif %}>Miền Nam (mọi đài)</option>
+        <option value="mt"{% if pham_vi in ('mt','xsmt') %} selected{% endif %}>Miền Trung (mọi đài)</option>
+      </optgroup>
+      <optgroup label="Từng đài">{% for p in provs %}<option value="{{ p.code }}"{% if pham_vi == p.code %} selected{% endif %}>{{ p.name }}</option>{% endfor %}</optgroup>
+      <optgroup label="Vietlott">{% for g in games %}<option value="{{ g.code }}"{% if pham_vi == g.code %} selected{% endif %}>{{ g.name }}</option>{% endfor %}</optgroup>
+    </select></label>
+    <label>Số kỳ gần nhất<select name="ky">{% for k in (30, 90, 180, 365) %}<option value="{{ k }}"{% if k == ky %} selected{% endif %}>{{ k }} kỳ</option>{% endfor %}</select></label>
+    <button class="btn" type="submit">So sánh</button>
+  </div>
+  <p class="hint" style="margin:8px 0 0">Ví dụ: <a href="/so-sanh?so=27,72&pham-vi=mb">27 và 72 miền Bắc</a> · <a href="/so-sanh?so=08,80,88&pham-vi=tp-hcm">08, 80, 88 TP. Hồ Chí Minh</a> · <a href="/so-sanh?so=07,16,53&pham-vi=power655">07, 16, 53 Power 6/55</a></p>
+</form>
+{% if result %}
+<p class="hint">{{ scope_name }}, {{ result.draws }} kỳ gần nhất. Khi hoàn toàn ngẫu nhiên, mỗi số có khoảng {{ ('%.1f' % (result.p_theory * 100)).replace('.', ',') }}% khả năng {{ 'có trong bộ số trúng' if pick else 'xuất hiện ở hai số cuối' }} của một kỳ.</p>
+<div class="tablewrap"><table class="list cmp">
+  <thead><tr><th></th>{% for x in result.per %}<th class="num-h"><span class="ball sm">{{ fmt(x.n) }}</span></th>{% endfor %}</tr></thead>
+  <tbody>
+    <tr><th scope="row">Số kỳ có về</th>{% for x in result.per %}<td><b>{{ x.hits }}</b> / {{ result.draws }}</td>{% endfor %}</tr>
+    <tr><th scope="row">Tỉ lệ (kỳ vọng {{ ('%.1f' % (result.p_theory * 100)).replace('.', ',') }}%)</th>{% for x in result.per %}<td>{{ ('%.1f' % (x.pct * 100)).replace('.', ',') }}%</td>{% endfor %}</tr>
+    {% if not pick %}<tr><th scope="row">Tổng số lần xuất hiện</th>{% for x in result.per %}<td>{{ x.occ }}</td>{% endfor %}</tr>{% endif %}
+    <tr><th scope="row">Lần về gần nhất</th>{% for x in result.per %}<td>{% if x.last_date %}{{ x.last_date.strftime('%d/%m/%Y') }}{% if x.last_place and not pick and pham_vi not in ('mb', 'xsmb') %}<br><small>{{ x.last_place }}</small>{% endif %}{% else %}–{% endif %}</td>{% endfor %}</tr>
+    <tr><th scope="row">Số kỳ chưa về</th>{% for x in result.per %}<td><b>{{ x.gap_now }}</b></td>{% endfor %}</tr>
+    <tr><th scope="row">Lâu nhất chưa về</th>{% for x in result.per %}<td>{{ x.max_gap }} kỳ</td>{% endfor %}</tr>
+    <tr><th scope="row">Khoảng cách trung bình</th>{% for x in result.per %}<td>{{ (x.avg_gap|string).replace('.', ',') if x.avg_gap is not none else '–' }} kỳ</td>{% endfor %}</tr>
+    <tr><th scope="row">Hay về cùng</th>{% for x in result.per %}<td class="small">{% for pt in x.partners %}<b>{{ fmt(pt.n) }}</b> ({{ pt.co }}){% if not loop.last %}, {% endif %}{% endfor %}</td>{% endfor %}</tr>
+  </tbody></table></div>
+<section class="card"><h2>{{ result.timeline_dates|length }} kỳ gần nhất</h2><p class="hint">Mỗi ô là một kỳ, cũ bên trái, mới bên phải; ô tô màu là kỳ số đó có về.</p>
+  <div class="tl">{% for x in result.per %}<div class="tl-row"><span class="tl-n">{{ fmt(x.n) }}</span><span class="tl-cells">{% for on in x.timeline %}<i class="{{ 'on' if on else '' }}" title="{{ result.timeline_dates[loop.index0].strftime('%d/%m/%Y') }}"></i>{% endfor %}</span></div>{% endfor %}</div>
+</section>
+{% if result.pairs %}<section class="card"><h2>Về cùng một kỳ</h2>
+  <div class="tablewrap"><table class="list"><thead><tr><th>Cặp số</th><th>Số kỳ có cả hai</th><th>Kỳ vọng nếu ngẫu nhiên</th></tr></thead><tbody>
+  {% for pr in result.pairs %}<tr><td class="mono"><b>{{ fmt(pr.a) }}</b> và <b>{{ fmt(pr.b) }}</b></td><td>{{ pr.both }}</td><td>khoảng {{ (pr.expected|string).replace('.', ',') }}</td></tr>{% endfor %}
+  </tbody></table></div></section>{% endif %}
+<p class="print-hide"><button class="btn" type="button" data-save-set data-kind="{{ 'pick' if pick else 'lo' }}" data-scope="{{ pham_vi }}" data-numbers="{{ result.per|map(attribute='n')|map('string')|join(',') }}">☆ Lưu bộ số này</button></p>
+<p class="hint">Các con số mô tả quá khứ. Mỗi kỳ quay độc lập; số lâu chưa về hay hay về cùng không làm thay đổi cơ hội ở kỳ tới.</p>
+{% elif so %}<p class="card">Không đọc được số hợp lệ trong “{{ so }}”, hoặc chưa có dữ liệu cho phạm vi này.</p>{% endif %}
+{% endblock %}

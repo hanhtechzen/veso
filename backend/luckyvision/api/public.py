@@ -10,7 +10,7 @@ from .errors import ApiError
 from .serialize import draw_json, iso, province_names, results_for
 
 router = APIRouter(prefix="/v1", tags=["public"])
-REGIONS = {"mb", "mn", "mt", "vl"}
+from ..domain.games import ALL_REGIONS as REGIONS  # noqa: E402
 
 
 def _region(region: str | None) -> None:

@@ -14,7 +14,7 @@
     });
   }).observe(document.body, {childList: true, subtree: true});
   scan(document);
-  var map = {mb: 'mb', mn: 'mn', mt: 'mt', vl: 'power'};
+  var map = {mb: 'mb', mn: 'mn', mt: 'mt', vl: 'power', mega: 'mega'};
   function setRegion(r) { document.body.dataset.region = map[r] || r || 'power'; }
   var sel = document.getElementById('region');
   if (sel) { setRegion(sel.value); sel.addEventListener('change', function () { setRegion(sel.value); }); }

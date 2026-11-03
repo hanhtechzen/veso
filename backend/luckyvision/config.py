@@ -1,6 +1,8 @@
 """Cấu hình đọc từ biến môi trường (tệp .env)."""
 from __future__ import annotations
 
+from typing import ClassVar
+
 from dataclasses import dataclass
 from datetime import time
 from functools import lru_cache
@@ -36,10 +38,22 @@ class Settings(BaseSettings):
     healthchecks_url: str = ""
     sentry_dsn: str = ""
 
+    # Trang công khai cho SEO: địa chỉ chính thức (không có dấu / cuối), dùng cho canonical và sitemap
+    site_url: str = "http://localhost"
+    site_name: str = "LuckyVision"
+    # Cách người dùng liên hệ quản trị khi quên mật khẩu, hiện trên trang đăng nhập (ví dụ: "Zalo 0901 234 567")
+    support_contact: str = ""
+    # Kênh Telegram công khai nhận kết quả mỗi khi có kỳ được công bố (ví dụ @luckyvision_kq), tùy chọn
+    telegram_results_chat_id: str = ""
+
     # AI (tùy chọn): khóa Claude API và mô hình dùng cho trợ lý, chọn số
-    anthropic_api_key: str = ""
-    ai_model: str = "claude-haiku-5-5"
-    ai_base_url: str = "https://api.anthropic.com"
+    # Nhà cung cấp AI: "anthropic" (Claude) hoặc "openai" (mọi dịch vụ dùng chuẩn API của OpenAI:
+    # OpenAI, Google Gemini, DeepSeek, Groq, OpenRouter, Ollama chạy trên máy...)
+    ai_provider: str = "anthropic"
+    ai_api_key: str = ""
+    anthropic_api_key: str = ""          # tên cũ, vẫn dùng được khi ai_provider = anthropic
+    ai_model: str = ""
+    ai_base_url: str = ""
     ai_requests_per_minute: int = 6
 
     # Cookie đăng nhập chỉ gửi qua HTTPS. Để trống: bật khi APP_ENV=prod, còn lại theo giao thức của yêu cầu.
@@ -54,11 +68,35 @@ class Settings(BaseSettings):
     def is_dev(self) -> bool:
         return self.app_env != "prod"
 
+    AI_DEFAULTS: ClassVar[dict] = {"anthropic": ("https://api.anthropic.com", "claude-haiku-5-5"),
+                   "openai": ("https://api.openai.com/v1", "gpt-4o-mini")}
+
+    @property
+    def ai_key(self) -> str:
+        return self.ai_api_key or (self.anthropic_api_key if self.ai_provider == "anthropic" else "")
+
+    @property
+    def ai_url(self) -> str:
+        return (self.ai_base_url or self.AI_DEFAULTS.get(self.ai_provider, ("", ""))[0]).rstrip("/")
+
+    @property
+    def ai_model_name(self) -> str:
+        return self.ai_model or self.AI_DEFAULTS.get(self.ai_provider, ("", ""))[1]
+
+    @property
+    def ai_enabled(self) -> bool:
+        # Ollama chạy trên máy không cần khóa; các dịch vụ khác cần khóa
+        local = self.ai_provider == "openai" and any(h in self.ai_base_url for h in ("localhost", "127.0.0.1", "ollama", "host.docker.internal"))
+        return bool(self.ai_key) or local
+
     def min_sources(self, region: str) -> int:
         for part in self.min_sources_by_region.split(","):
             k, _, v = part.strip().partition(":")
             if k == region and v.strip().isdigit():
                 return max(1, int(v))
+        from .domain.games import GAMES
+        if any(g.region == region and g.feed for g in GAMES.values()):
+            return 1  # trò chơi Vietlott lấy thẳng từ trang chính thức
         return self.min_matching_sources
 
     def admin_token_map(self) -> dict[str, tuple[str, str]]:
@@ -93,4 +131,5 @@ WINDOWS: dict[str, Window] = {
     "mt": Window(time(17, 10), time(17, 50), 5, (time(18, 0), time(20, 0), time(22, 0)), time(18, 0), time(19, 0)),
     "mb": Window(time(18, 10), time(18, 50), 5, (time(19, 0), time(21, 0), time(23, 0)), time(19, 0), time(20, 0)),
     "vl": Window(time(18, 0), time(19, 0), 30, (time(19, 30), time(21, 0), time(23, 0)), time(19, 30), time(21, 0)),
+    "mega": Window(time(18, 0), time(19, 0), 30, (time(19, 30), time(21, 0), time(23, 0)), time(19, 30), time(21, 0)),
 }

@@ -9,6 +9,7 @@ import psycopg
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 
+from .domain.games import game_of_region
 from .domain.prizes import DEFAULT_STRUCTURES, PrizeSpec, Structure
 
 log = logging.getLogger(__name__)
@@ -52,7 +53,7 @@ async def load_structure(conn, region: str, day: date) -> Structure:
     rows = await cur.fetchall()
     if not rows:
         return DEFAULT_STRUCTURES[region]
-    game = "power655" if region == "vl" else "xs"
+    game = game_of_region(region)
     specs = tuple(sorted((PrizeSpec(r["prize_code"], r["name"], r["count"], r["digits"], r["sort_order"]) for r in rows),
                          key=lambda p: p.sort_order))
     return Structure(region, game, specs)
