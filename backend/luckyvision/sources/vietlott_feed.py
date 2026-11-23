@@ -130,11 +130,11 @@ CONFIG = {
                                                    "PageIndex": p, "TotalRow": 112453}, "first": 1,
              "parse": lambda h: parse_link_rows(h, 20, 2)},
     "max3d": {"part": "GameMax3D", "body": lambda p: {"ORenderInfo": ORENDER, "GameId": "5", "GameDrawId": "", "CheckMulti": 0,
-                                                     "number01": "123", "number02": "321", "PageIndex": p}, "first": 1,
-              "parse": parse_max3d_rows},
+                                                     "number01": "123", "number02": "321", "PageIndex": p}, "first": 0,
+              "parse": parse_max3d_rows},  # trang mới nhất là PageIndex=0
     "max3dpro": {"part": "GameMax3DPro", "body": lambda p: {"ORenderInfo": ORENDER, "GameId": "7", "GameDrawId": "", "CheckMulti": 0,
-                                                           "number01": "123", "number02": "321", "PageIndex": p}, "first": 1,
-                 "parse": parse_max3d_rows},
+                                                           "number01": "123", "number02": "321", "PageIndex": p}, "first": 0,
+                 "parse": parse_max3d_rows},  # trang mới nhất là PageIndex=0
     "bingo18": {"part": "GameBingo", "body": lambda p: {"ORenderInfo": ORENDER, "GameId": "8", "GameDrawNo": "", "number": "",
                                                        "DrawDate": "", "PageIndex": p, "TotalRow": 45628}, "first": 1,
                 "parse": lambda h: parse_link_rows(h, 3, 1)},

@@ -8,11 +8,12 @@ Tài liệu này hướng dẫn từng bước: chạy thử trên máy Windows,
 
 | Bước | Làm gì | Mục |
 | --- | --- | --- |
-| 1 | Cài Docker Desktop, giải nén `Luckey.zip` vào `C:\Luckey`, chạy `.\start.ps1` | 1–3 |
+| 1 | Cài Docker Desktop, giải nén `Luckey.zip` vào `C:\Luckey`, chạy `.\start.ps1` (dùng WSL thì chạy `bash start.sh`) | 1–3, 3b |
 | 2 | Mở http://localhost/admin.html, đăng nhập `admin` bằng mật khẩu tạm, đổi mật khẩu, bật xác thực hai lớp | 7 |
 | 3 | Chạy thử và bật nguồn dữ liệu, sửa `.env` (`APP_ENV=prod`...), **tải bù lịch sử** bằng `backfill` và `feed` | 6, 7b |
 | 4 | Tùy chọn: AI (`AI_API_KEY`), Telegram, `SUPPORT_CONTACT` cho người quên mật khẩu | 7b, 7c, 8 |
 | 5 | Thuê VPS, đưa lên chạy 24/7, gắn tên miền, khai báo Google Search Console | 10, 7c |
+| Sau này | Nhận bản mới: giải nén đè rồi chạy `.\update.ps1` (Windows) hoặc `bash deploy/update.sh` (VPS) | 10b |
 
 Sau mỗi bước, chạy `docker compose exec api python -m luckyvision.cli doctor` để tự kiểm tra.
 
@@ -118,6 +119,38 @@ docker compose ps
 Cả 5 dịch vụ phải ở trạng thái `running` (riêng `api` có thêm `healthy`).
 
 ---
+
+## 3b. Chạy bằng WSL (Ubuntu trong Windows), không cần Docker Desktop
+
+Dùng cách này nếu bạn đã cài Docker ngay trong WSL (ví dụ bằng `curl -fsSL https://get.docker.com | sudo sh`).
+
+1. Ổ C của Windows nằm ở `/mnt/c` trong WSL. Chép dự án vào thư mục nhà của WSL (chạy nhanh hơn, tránh lỗi quyền):
+   ```bash
+   sudo apt update && sudo apt install -y unzip
+   unzip /mnt/c/Users/TEN-BAN/Downloads/Luckey.zip -d ~      # hoặc: cp -r /mnt/c/Luckey ~/Luckey
+   cd ~/Luckey
+   ```
+2. Bật Docker và cấp quyền (chỉ làm một lần; xong thì đóng, mở lại cửa sổ WSL):
+   ```bash
+   sudo service docker start
+   sudo usermod -aG docker $USER
+   ```
+3. Chạy:
+   ```bash
+   bash start.sh
+   ```
+4. Mở trình duyệt **trên Windows**: http://localhost (WSL tự chuyển tiếp cổng).
+
+Ghi chú:
+- Mỗi lần khởi động lại máy, Docker trong WSL có thể tắt: chạy lại `sudo service docker start`. Muốn tự bật, thêm vào `/etc/wsl.conf`:
+  ```
+  [boot]
+  systemd=true
+  ```
+  rồi chạy `wsl --shutdown` trong PowerShell và mở lại WSL.
+- Nếu báo cổng 80 đang bận: tắt IIS, Skype hoặc chương trình khác đang dùng cổng 80 trên Windows.
+- Cập nhật bản mới: giải nén đè lên `~/Luckey` (giữ `.env`) rồi chạy `bash update.sh`.
+- Các lệnh trong hướng dẫn viết cho PowerShell (`docker compose exec ...`) dùng y nguyên trong WSL.
 
 ## 4. Chạy thủ công (nếu không dùng start.ps1)
 
@@ -423,6 +456,32 @@ Mỗi địa chỉ IP chỉ gọi được `AI_REQUESTS_PER_MINUTE` lần mỗi 
   - Tin "Quên mật khẩu" có nút **Mở Thành viên** để cấp mật khẩu tạm ngay.
   - Chống thư rác: ô bẫy ẩn, phải mở form ít nhất 3 giây mới gửi được, mỗi địa chỉ tối đa 5 tin mỗi giờ, giới hạn số đường dẫn trong tin.
 
+### Dò vé và máy thời gian cho Mega 6/45, Lotto 5/35, Max 3D, Max 3D Pro
+
+Trong trang Công cụ, mục **Dò vé** và **Máy thời gian** có thêm 4 loại ở ô "Loại xổ số". Giá trị giải theo thể lệ của Vietlott
+cho vé 10.000đ:
+
+| Trò chơi | Cách nhập vé | Giải |
+| --- | --- | --- |
+| Mega 6/45 | `05 12 23 34 40 45` | 6 số: Jackpot (theo kỳ); 5 số 10 triệu; 4 số 300.000đ; 3 số 30.000đ |
+| Lotto 5/35 | `05 12 23 30 35 + 08` (số sau dấu + là số đặc biệt) | 5 số + ĐB: Độc đắc; 5 số 10 triệu; 4 + ĐB 5 triệu; 4 số 500.000đ; 3 + ĐB 100.000đ; 3 số 30.000đ; chỉ trùng ĐB 10.000đ |
+| Max 3D | `123` | Trùng 1 trong 2 số nhóm đầu 1 triệu; nhóm 4 số 350.000đ; nhóm 6 số 210.000đ; nhóm 8 số 100.000đ (cộng dồn) |
+| Max 3D Pro | `123 456` | Đúng thứ tự 2 số ĐB 2 tỷ; ngược thứ tự 400 triệu; 2 trong 4 số giải Nhất 30 triệu; Nhì 10 triệu; Ba 4 triệu; 2 trong 20 số 1 triệu; 1 số trùng ĐB 100.000đ; 1 số trùng Nhất/Nhì/Ba 40.000đ (cộng dồn) |
+
+Jackpot và Độc đắc thay đổi theo kỳ nên Máy thời gian chỉ đếm số lần trúng, không cộng vào lãi lỗ.
+Nếu Vietlott đổi thể lệ, sửa bảng `VL_GAMES` trong mã nguồn trang Công cụ.
+
+### Xem quay trực tiếp có hiệu ứng (`/live.html`)
+
+- Mỗi số mới về: các chữ số chạy ngẫu nhiên rồi dừng lần lượt từ trái sang phải; hàng giải đang quay được tô sáng.
+- Kỳ Vietlott vừa công bố: bóng rơi xuống lần lượt từng quả.
+- Trước giờ quay: đồng hồ đếm ngược lớn.
+- Nút **🔈 Âm thanh**: tiếng chuông nhỏ mỗi khi có số mới (mặc định tắt).
+- Nút **🔔 Nhắc tôi trước giờ quay**: chọn miền Nam, Trung, Bắc, Power, Mega và số phút nhắc trước (5–30).
+  - **Bật nhắc trên trình duyệt:** báo bằng thông báo, chuông và tiêu đề trang nhấp nháy, khi trang đang mở.
+  - **Thêm vào lịch điện thoại:** tải tệp lịch (.ics) có lặp lại mỗi ngày hoặc theo thứ, điện thoại tự nhắc kể cả khi tắt trang.
+- Xem thử hiệu ứng không cần kết quả thật: http://localhost/live.html?demo=1
+
 ### Trang Công cụ dùng dữ liệu thật
 
 Trang `/cong-cu/` không còn nhúng dữ liệu cũ: khi mở, trang tải toàn bộ kết quả Power 6/55 và 3 năm gần nhất của ba miền
@@ -530,27 +589,53 @@ Bạn sẽ nhận cảnh báo khi kỳ quay quá giờ, nguồn lỗi liên tụ
 
 ## 10. Đưa lên VPS (chạy 24/7)
 
-Tóm tắt; chi tiết ở `README.md`, mục 6.
+Làm theo **`HUONG-DAN-DUA-LEN-VPS.md`**: từng bước từ thuê VPS, tên miền, Cloudflare Tunnel, chuyển dữ liệu
+từ máy đang chạy sang, đến sao lưu, cảnh báo, Google Search Console và tự động cập nhật.
 
-1. Thuê VPS Ubuntu 24.04, cấu hình 4 vCPU, 8 GB RAM.
-2. Chép thư mục dự án lên VPS, rồi chạy với quyền root:
+Các script dùng trong đó (thư mục `deploy/`):
+
+| Script | Chạy ở đâu | Việc |
+|---|---|---|
+| `setup-vps.sh` | VPS, quyền root, một lần | Docker, tường lửa, SSH bằng khóa, swap, giới hạn log, lịch sao lưu |
+| `check-env.sh` | VPS | Kiểm tra `.env` trước khi chạy thật |
+| `export-data.sh` | Máy đang có dữ liệu | Xuất toàn bộ dữ liệu ra một tệp |
+| `import-data.sh` | VPS | Nạp tệp dữ liệu (tự sao lưu dữ liệu cũ trước) |
+| `update.sh` | VPS | Cập nhật bản mới: kiểm tra, sao lưu, dựng lại, tự kiểm tra |
+| `backup.sh` | VPS (cron 02:15) | Sao lưu hằng đêm, chép ra ngoài nếu đã khai báo rclone |
+| `restore-test.sh` | VPS | Thử khôi phục bản sao lưu mới nhất |
+
+---
+
+## 10b. Cập nhật lên bản mới
+
+Mỗi khi nhận `Luckey.zip` mới (có tính năng hoặc bản sửa lỗi):
+
+**Trên máy Windows**
+1. Giải nén `Luckey.zip` mới **đè lên** thư mục `C:\Luckey` hiện tại. Tệp `.env` và dữ liệu (nằm trong Docker) được giữ nguyên.
+2. Mở PowerShell trong `C:\Luckey`, chạy:
+   ```powershell
+   .\update.ps1
+   ```
+   Script tự sao lưu cơ sở dữ liệu vào `backups\`, dựng lại, áp dụng thay đổi cơ sở dữ liệu và chạy `doctor`.
+3. Mở trang, nhấn **Ctrl+F5** để trình duyệt tải bản mới.
+
+**Trên WSL hoặc Linux:** giải nén đè lên thư mục dự án (giữ `.env`) rồi chạy `bash update.sh`.
+
+**Trên VPS**
+1. Chép thư mục mới lên VPS đè lên `/opt/luckey`, giữ nguyên `.env`. Ví dụ từ máy Windows:
+   ```powershell
+   scp -r C:\Luckey\* root@IP-VPS:/opt/luckey/
+   ```
+2. Trên VPS:
    ```bash
-   sudo bash deploy/setup-vps.sh
+   cd /opt/luckey && bash deploy/update.sh
    ```
-   Script cài Docker, bật tường lửa (chỉ mở SSH), fail2ban và tự cập nhật bản vá.
-3. Trên Cloudflare, tạo **Tunnel** trỏ tên miền tới `http://caddy:80`, lấy token.
-4. Trên VPS:
-   ```bash
-   cd /opt/luckey
-   cp .env.example .env && nano .env    # APP_ENV=prod, POSTGRES_PASSWORD, CLOUDFLARE_TUNNEL_TOKEN
-   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-   docker compose exec api python -m luckyvision.cli create-admin --username admin --name "Quản trị"
-   ```
-5. Làm lại mục 6.2 đến 6.4 trên VPS để bật các nguồn dữ liệu, rồi chạy `doctor` (mục 9) để tự kiểm tra.
-6. Cài sao lưu hằng đêm: `rclone config` rồi thêm vào `crontab -e`:
-   ```
-   15 2 * * * /opt/luckey/deploy/backup.sh >> /opt/luckey/backups/backup.log 2>&1
-   ```
+3. Nếu trang vẫn hiện bản cũ: vào Cloudflare, mục **Caching**, bấm **Purge Everything**.
+
+Nếu bản mới có lỗi, khôi phục bản sao lưu vừa tạo:
+```bash
+docker compose exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' < backups/truoc-cap-nhat-NGAY-GIO.dump
+```
 
 ---
 

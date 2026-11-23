@@ -6,7 +6,7 @@ Chỉ viết bộ chuyển đổi cho nguồn đã được duyệt pháp lý (c
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 
 import httpx
@@ -30,6 +30,7 @@ class FetchResult:
     status: int
     body: bytes
     content_type: str = "application/octet-stream"
+    headers: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass

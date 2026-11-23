@@ -88,6 +88,8 @@ def page_group(path: str) -> str:
         if m:
             return f"Công cụ: {RG[m[1]]} {VIEW_NAMES.get(m[2], m[2])}"
         return "Công cụ: " + TOOL_NAMES.get(h, h)
+    if path == "/tin-tuc" or path.startswith("/tin-tuc/"):
+        return "Tin tức"
     if path.startswith("/so-ket-qua"):
         return "Sổ kết quả"
     if path.startswith("/thong-ke"):
@@ -101,4 +103,4 @@ def page_group(path: str) -> str:
                                .replace("bingo18", "Bingo18").replace(" pro", " Pro") if m else "(tổng hợp)")
     if path.startswith("/xs-"):
         return "Trang từng đài"
-    return {"/live.html": "Tường thuật trực tiếp", "/du-doan.html": "Dự báo và AI"}.get(path, "Khác")
+    return {"/live.html": "Tường thuật trực tiếp", "/thong-ke-phan-tich.html": "Thống kê phân tích", "/du-doan.html": "Dự báo và AI"}.get(path, "Khác")

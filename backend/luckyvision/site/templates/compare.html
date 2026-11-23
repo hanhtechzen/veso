@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% from "macros.html" import num_chips %}
 {% block content %}
 <h1>So sánh các con số</h1>
 <p class="lead">Nhập 2–4 số để đặt cạnh nhau: số lần về, số kỳ chưa về, khoảng cách giữa các lần về, và những số hay về cùng.</p>
@@ -31,14 +31,14 @@
     <tr><th scope="row">Số kỳ chưa về</th>{% for x in result.per %}<td><b>{{ x.gap_now }}</b></td>{% endfor %}</tr>
     <tr><th scope="row">Lâu nhất chưa về</th>{% for x in result.per %}<td>{{ x.max_gap }} kỳ</td>{% endfor %}</tr>
     <tr><th scope="row">Khoảng cách trung bình</th>{% for x in result.per %}<td>{{ (x.avg_gap|string).replace('.', ',') if x.avg_gap is not none else '–' }} kỳ</td>{% endfor %}</tr>
-    <tr><th scope="row">Hay về cùng</th>{% for x in result.per %}<td class="small">{% for pt in x.partners %}<b>{{ fmt(pt.n) }}</b> ({{ pt.co }}){% if not loop.last %}, {% endif %}{% endfor %}</td>{% endfor %}</tr>
+    <tr><th scope="row">Hay về cùng</th>{% for x in result.per %}<td class="small">{% set pp = [] %}{% for pt in x.partners %}{% set _ = pp.append((fmt(pt.n), pt.co)) %}{% endfor %}{{ num_chips(pp, 'kỳ') }}</td>{% endfor %}</tr>
   </tbody></table></div>
 <section class="card"><h2>{{ result.timeline_dates|length }} kỳ gần nhất</h2><p class="hint">Mỗi ô là một kỳ, cũ bên trái, mới bên phải; ô tô màu là kỳ số đó có về.</p>
   <div class="tl">{% for x in result.per %}<div class="tl-row"><span class="tl-n">{{ fmt(x.n) }}</span><span class="tl-cells">{% for on in x.timeline %}<i class="{{ 'on' if on else '' }}" title="{{ result.timeline_dates[loop.index0].strftime('%d/%m/%Y') }}"></i>{% endfor %}</span></div>{% endfor %}</div>
 </section>
 {% if result.pairs %}<section class="card"><h2>Về cùng một kỳ</h2>
   <div class="tablewrap"><table class="list"><thead><tr><th>Cặp số</th><th>Số kỳ có cả hai</th><th>Kỳ vọng nếu ngẫu nhiên</th></tr></thead><tbody>
-  {% for pr in result.pairs %}<tr><td class="mono"><b>{{ fmt(pr.a) }}</b> và <b>{{ fmt(pr.b) }}</b></td><td>{{ pr.both }}</td><td>khoảng {{ (pr.expected|string).replace('.', ',') }}</td></tr>{% endfor %}
+  {% for pr in result.pairs %}<tr><td><div class="rk-nums"><span class="rk-n">{{ fmt(pr.a) }}</span><span class="rk-sum">+</span><span class="rk-n">{{ fmt(pr.b) }}</span></div></td><td>{{ pr.both }}</td><td>khoảng {{ (pr.expected|string).replace('.', ',') }}</td></tr>{% endfor %}
   </tbody></table></div></section>{% endif %}
 <p class="print-hide"><button class="btn" type="button" data-save-set data-kind="{{ 'pick' if pick else 'lo' }}" data-scope="{{ pham_vi }}" data-numbers="{{ result.per|map(attribute='n')|map('string')|join(',') }}">☆ Lưu bộ số này</button></p>
 <p class="hint">Các con số mô tả quá khứ. Mỗi kỳ quay độc lập; số lâu chưa về hay hay về cùng không làm thay đổi cơ hội ở kỳ tới.</p>

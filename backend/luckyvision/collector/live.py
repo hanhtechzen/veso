@@ -50,11 +50,13 @@ async def collect_draws(ctx: Ctx, draws: list[dict]) -> None:
                                        prize_map=adapter.prize_map, source_complete=parsed.complete)
                     seq = (parsed.meta or {}).get("draw_seq")
                     if seq:
-                        await conn.execute("UPDATE lottery_draws SET draw_seq = %s WHERE id = %s AND draw_seq IS NULL",
+                        await conn.execute("UPDATE lottery_draws SET draw_seq = %s WHERE id = %s",  # số kỳ của nguồn chính thức ghi đè số kỳ tự đoán
                                            (seq, ref.id))
                 ctx.alerts.extend(out["alerts"])
 
-            await asyncio.gather(*(one(d) for d in items))
+            for d, r in zip(items, await asyncio.gather(*(one(d) for d in items), return_exceptions=True)):
+                if isinstance(r, Exception):  # một kỳ lỗi không làm bỏ dở các kỳ khác
+                    log.error("Lỗi khi tải %s: %r", repr(d)[:120], r)
     await flush_alerts(ctx)
 
 
@@ -91,11 +93,11 @@ async def watch(ctx: Ctx, region: str, day: date) -> None:
     end = datetime.combine(day, w.live_end, VN_TZ)
     log.info("Bắt đầu theo dõi %s ngày %s đến %s", region, day, end.time())
     while datetime.now(VN_TZ) < end:
-        draws = await pending_draws(ctx, region=region, day=day)
-        if not draws:
-            log.info("Mọi kỳ %s ngày %s đã công bố, dừng theo dõi", region, day)
-            return
         try:
+            draws = await pending_draws(ctx, region=region, day=day)
+            if not draws:
+                log.info("Mọi kỳ %s ngày %s đã công bố, dừng theo dõi", region, day)
+                return
             await collect_draws(ctx, draws)
         except Exception:  # noqa: BLE001
             log.exception("Lỗi trong phiên theo dõi %s", region)

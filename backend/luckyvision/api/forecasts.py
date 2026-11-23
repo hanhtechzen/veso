@@ -12,7 +12,7 @@ from .errors import ApiError
 from .serialize import iso
 
 router = APIRouter(prefix="/v1", tags=["forecasts"])
-DISCLAIMER = ("Dự báo thống kê để tham khảo. Điểm xếp hạng không phải xác suất trúng; "
+DISCLAIMER = ("Phân tích thống kê để tham khảo. Điểm xếp hạng không phải xác suất trúng; "
               "không mô hình nào được chứng minh tốt hơn chọn ngẫu nhiên.")
 
 

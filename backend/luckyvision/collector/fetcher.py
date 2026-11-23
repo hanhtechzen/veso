@@ -19,20 +19,38 @@ log = logging.getLogger(__name__)
 RETRIES = 3
 
 
+class PermanentFetchError(Exception):
+    """Lỗi 4xx không phải 404/429: không thử lại."""
+
+
+def _retry_after(res: FetchResult) -> float:
+    for k, v in (res.headers or {}).items():
+        if k.lower() == "retry-after":
+            try:
+                return min(300.0, max(0.0, float(str(v).strip())))
+            except ValueError:
+                return 0.0
+    return 0.0
+
+
 async def _fetch_with_retry(ctx: Ctx, adapter: Adapter, draw: DrawRef, rate_ms: int) -> FetchResult:
     delay = 2.0
     last_exc: Exception | None = None
     for attempt in range(RETRIES):
         await ctx.gate.wait_turn(adapter.code, rate_ms)
+        retry_after = 0.0
         try:
             res = await adapter.fetch(ctx.http, draw)
-            if res.status >= 500:
+            if 400 <= res.status < 500 and res.status not in (404, 429):
+                raise PermanentFetchError(f"HTTP {res.status}")  # lỗi vĩnh viễn, không thử lại
+            if res.status == 429 or res.status >= 500:
+                retry_after = _retry_after(res)
                 raise httpx.HTTPError(f"HTTP {res.status}")
             return res
         except (httpx.HTTPError, OSError) as e:
             last_exc = e
             if attempt < RETRIES - 1:
-                await asyncio.sleep(min(60.0, delay) + random.uniform(0, 1))
+                await asyncio.sleep(max(min(60.0, delay) + random.uniform(0, 1), retry_after))
                 delay *= 2
     assert last_exc is not None
     raise last_exc

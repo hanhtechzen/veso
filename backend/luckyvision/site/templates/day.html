@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% from "macros.html" import result_table, loto_table %}
 {% block content %}
 <h1>{{ h1 }}</h1>
-<p class="lead">{{ summary }}</p>
+<p class="lead">{{ summary }} <a href="/luat-choi#xs{{ region }}">Luật chơi &amp; cơ cấu giải</a></p>
 <div class="bar">
   <div class="daynav">
     {% if prev %}<a class="btn ghost" href="{{ prev_url }}" rel="prev" aria-label="Ngày quay trước {{ prev_label }}">‹<span class="hide-m"> {{ prev_label }}</span></a>{% endif %}
@@ -21,6 +21,6 @@
       <li><a href="/cong-cu/#kq">Dò vé số theo ngày</a></li>
     </ul></section>
   <section class="card"><h2>Dò vé số</h2><p class="hint">Nhập số trên vé để biết trúng giải nào, đài nào, bao nhiêu tiền.</p>
-    <p><a class="btn" href="/cong-cu/#do-ve">Mở công cụ dò vé</a></p></section>
+    <p><a class="btn" href="/do-ve-anh.html">Mở công cụ dò vé</a></p></section>
 </div>
 {% endblock %}

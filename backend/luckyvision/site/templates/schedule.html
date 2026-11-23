@@ -2,6 +2,7 @@
 {% block content %}
 <h1>Lịch quay xổ số trong tuần</h1>
 <p class="lead">Miền Nam quay lúc {{ times.get('mn', '16:15') }}, miền Trung lúc {{ times.get('mt', '17:15') }}, miền Bắc lúc {{ times.get('mb', '18:15') }} hằng ngày. Bấm tên đài để xem kết quả các kỳ trước.</p>
+<p class="hint"><a href="/luat-choi">Luật chơi &amp; cơ cấu giải</a></p>
 <div class="tablewrap"><table class="list sched">
   <thead><tr><th>Ngày</th><th>Miền Nam ({{ times.get('mn', '16:15') }})</th><th>Miền Trung ({{ times.get('mt', '17:15') }})</th><th>Miền Bắc ({{ times.get('mb', '18:15') }})</th></tr></thead>
   <tbody>

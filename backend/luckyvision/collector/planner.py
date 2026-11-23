@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from ..domain.games import GAMES
 from ..config import VN_TZ, WINDOWS
@@ -29,26 +29,39 @@ def make_seq_draw_id(region: str, province: str, day: date, seq: int, width: int
     return f"{region}-{province}-{day.isoformat()}-{seq:0{width}d}"
 
 
-async def plan_day(conn, day: date) -> int:
+async def day_slots(conn, day: date) -> list[dict]:
+    """Các kỳ quay theo lịch của một ngày (đã loại ngày nghỉ): province_code, province_name, draw_time, region_code, game."""
     cur = await conn.execute(
-        """SELECT s.province_code, s.draw_time, p.region_code, p.game
+        """SELECT s.province_code, s.draw_time, p.region_code, p.game, p.name AS province_name
              FROM draw_schedules s JOIN provinces p ON p.code = s.province_code
             WHERE p.active AND s.iso_weekday = %s AND s.valid_from <= %s
               AND (s.valid_to IS NULL OR s.valid_to >= %s)
               AND NOT EXISTS (SELECT 1 FROM draw_holidays h
                                WHERE h.region_code = p.region_code AND %s BETWEEN h.date_from AND h.date_to)""",
         (day.isoweekday(), day, day, day))
+    return await cur.fetchall()
+
+
+async def plan_day(conn, day: date) -> int:
     created = 0
-    for r in await cur.fetchall():
+    for r in await day_slots(conn, day):
         region = r["region_code"]
         w = WINDOWS.get(region)
         seq = None
         if r["game"] in GAMES:
+            # Số kỳ = kỳ gần nhất đã biết + số kỳ theo lịch từ đó đến ngày này (đúng cả khi thiếu dữ liệu vài kỳ ở giữa)
             c2 = await conn.execute(
-                "SELECT max(draw_seq) AS s FROM lottery_draws WHERE province_code = %s AND draw_date < %s",
-                (r["province_code"], day))
-            last = (await c2.fetchone())["s"]
-            seq = last + 1 if last else None
+                """SELECT draw_seq AS s, draw_date AS d FROM lottery_draws
+                    WHERE province_code = %s AND draw_date < %s AND draw_seq IS NOT NULL
+                    ORDER BY draw_date DESC LIMIT 1""", (r["province_code"], day))
+            last = await c2.fetchone()
+            seq = None
+            if last and (day - last["d"]).days <= 60:
+                n, x = 0, last["d"] + timedelta(days=1)
+                while x <= day:
+                    n += sum(1 for s2 in await day_slots(conn, x) if s2["province_code"] == r["province_code"])
+                    x += timedelta(days=1)
+                seq = last["s"] + n if n else None
         res = await conn.execute(
             """INSERT INTO lottery_draws (id, game, region_code, province_code, draw_date, draw_seq,
                                           scheduled_at, warn_at, critical_at)

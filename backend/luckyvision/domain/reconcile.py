@@ -51,6 +51,8 @@ def reconcile(candidates: list[Candidate], min_sources: int = 2) -> Decision:
     for c in latest.values():
         groups.setdefault(c.checksum, []).append(c)
     for members in sorted(groups.values(), key=len, reverse=True):
+        if min_sources <= 1 and len(groups) > 1:
+            break  # nhiều nguồn khác nhau: không tự chọn bản nào
         if len(members) >= min_sources:
             best = min(members, key=lambda c: (c.priority, c.id))
             return Decision("verified", best.id, sorted(m.source_code for m in members))

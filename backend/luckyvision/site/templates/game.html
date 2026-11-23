@@ -1,25 +1,27 @@
-{% extends "base.html" %}{% from "macros_game.html" import game_result %}
+{% extends "base.html" %}{% from "macros_game.html" import game_result, vl_hero, vl_clock_script %}
 {% block content %}
 <h1>{{ h1 }}</h1>
-<p class="lead">{{ summary }}{% if g.schedule %} {{ g.schedule }}.{% endif %}</p>
-<p class="print-hide"><button class="btn ghost" type="button" data-fav-province="{{ g.code }}">☆ Theo dõi {{ g.name.replace("Vietlott ", "") }}</button>{% if g.kind == "pick" and g.code != "keno" %} <a class="btn ghost" href="/so-sanh?pham-vi={{ g.code }}">So sánh các con số</a>{% endif %}</p>
+<p class="lead">{{ summary }}{% if g.schedule %} {{ g.schedule }}.{% endif %} {% if g.code in ('power655', 'mega645', 'lotto535', 'keno', 'max3d', 'max3dpro', 'bingo18') %}<a href="/luat-choi#{{ g.code }}">Luật chơi &amp; cơ cấu giải</a>{% endif %}</p>
+<p class="print-hide"><button class="btn ghost" type="button" data-fav-province="{{ g.code }}" data-name="{{ g.name.replace("Vietlott ", "") }}">☆ Theo dõi {{ g.name.replace("Vietlott ", "") }}</button>{% if g.kind == "pick" and g.code != "keno" %} <a class="btn ghost" href="/so-sanh?pham-vi={{ g.code }}">So sánh các con số</a>{% endif %}</p>
 {% if day_draws %}
 <div class="card"><h2>Tất cả kỳ quay trong ngày ({{ day_draws|length }} kỳ)</h2>
   <div class="tablewrap"><table class="list"><thead><tr><th>Kỳ</th><th>Kết quả</th></tr></thead><tbody>
-  {% for d in day_draws %}<tr><td class="mono">{{ '%0*d' % (g.seq_width, d.draw_seq) if d.draw_seq else '–' }}</td><td class="mono">{{ compact(g, d) }}</td></tr>{% endfor %}
+  {% for d in day_draws %}<tr><td class="mono">{{ '%0*d' % (g.seq_width, d.draw_seq) if d.draw_seq else '–' }}</td><td>{% if g.kind == 'pick' %}<div class="rk-nums{% if g.main_count > 8 %} many{% endif %}">{% for n in d.prizes.get('main', []) %}<span class="rk-n{% if g.code == 'keno' and n|int > 40 %} hi{% endif %}">{{ n }}</span>{% endfor %}{% for n in d.prizes.get('special', []) %}<span class="rk-n sp">{{ n }}</span>{% endfor %}</div>{% elif g.kind == 'digits' %}<div class="rk-groups">{% for code, label in [('db','ĐB'),('g1','Nhất'),('g2','Nhì'),('g3','Ba'),('g4','Tư'),('g5','Năm'),('g6','Sáu')] if d.prizes.get(code) %}<div class="rk-grp"><span class="rk-lab">{{ label }}</span>{% for n in d.prizes[code] %}<span class="rk-n w3{% if code == 'db' %} sp{% endif %}">{{ n }}</span>{% endfor %}</div>{% endfor %}</div>{% elif g.kind == 'dice' %}{% set dv = d.prizes.get('main', []) %}<div class="rk-nums">{% for n in dv %}<span class="rk-n die">{{ n }}</span>{% endfor %}{% if dv %}<span class="rk-sum">= {{ dv|map('int')|sum }}</span>{% endif %}</div>{% else %}<span class="mono">{{ compact(g, d) }}</span>{% endif %}</td></tr>{% endfor %}
   </tbody></table></div></div>
+{% elif hero %}
+{{ vl_hero(g, main, next_info, quick_links, odds_text) }}{{ vl_clock_script() }}
 {% elif main %}
 <section class="card center">
   <p class="hint">{% if main.draw_seq %}Kỳ {{ '%0*d' % (g.seq_width, main.draw_seq) }}, {% endif %}{{ weekday(main.draw_date) }} {{ main.draw_date.strftime('%d/%m/%Y') }}</p>
   {{ game_result(g, main) }}
   {% if odds_text %}<p class="hint">{{ odds_text }}</p>{% endif %}
-  {% if g.code in ('power655', 'mega645') %}<p class="print-hide"><a class="btn" href="/cong-cu/#do-ve">Dò vé</a> <a class="btn ghost" href="/cong-cu/#may-thoi-gian">Máy thời gian</a></p>{% endif %}
+  {% if g.code in ('power655', 'mega645') %}<p class="print-hide">{% set tk = 'power655' if g.code == 'power655' else g.code %}<a class="btn" href="/cong-cu/#{{ tk }}-do-ve">Dò vé</a> <a class="btn ghost" href="/cong-cu/#{{ tk }}-may-thoi-gian">Máy thời gian</a></p>{% endif %}
 </section>
 {% endif %}
 {% if recent %}
 <div class="card"><h2>Các kỳ gần đây</h2>
   <div class="tablewrap"><table class="list"><thead><tr><th>Kỳ</th><th>Ngày quay</th><th>Kết quả</th></tr></thead><tbody>
-  {% for d in recent %}<tr><td class="mono">{{ '%0*d' % (g.seq_width, d.draw_seq) if d.draw_seq else '–' }}</td><td><a href="/{{ slug }}-{{ d.draw_date.strftime('%d-%m-%Y') }}">{{ weekday(d.draw_date) }} {{ d.draw_date.strftime('%d/%m/%Y') }}</a></td><td class="mono">{{ compact(g, d) }}</td></tr>{% endfor %}
+  {% for d in recent %}<tr><td class="mono">{{ '%0*d' % (g.seq_width, d.draw_seq) if d.draw_seq else '–' }}</td><td class="rk-date"><a href="/{{ slug }}-{{ d.draw_date.strftime('%d-%m-%Y') }}">{% if g.multi_daily %}{{ d.draw_date.strftime('%d/%m') }}{% else %}{{ weekday(d.draw_date) }} {{ d.draw_date.strftime('%d/%m/%Y') }}{% endif %}</a></td><td>{% if g.kind == 'pick' %}<div class="rk-nums{% if g.main_count > 8 %} many{% endif %}">{% for n in d.prizes.get('main', []) %}<span class="rk-n{% if g.code == 'keno' and n|int > 40 %} hi{% endif %}">{{ n }}</span>{% endfor %}{% for n in d.prizes.get('special', []) %}<span class="rk-n sp">{{ n }}</span>{% endfor %}</div>{% elif g.kind == 'digits' %}<div class="rk-groups">{% for code, label in [('db','ĐB'),('g1','Nhất'),('g2','Nhì'),('g3','Ba'),('g4','Tư'),('g5','Năm'),('g6','Sáu')] if d.prizes.get(code) %}<div class="rk-grp"><span class="rk-lab">{{ label }}</span>{% for n in d.prizes[code] %}<span class="rk-n w3{% if code == 'db' %} sp{% endif %}">{{ n }}</span>{% endfor %}</div>{% endfor %}</div>{% elif g.kind == 'dice' %}{% set dv = d.prizes.get('main', []) %}<div class="rk-nums">{% for n in dv %}<span class="rk-n die">{{ n }}</span>{% endfor %}{% if dv %}<span class="rk-sum">= {{ dv|map('int')|sum }}</span>{% endif %}</div>{% else %}<span class="mono">{{ compact(g, d) }}</span>{% endif %}</td></tr>{% endfor %}
   </tbody></table></div></div>
 {% endif %}
 {% endblock %}

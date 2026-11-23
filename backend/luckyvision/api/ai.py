@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import json
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, Field
 
-from ..ai import LIMITER, SYSTEM_ASK, SYSTEM_PICK, AiError, complete, parse_pick, pick_rule, stats_context
+from ..ai import BUSY_MSG, LIMITER, SYSTEM_ASK, SYSTEM_PICK, AiError, complete, parse_pick, pick_rule, stats_context
 from ..domain.games import game_of_region
+from .admin import Admin, require
 from .errors import ApiError
 
 router = APIRouter(prefix="/v1/ai", tags=["ai"])
@@ -44,8 +45,9 @@ async def ask(request: Request, body: AskIn):
     user = f"DỮ LIỆU:\n{json.dumps(ctx, ensure_ascii=False)}\n\nCÂU HỎI: {body.question}"
     try:
         answer = await complete(request.app.state.settings, request.app.state.collector.http, SYSTEM_ASK, user)
-    except AiError as e:
-        raise ApiError(502, "ai_error", str(e))
+    except AiError:
+        # Không bao giờ chuyển nguyên văn lỗi của nhà cung cấp cho người dùng (đã ghi nhật ký trong ai.complete)
+        raise ApiError(502, "ai_error", BUSY_MSG)
     return {"answer": answer, "data_used": {"draws_analyzed": ctx["draws_analyzed"]}, "disclaimer": DISCLAIMER}
 
 
@@ -58,7 +60,9 @@ class PickIn(BaseModel):
 
 
 @router.post("/pick")
-async def pick(request: Request, body: PickIn):
+async def pick(request: Request, response: Response, body: PickIn, _: Admin = Depends(require("admin"))):
+    # Quy định: không công khai dự đoán xổ số; chỉ quản trị viên (admin) dùng được
+    response.headers["Cache-Control"] = "private, no-store"
     _guard(request)
     game = game_of_region(body.region)
     async with request.app.state.pool.connection() as conn:

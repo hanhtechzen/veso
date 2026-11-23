@@ -12,7 +12,7 @@ from .. import __version__
 from ..collector.context import Ctx, make_http
 from ..config import get_settings
 from ..db import make_pool
-from . import admin, ai, auth, contact, errors, forecasts, public, stream, tools, track, user
+from . import admin, ai, auth, check, contact, errors, forecasts, play, public, stream, tools, track, user
 from ..site import routes as site_routes
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -45,6 +45,8 @@ app.include_router(admin.router)
 app.include_router(ai.router)
 app.include_router(track.router)
 app.include_router(user.router)
+app.include_router(play.router)
+app.include_router(check.router)
 app.include_router(contact.router)
 app.include_router(tools.router)
 app.include_router(site_routes.router)

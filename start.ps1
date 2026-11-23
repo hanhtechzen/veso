@@ -18,6 +18,7 @@ if ($firstRun) {
 }
 
 docker compose up -d --build
+docker compose up -d --force-recreate --no-deps caddy   # luôn dùng Caddyfile mới nhất
 Write-Host "Đang chờ API sẵn sàng..."
 for ($i = 0; $i -lt 60; $i++) {
     try { Invoke-RestMethod http://localhost/healthz | Out-Null; break } catch { Start-Sleep 2 }

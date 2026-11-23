@@ -64,6 +64,18 @@ async def list_draws(request: Request, response: Response, region: str | None = 
     return {"items": items, "next_cursor": nxt}
 
 
+@router.get("/stats/summary")
+async def stats_summary(request: Request, response: Response, region: str = "mb"):
+    """Thống kê nhanh theo miền (lô gan tính theo ngày quay, lô về nhiều 30 ngày, đầu/đuôi ngày mới nhất)."""
+    from ..site.data import region_snapshot
+    if region not in ("mb", "mn", "mt"):
+        raise ApiError(400, "invalid_param", "region phải là một trong mb, mn, mt")
+    async with request.app.state.pool.connection() as conn:
+        snap = await region_snapshot(conn, region)
+    response.headers["Cache-Control"] = "public, max-age=60"
+    return snap
+
+
 @router.get("/draws/latest")
 async def latest(request: Request, response: Response, region: str):
     _region(region)

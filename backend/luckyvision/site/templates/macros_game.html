@@ -1,17 +1,92 @@
+{# Đồng hồ đếm ngược tới kỳ quay kế tiếp; data-target là giờ Việt Nam dạng ISO, script ở vl_clock_script #}
+{% macro vl_clock(g, nx, small=false) -%}
+<div class="vl-clock{% if small %} sm{% endif %}"{% if nx.iso %} data-vl-target="{{ nx.iso }}"{% endif %}>
+  {% if nx.iso %}
+  <div class="vl-clock-label">{% if nx.seq %}Kỳ <b>{{ nx.seq }}</b> quay sau{% else %}Kỳ tiếp theo quay sau{% endif %}</div>
+  <div class="vl-digits" aria-live="off"><span class="vl-d" data-u="h">--</span><i>:</i><span class="vl-d" data-u="m">--</span><i>:</i><span class="vl-d" data-u="s">--</span></div>
+  <div class="vl-clock-when">{{ nx.when }}</div>
+  <div class="vl-clock-live" hidden>Đang quay / chờ kết quả</div>
+  {% else %}
+  <div class="vl-clock-label">Lịch quay</div>
+  <div class="vl-clock-when">{{ nx.text or 'Chưa có lịch quay.' }}</div>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{% macro vl_clock_script() -%}
+<script>
+(function(){
+  var els=document.querySelectorAll('[data-vl-target]');if(!els.length)return;
+  function p(n){return n<10?'0'+n:''+n;}
+  function tick(){
+    var now=Date.now();
+    els.forEach(function(el){
+      var left=Date.parse(el.getAttribute('data-vl-target'))-now;
+      var live=el.querySelector('.vl-clock-live'),dg=el.querySelector('.vl-digits'),when=el.querySelector('.vl-clock-when'),lab=el.querySelector('.vl-clock-label');
+      if(left<=0){dg.hidden=true;if(when)when.hidden=true;if(lab)lab.hidden=true;live.hidden=false;return;}
+      var s=Math.floor(left/1000),h=Math.floor(s/3600);
+      var v={h:p(h),m:p(Math.floor(s%3600/60)),s:p(s%60)};
+      el.querySelectorAll('.vl-d').forEach(function(d){var t=v[d.getAttribute('data-u')];if(d.textContent!==t)d.textContent=t;});
+    });
+  }
+  tick();setInterval(tick,1000);
+})();
+</script>
+{%- endmacro %}
+
+{# Bóng kết quả; số đặc biệt màu vàng #}
+{% macro vl_balls(g, d, cls='') -%}
+{% if g.kind == 'pick' %}
+<div class="vl-balls{% if g.main_count > 8 %} many{% endif %} {{ cls }}">{% for n in d.prizes.get('main', []) %}<span class="vl-ball">{{ n }}</span>{% endfor %}{% for n in d.prizes.get('special', []) %}<span class="vl-plus" aria-hidden="true">+</span><span class="vl-ball sp" title="Số đặc biệt">{{ n }}</span>{% endfor %}</div>
+{% endif %}
+{%- endmacro %}
+
+{% macro vl_special_note(g) -%}
+{% if g.code == 'power655' %}<p class="vl-note"><span class="vl-ball sp xs" aria-hidden="true"></span> Số vàng là số đặc biệt, dùng cho giải Jackpot 2.</p>
+{% elif g.special_max %}<p class="vl-note"><span class="vl-ball sp xs" aria-hidden="true"></span> Số vàng là số đặc biệt của kỳ quay.</p>{% endif %}
+{%- endmacro %}
+
+{% macro vl_mini(g, d, nx) -%}
+<div class="vl-mini-body">
+  {% if d %}<p class="hint">{% if d.draw_seq %}Kỳ {{ '%0*d' % (g.seq_width, d.draw_seq) }}, {% endif %}{{ weekday(d.draw_date) }} {{ d.draw_date.strftime('%d/%m/%Y') }}</p>
+  {% if g.kind == 'pick' %}{{ vl_balls(g, d, 'sm') }}{% else %}{{ game_result(g, d, false) }}{% endif %}
+  {% else %}<p class="hint">Chưa có kết quả.</p>{% endif %}
+  {{ vl_clock(g, nx, true) }}
+</div>
+{%- endmacro %}
+
+{% macro vl_hero(g, d, nx, links, odds_text='') -%}
+<section class="vl-hero" data-game="{{ g.code }}">
+  <div class="vl-clock-card">
+    <div class="vl-title">{{ g.name }}</div>
+    {{ vl_clock(g, nx) }}
+    {% if g.schedule and nx.iso %}<div class="vl-sched">{{ g.schedule }}</div>{% endif %}{# không lặp lại khi đồng hồ đã hiện lịch #}
+  </div>
+  <div class="vl-latest">
+    {% if d %}
+    <div class="vl-latest-head"><b>Kết quả mới nhất</b><span>{% if d.draw_seq %}Kỳ {{ '%0*d' % (g.seq_width, d.draw_seq) }}, {% endif %}{{ weekday(d.draw_date) }} {{ d.draw_date.strftime('%d/%m/%Y') }}</span></div>
+    {% if g.kind == 'pick' %}{{ vl_balls(g, d) }}{{ vl_special_note(g) }}{% if g.code == 'keno' %}{% set k = keno_stats(d) %}<p class="vl-note">Nhỏ (01–40): {{ k.small }} số · Lớn (41–80): {{ k.big }} số · Chẵn: {{ k.even }} · Lẻ: {{ k.odd }}</p>{% endif %}
+    {% else %}{{ game_result(g, d) }}{% endif %}
+    {% if odds_text %}<p class="vl-note">{{ odds_text }}</p>{% endif %}
+    {% else %}<p class="hint">Chưa có kết quả.</p>{% endif %}
+  </div>
+</section>
+{% if links %}<nav class="vl-links print-hide" aria-label="Liên kết nhanh">{% for l in links %}<a href="{{ l.href }}"><b>{{ l.name }}</b><span>{{ l.desc }}</span></a>{% endfor %}</nav>{% endif %}
+{%- endmacro %}
+
 {% macro game_result(g, d, big=true) -%}
 {% if g.kind == 'pick' %}
-  <div class="balls{% if g.main_count > 8 %} many{% endif %}">{% for n in d.prizes.get('main', []) %}<span class="ball">{{ n }}</span>{% endfor %}{% for n in d.prizes.get('special', []) %}<span class="plus" aria-hidden="true">+</span><span class="ball sp" title="Số đặc biệt">{{ n }}</span>{% endfor %}</div>
+  <div class="rk-nums{% if g.main_count > 8 %} many{% endif %}">{% for n in d.prizes.get('main', []) %}<span class="rk-n{% if g.code == 'keno' and n|int > 40 %} hi{% endif %}">{{ n }}</span>{% endfor %}{% for n in d.prizes.get('special', []) %}<span class="rk-n sp" title="Số đặc biệt">{{ n }}</span>{% endfor %}</div>
   {% if g.code == 'keno' %}{% set k = keno_stats(d) %}<p class="hint center">Nhỏ (01–40): {{ k.small }} số · Lớn (41–80): {{ k.big }} số · Chẵn: {{ k.even }} · Lẻ: {{ k.odd }}</p>{% endif %}
 {% elif g.kind == 'dice' %}
   {% set nums = d.prizes.get('main', []) %}
-  <div class="dice">{% for n in nums %}<span class="die" data-v="{{ n }}" aria-label="{{ n }}">{{ n }}</span>{% endfor %}<span class="dice-sum">Tổng {{ nums | map('int') | sum }}</span></div>
+  <div class="rk-nums">{% for n in nums %}<span class="rk-n die">{{ n }}</span>{% endfor %}{% if nums %}<span class="rk-sum">= {{ nums | map('int') | sum }}</span>{% endif %}</div>
 {% else %}
   {% if g.prizes|length == 1 %}
     <div class="bignum">{{ d.prizes.get(g.prizes[0][0], ['?'])[0] }}</div>
   {% else %}
-    <div class="tablewrap"><table class="kq mini"><tbody>
-    {% for code, name, cnt, w in g.prizes %}<tr class="g-{{ code }}"><th scope="row">{{ name }}</th><td>{% for n in d.prizes.get(code, []) %}<span class="n inl"><b>{{ n }}</b></span>{% endfor %}</td></tr>{% endfor %}
-    </tbody></table></div>
+    {% set labs = {'db': 'ĐB', 'g1': 'Nhất', 'g2': 'Nhì', 'g3': 'Ba', 'g4': 'Tư', 'g5': 'Năm', 'g6': 'Sáu'} if g.code in ('max3d', 'max3dpro') else {} %}
+    <div class="rk-groups">{% for code, name, cnt, w in g.prizes if d.prizes.get(code) %}<div class="rk-grp"><span class="rk-lab">{{ labs.get(code, name) }}</span>{% for n in d.prizes[code] %}<span class="rk-n w3{% if code == 'db' and labs %} sp{% endif %}">{{ n }}</span>{% endfor %}</div>{% endfor %}</div>
   {% endif %}
 {% endif %}
 {%- endmacro %}

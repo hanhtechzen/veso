@@ -48,7 +48,8 @@ class HttpJsonAdapter(Adapter):
         url = self._url(draw)
         r = await http.get(url, headers=headers)
         return FetchResult(url=url, status=r.status_code, body=r.content,
-                           content_type=r.headers.get("content-type", "application/json"))
+                           content_type=r.headers.get("content-type", "application/json"),
+                           headers=dict(r.headers))
 
     def parse(self, result: FetchResult, draw: DrawRef) -> Parsed:
         try:

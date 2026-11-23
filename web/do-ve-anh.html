@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dò vé bằng ảnh | LuckyVision</title>
+<meta name="description" content="Chụp ảnh vé số giấy, đọc số ngay trên điện thoại rồi dò kết quả. Ảnh không rời khỏi thiết bị của bạn.">
+<link rel="preload" href="/assets/fonts/be-vietnam-pro-vietnamese-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css">
+<script src="/assets/lv-loading.js"></script>
+<link rel="stylesheet" href="/assets/lv-header.css">
+<style>
+:root{--bg:#EEF1F6;--surface:#fff;--surface-2:#F4F6F9;--ink:#141B2D;--muted:#5B6578;--line:#E0E5EC;--red:#D12A2A;--good:#1F7A4C;--gold:#F2B01E;--focus:#2356C9;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0A0F1C;--surface:#121A2B;--surface-2:#1A2336;--ink:#E8ECF4;--muted:#98A3B9;--line:#263049;--good:#5CC48D;--focus:#7FA6FF;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.55 "Be Vietnam Pro",system-ui,sans-serif}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+[hidden]{display:none!important}
+main{max-width:860px;margin:0 auto;padding:22px 16px 48px}
+h1{font-size:1.7rem;letter-spacing:-.02em;margin:0 0 4px}
+h2{font-size:1.1rem;margin:0 0 8px}
+.lead{color:var(--muted);margin:0 0 16px;max-width:72ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+.notice{background:#FFF4D6;border:1px solid var(--gold);border-radius:12px;padding:12px 14px;font-size:.95rem;color:#5c4400;margin-bottom:16px;font-weight:600}
+@media (prefers-color-scheme:dark){.notice{background:#3A311B;color:#F5DFA0}}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.row>div{flex:1;min-width:180px}
+label,.lbl{display:block;font-weight:600;font-size:.86rem;margin-bottom:5px}
+select,input[type=text],input[type=date]{padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface-2);width:100%}
+.btn{border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:700;padding:11px 18px;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+.btn.sec{background:var(--surface-2);color:var(--ink);border:1.5px solid var(--line)}
+.btn.sm{padding:5px 12px;font-size:.85rem}
+.btn.big{font-size:1.05rem;padding:14px 22px}
+.btn[disabled]{opacity:.5;cursor:wait}
+.acts{display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.msg{min-height:1.3em;font-size:.92rem;color:var(--red);margin:8px 0 0}
+.msg.ok{color:var(--good)}
+.meta{font-size:.84rem;color:var(--muted)}
+.sr{position:absolute;left:-9999px}
+.bar{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;width:0;background:var(--red);transition:width .2s}
+.preview{max-width:100%;max-height:260px;border-radius:12px;border:1px solid var(--line);display:block;margin:10px 0}
+.ln{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.ln input[type=text]{font:700 1.15rem "IBM Plex Mono",monospace;letter-spacing:.12em;max-width:260px}
+.ln .vl{display:flex;gap:4px;flex-wrap:wrap}
+.ln .vl input{width:3.2rem;padding:10px 4px;text-align:center;font:700 1.05rem "IBM Plex Mono",monospace}
+.ln .vl input.sp{border-color:var(--gold);background:rgba(242,176,30,.2);font-weight:800}
+.ln .vl input.m3{width:4.6rem}
+.ln .vl .sep{align-self:center;color:var(--muted);font-weight:700}
+.ln .idx{font-weight:700;color:var(--muted);min-width:1.4rem}
+.rs{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--surface)}
+.rs.win{border-color:var(--gold);background:rgba(242,176,30,.12)}
+.nums{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.ball{min-width:2.3em;height:2.3em;padding:0 .4em;border-radius:999px;display:grid;place-items:center;font:800 .95rem "Be Vietnam Pro",sans-serif;background:var(--surface-2);border:1.5px solid var(--line)}
+.pill{font-size:.8rem;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.pill.win{background:var(--gold);color:#3a2a00;font-size:.9rem}
+</style>
+<link rel="stylesheet" href="/assets/lv-colors.css">
+</head>
+<body>
+<header class="top" id="lvHeader" data-section="dv" data-sub=""></header>
+<script src="/nav.js"></script>
+<main>
+  <h1>Dò vé bằng ảnh</h1>
+  <p class="lead">Chụp ảnh vé giấy hoặc chọn ảnh có sẵn, kiểm tra lại các số máy đọc được rồi dò kết quả ngay.</p>
+  <div class="notice" role="note">Ảnh chỉ được xử lý ngay trên thiết bị của bạn và không bao giờ được gửi đi hay lưu trên máy chủ. Chỉ các con số bạn xác nhận mới được gửi để dò vé.</div>
+
+  <div class="card">
+    <h2>1. Chụp hoặc chọn ảnh vé</h2>
+    <div class="acts">
+      <label class="btn big" for="cam">Chụp ảnh vé</label>
+      <label class="btn sec big" for="pic">Chọn ảnh từ máy</label>
+      <button type="button" class="btn sec big" id="manual">Nhập tay</button>
+    </div>
+    <input id="cam" class="sr" type="file" accept="image/*" capture="environment">
+    <input id="pic" class="sr" type="file" accept="image/*">
+    <p class="meta">Chụp thẳng, đủ sáng, để dòng số vé nằm rõ trong khung. Lần đầu máy cần tải khoảng 11 MB dữ liệu đọc chữ, sau đó được dùng lại.</p>
+    <div id="ocrBox" hidden>
+      <img id="prev" class="preview" alt="Ảnh vé đã chọn" hidden>
+      <div id="ocrStatus" class="meta" role="status"></div>
+      <div class="bar" aria-hidden="true"><i id="ocrBar"></i></div>
+    </div>
+    <p class="msg" id="ocrMsg" role="status"></p>
+  </div>
+
+  <div class="card" id="formCard" hidden>
+    <h2>2. Xác nhận thông tin vé</h2>
+    <p class="meta" style="margin-top:0">Hãy đối chiếu với vé thật và sửa nếu máy đọc chưa đúng.</p>
+    <form id="form" novalidate>
+      <div class="row">
+        <div><label for="game">Loại vé</label><select id="game"><optgroup label="Xổ số kiến thiết"><option value="xs">Vé 3 miền</option></optgroup><optgroup label="Vietlott"><option value="power655">Power 6/55</option><option value="mega645">Mega 6/45</option><option value="lotto535">Lotto 5/35</option><option value="max3d">Max 3D</option><option value="max3dpro">Max 3D Pro</option></optgroup></select></div>
+        <div id="provBox"><label for="prov">Đài</label><select id="prov"></select></div>
+        <div id="slotBox" hidden><label for="slot">Kỳ quay</label><select id="slot"><option value="13:00">Kỳ trưa 13:00</option><option value="21:00">Kỳ tối 21:00</option></select></div>
+        <div><label for="date">Ngày quay</label><input id="date" type="date"></div>
+      </div>
+      <div class="lbl" id="lnLbl">Số vé</div>
+      <div id="lines"></div>
+      <div class="acts">
+        <button type="button" class="btn sec sm" id="addLn">Thêm dòng</button>
+        <button type="submit" class="btn" id="go">Dò vé</button>
+      </div>
+      <p class="msg" id="fmsg" role="status"></p>
+    </form>
+  </div>
+
+  <div class="card" id="resCard" hidden>
+    <h2>3. Kết quả dò vé</h2>
+    <div id="res"></div>
+    <p class="meta">Kết quả chỉ để tham khảo, hãy đối chiếu với công ty xổ số trước khi lĩnh thưởng.</p>
+  </div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MAXN = {power655: 55, mega645: 45};
+const ERR = {
+  draw_not_found: 'Không có kỳ quay này. Kiểm tra lại đài và ngày.',
+  invalid_ticket: 'Vé chưa hợp lệ. Hãy kiểm tra lại các số đã nhập.',
+  rate_limited: 'Bạn thử quá nhiều lần. Vui lòng đợi một lát rồi dò lại.'
+};
+const nfMsg = g => g === 'max3d' ? 'Không có kỳ quay này vào ngày đã chọn. Max 3D quay vào thứ Hai, thứ Tư và thứ Sáu.'
+  : g === 'max3dpro' ? 'Không có kỳ quay này vào ngày đã chọn. Max 3D Pro quay vào thứ Ba, thứ Năm và thứ Bảy.'
+  : g === 'lotto535' ? 'Không có kỳ quay này vào ngày đã chọn. Lotto 5/35 quay mỗi ngày, hãy kiểm tra lại ngày và kỳ quay (13:00 hoặc 21:00).'
+  : ERR.draw_not_found;
+const todayVN =() => new Date().toLocaleDateString('sv-SE', {timeZone: 'Asia/Ho_Chi_Minh'});
+const pad = n => String(n).padStart(2, '0');
+let PROV = [];
+
+/* ---------- Danh sách đài ---------- */
+async function loadProv() {
+  try { PROV = ((await (await fetch('/v1/provinces')).json()).items || []); } catch (e) { PROV = []; }
+  // Miền Bắc dùng mã "mb" (giống trang Chơi thử)
+  if (!PROV.some(p => p.code === 'mb')) PROV.unshift({code: 'mb', name: 'Miền Bắc', region: 'mb'});
+  const rn = {mb: 'Miền Bắc', mn: 'Miền Nam', mt: 'Miền Trung'};
+  const groups = ['mb', 'mn', 'mt'].map(r => ({r, list: PROV.filter(p => p.region === r)})).filter(g => g.list.length);
+  $('#prov').innerHTML = groups.map(g => `<optgroup label="${rn[g.r]}">${g.list.map(p => `<option value="${esc(p.code)}">${esc(p.name)}</option>`).join('')}</optgroup>`).join('');
+  $('#prov').value = 'mb';
+}
+const provLen = () => $('#prov').value === 'mb' ? 5 : 6;
+
+/* ---------- Biểu mẫu ---------- */
+const game = () => $('#game').value;
+function lineHtml(i, vals) {
+  const g = game();
+  const rm = `<button type="button" class="btn sec sm" data-rm aria-label="Xóa dòng ${i + 1}">Xóa</button>`;
+  if (g === 'xs') {
+    return `<div class="ln"><span class="idx">${i + 1}</span><input type="text" inputmode="numeric" autocomplete="off" maxlength="6" data-xs value="${esc(vals || '')}" aria-label="Số vé ${i + 1}">${rm}</div>`;
+  }
+  if (g === 'max3d' || g === 'max3dpro') {
+    const n = g === 'max3d' ? 1 : 2, v = g === 'max3d' ? [vals] : (Array.isArray(vals) ? vals : []);
+    const ins = Array.from({length: n}, (_, k) => `<input type="text" class="m3" inputmode="numeric" autocomplete="off" maxlength="3" data-m3 value="${v[k] != null ? esc(v[k]) : ''}" aria-label="${n === 1 ? `Số vé ${i + 1}` : `Dòng ${i + 1} bộ ${k + 1}`}">`);
+    return `<div class="ln"><span class="idx">${i + 1}</span><span class="vl">${ins.join('<span class="sep">-</span>')}</span>${rm}</div>`;
+  }
+  const v = Array.isArray(vals) ? vals : [], n = g === 'lotto535' ? 5 : 6;
+  const cells = Array.from({length: 6}, (_, k) => {
+    const sp = g === 'lotto535' && k === 5;
+    return `<input type="text" inputmode="numeric" maxlength="2" ${sp ? 'class="sp" data-sp' : 'data-vl'} value="${v[k] != null && v[k] !== '' ? esc(pad(v[k])) : ''}" aria-label="${sp ? `Dòng ${i + 1} số đặc biệt` : `Dòng ${i + 1} số ${k + 1}`}">`;
+  }).slice(0, g === 'lotto535' ? 6 : n);
+  return `<div class="ln"><span class="idx">${i + 1}</span><span class="vl">${cells.join('')}</span>${rm}</div>`;
+}
+const emptyLine = () => { const g = game(); return g === 'xs' || g === 'max3d' ? '' : []; };
+const maxLines = () => game() === 'xs' ? 5 : 6;
+function setLines(arr) {
+  const a = arr.slice(0, maxLines()); if (!a.length) a.push(emptyLine());
+  $('#lines').innerHTML = a.map((v, i) => lineHtml(i, v)).join('');
+  $('#addLn').hidden = a.length >= maxLines();
+}
+function readLines() {
+  const g = game();
+  return [...document.querySelectorAll('#lines .ln')].map(ln => {
+    if (g === 'xs') return ln.querySelector('[data-xs]').value.trim();
+    if (g === 'max3d') return ln.querySelector('[data-m3]').value.trim();
+    if (g === 'max3dpro') return [...ln.querySelectorAll('[data-m3]')].map(i => i.value.trim());
+    return [...ln.querySelectorAll('[data-vl],[data-sp]')].map(i => i.value.trim());
+  });
+}
+function defaultSlot() {
+  const p = new Intl.DateTimeFormat('en-GB', {timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false}).formatToParts(new Date());
+  const h = +p.find(x => x.type === 'hour').value % 24, m = +p.find(x => x.type === 'minute').value;
+  return h * 60 + m >= 21 * 60 + 15 ? '21:00' : '13:00';
+}
+function applyGame() {
+  const g = game(); $('#provBox').hidden = g !== 'xs'; $('#slotBox').hidden = g !== 'lotto535';
+  if (g === 'lotto535') $('#slot').value = defaultSlot();
+  $('#lnLbl').textContent = g === 'xs' ? 'Số vé (tối đa 5 vé)'
+    : g === 'lotto535' ? 'Bộ số (5 số từ 01 đến 35, rồi số đặc biệt màu vàng từ 01 đến 12; tối đa 6 dòng)'
+    : g === 'max3d' ? 'Số vé (3 chữ số, ví dụ 007; tối đa 6 dòng)'
+    : g === 'max3dpro' ? 'Cặp số vé (mỗi bộ 3 chữ số, đúng thứ tự trên vé; tối đa 6 dòng)'
+    : `Bộ số (6 số, từ 01 đến ${MAXN[g]}; tối đa 6 dòng)`;
+}
+function showForm(o = {}) {
+  $('#formCard').hidden = false; $('#resCard').hidden = true; $('#fmsg').textContent = '';
+  $('#game').value = o.game || 'xs'; applyGame();
+  if (o.province) $('#prov').value = o.province;
+  $('#date').max = todayVN(); $('#date').value = o.date || todayVN();
+  setLines(o.lines || []);
+  $('#formCard').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+$('#game').addEventListener('change', () => { applyGame(); setLines([]); });
+$('#addLn').addEventListener('click', () => { const n = document.querySelectorAll('#lines .ln').length; if (n >= maxLines()) { window.lvToast('Đã đủ số dòng tối đa của loại vé này.', 'info'); return; }
+  $('#lines').insertAdjacentHTML('beforeend', lineHtml(n, emptyLine())); $('#addLn').hidden = n + 1 >= maxLines(); });
+$('#lines').addEventListener('click', e => {
+  const b = e.target.closest('[data-rm]'); if (!b) return;
+  const all = readLines(); const i = [...document.querySelectorAll('#lines .ln')].indexOf(b.closest('.ln'));
+  all.splice(i, 1); setLines(all);
+});
+$('#lines').addEventListener('input', e => {
+  const t = e.target; if (t.matches('[data-xs],[data-vl],[data-sp],[data-m3]')) t.value = t.value.replace(/\D/g, '');
+  if (t.matches('[data-vl]') && t.value.length === 2 && t.nextElementSibling) t.nextElementSibling.focus();
+  if (t.matches('[data-m3]') && t.value.length === 3) { const nx = t.parentElement.querySelector('[data-m3]:not(:first-child)'); if (nx && nx !== t) nx.focus(); }
+});
+$('#manual').addEventListener('click', () => showForm({}));
+
+/* ---------- Phân tích chữ đọc được ---------- */
+function parseText(text) {
+  const out = {game: 'xs', lines: [], date: null, province: null};
+  let t = String(text || '');
+  // Ngày dd/mm/yyyy, dd-mm-yy
+  const dm = t.match(/\b(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{4}|\d{2})\b/);
+  if (dm) {
+    let [, d, m, y] = dm; d = +d; m = +m; y = +y; if (y < 100) y += 2000;
+    if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 2000) out.date = `${y}-${pad(m)}-${pad(d)}`;
+    t = t.split(dm[0]).join(' ');
+  }
+  // Vietlott: dòng có ít nhất 6 số hai chữ số
+  const vl = [];
+  t.split(/\r?\n/).forEach(line => {
+    const toks = line.match(/\b\d{2}\b/g) || [];
+    if (toks.length >= 6) { const nums = toks.map(Number); if (nums.slice(0, 6).every(n => n >= 1 && n <= 55)) vl.push(nums.slice(0, 6)); return; }
+    const compact = line.replace(/\D/g, '');
+    if (compact.length === 12) { const nums = compact.match(/\d{2}/g).map(Number); if (nums.every(n => n >= 1 && n <= 55)) vl.push(nums); }
+  });
+  const vk = new Set(); for (let i = vl.length - 1; i >= 0; i--) { const k = vl[i].join(','); if (vk.has(k)) vl.splice(i, 1); else vk.add(k); }
+  if (vl.length) {
+    out.game = 'power655'; // Power và Mega có cùng dạng dòng số; người dùng đổi loại vé nếu cần
+    out.lines = vl.slice(0, 6);
+    return out;
+  }
+  // Vé 3 miền: dãy 5-6 chữ số
+  const seen = new Set();
+  (t.match(/\b\d{5,6}\b/g) || []).forEach(s => { if (!seen.has(s) && seen.size < 5) seen.add(s); });
+  out.lines = [...seen];
+  if (out.lines.length && out.lines.every(s => s.length === 5)) out.province = 'mb';
+  return out;
+}
+
+/* ---------- OCR (nạp khi cần) ---------- */
+let tessLoad = null;
+function loadTess() {
+  if (window.Tesseract) return Promise.resolve();
+  return tessLoad || (tessLoad = new Promise((ok, no) => {
+    const s = document.createElement('script'); s.src = '/assets/ocr/tesseract.min.js';
+    s.onload = ok; s.onerror = () => { tessLoad = null; no(new Error('load')); }; document.head.appendChild(s);
+  }));
+}
+async function toBitmap(file) {
+  if (window.createImageBitmap) { try { return await createImageBitmap(file); } catch (e) {} }
+  const url = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(file); });
+  return await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = url; });
+}
+function srcSize(b) { return [b.width || b.naturalWidth, b.height || b.naturalHeight]; }
+async function preprocess(src) {
+  const [w0, h0] = srcSize(src), W = 1600, sc = W / w0, H = Math.round(h0 * sc);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d', {willReadFrequently: true}); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.drawImage(src, 0, 0, W, H);
+  const img = x.getImageData(0, 0, W, H), d = img.data, n = W * H, g = new Uint8ClampedArray(n), hist = new Array(256).fill(0);
+  for (let i = 0, j = 0; i < n; i++, j += 4) { const v = (0.299 * d[j] + 0.587 * d[j + 1] + 0.114 * d[j + 2]) | 0; g[i] = v; hist[v]++; }
+  // Ngưỡng Otsu
+  let sum = 0; for (let i = 0; i < 256; i++) sum += i * hist[i];
+  let wB = 0, sB = 0, best = 0, th = 128;
+  for (let i = 0; i < 256; i++) { wB += hist[i]; if (!wB) continue; const wF = n - wB; if (!wF) break; sB += i * hist[i];
+    const mB = sB / wB, mF = (sum - sB) / wF, v = wB * wF * (mB - mF) * (mB - mF); if (v > best) { best = v; th = i; } }
+  for (let i = 0, j = 0; i < n; i++, j += 4) { const v = g[i] > th ? 255 : 0; d[j] = d[j + 1] = d[j + 2] = v; d[j + 3] = 255; }
+  x.putImageData(img, 0, 0);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  return new Uint8Array(await blob.arrayBuffer());
+}
+function showPrev(bmp) {
+  const [w, h] = srcSize(bmp), k = Math.min(1, 800 / w), c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height); const p = $('#prev'); p.src = c.toDataURL('image/jpeg', 0.8); p.hidden = false;
+}
+const STATUS = {'loading tesseract core': 'Đang tải bộ đọc chữ…', 'initializing tesseract': 'Đang khởi động…', 'loading language traineddata': 'Đang tải dữ liệu ngôn ngữ…',
+  'initializing api': 'Đang khởi động…', 'recognizing text': 'Đang đọc số trên vé…'};
+async function onPhoto(file) {
+  if (!file) return;
+  const msg = $('#ocrMsg'); msg.textContent = ''; $('#ocrBox').hidden = false;
+  const locks = ['#cam', '#pic', '#manual'].map($); locks.forEach(x => { x.disabled = true; });
+  document.querySelectorAll('label[for=cam],label[for=pic]').forEach(l => { l.style.opacity = '.6'; l.style.pointerEvents = 'none'; });
+  const st = $('#ocrStatus'), bar = $('#ocrBar'); st.textContent = 'Đang chuẩn bị ảnh…'; bar.style.width = '2%';
+  let worker;
+  try {
+    const bmp = await toBitmap(file); showPrev(bmp);
+    const bytes = await preprocess(bmp); if (bmp.close) bmp.close();
+    st.textContent = 'Đang tải bộ đọc chữ (lần đầu khoảng 11 MB)…';
+    await loadTess();
+    worker = await Tesseract.createWorker('eng', 1, {
+      workerPath: '/assets/ocr/worker.min.js', corePath: '/assets/ocr/', langPath: '/assets/ocr/', gzip: true, workerBlobURL: false,
+      logger: m => { st.textContent = STATUS[m.status] || m.status || ''; if (typeof m.progress === 'number') bar.style.width = Math.max(2, Math.round(m.progress * 100)) + '%'; }
+    });
+    // Lượt 1: tự chia bố cục (đọc tốt dãy số in to); lượt 2: tìm chữ rời rạc (vé Vietlott nhiều dòng, chữ nhỏ).
+    // Không giới hạn ký tự: giới hạn chỉ chữ số làm Tesseract bỏ sót số vé lớn.
+    await worker.setParameters({tessedit_pageseg_mode: '3', preserve_interword_spaces: '1'});
+    const t1 = (await worker.recognize(bytes)).data.text;
+    await worker.setParameters({tessedit_pageseg_mode: '11'});
+    const t2 = (await worker.recognize(bytes)).data.text;
+    const parsed = parseText(t1 + '\n' + t2);
+    bar.style.width = '100%'; st.textContent = 'Đã đọc xong. Hãy kiểm tra lại các số bên dưới.';
+    if (!parsed.lines.length) { msg.textContent = 'Chưa đọc được số nào từ ảnh. Hãy chụp lại rõ hơn hoặc nhập tay.'; window.lvToast('Chưa đọc được số nào. Hãy chụp lại rõ hơn hoặc nhập tay.', 'err'); }
+    showForm(parsed);
+  } catch (e) {
+    st.textContent = ''; msg.textContent = 'Không đọc được ảnh trên thiết bị này. Bạn có thể chụp lại hoặc nhập tay.'; window.lvToast(msg.textContent, 'err'); showForm({});
+  } finally {
+    locks.forEach(x => { x.disabled = false; });
+    document.querySelectorAll('label[for=cam],label[for=pic]').forEach(l => { l.style.opacity = ''; l.style.pointerEvents = ''; });
+    if (worker) { try { await worker.terminate(); } catch (e) {} }
+  }
+}
+['#cam', '#pic'].forEach(id => $(id).addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; onPhoto(f); }));
+
+/* ---------- Dò vé ---------- */
+function validate() {
+  const g = game(), ls = readLines();
+  if (!$('#date').value) return 'Hãy chọn ngày quay.';
+  if (g === 'xs') {
+    const n = provLen(), L = ls.filter(Boolean);
+    if (!L.length) return 'Hãy nhập ít nhất một số vé.';
+    if (L.some(s => s.length !== n)) return `Số vé của đài này gồm ${n} chữ số.`;
+    return {lines: L};
+  }
+  if (g === 'max3d' || g === 'max3dpro') {
+    const out = [], ok = s => /^\d{3}$/.test(s);
+    for (const l of ls) {
+      const a = g === 'max3d' ? [l] : l;
+      if (a.every(v => !v)) continue;
+      if (!a.every(ok)) return g === 'max3d' ? 'Mỗi số vé gồm đúng 3 chữ số, ví dụ 007.' : 'Mỗi dòng cần đủ 2 bộ số, mỗi bộ gồm đúng 3 chữ số (ví dụ 123 và 456).';
+      out.push(l);
+    }
+    if (!out.length) return 'Hãy nhập ít nhất một dòng số.';
+    return {lines: out};
+  }
+  if (g === 'lotto535') {
+    const out = [];
+    for (const l of ls) {
+      if (l.every(v => !v)) continue;
+      if (l.some(v => !v)) return 'Mỗi dòng cần đủ 5 số chính và 1 số đặc biệt (ô vàng).';
+      const nums = l.map(Number), main = nums.slice(0, 5);
+      if (main.some(v => v < 1 || v > 35)) return 'Năm số chính phải từ 01 đến 35.';
+      if (new Set(main).size !== 5) return 'Năm số chính trong một dòng không được trùng nhau.';
+      if (nums[5] < 1 || nums[5] > 12) return 'Số đặc biệt (ô vàng) phải từ 01 đến 12.';
+      out.push(nums);
+    }
+    if (!out.length) return 'Hãy nhập ít nhất một dòng số.';
+    return {lines: out};
+  }
+  const m = MAXN[g], out = [];
+  for (const l of ls) {
+    if (l.every(v => !v)) continue;
+    const nums = l.map(Number);
+    if (l.some(v => !v) || nums.some(v => v < 1 || v > m)) return `Mỗi dòng cần đủ 6 số từ 01 đến ${m}.`;
+    if (new Set(nums).size !== 6) return 'Các số trong một dòng không được trùng nhau.';
+    out.push(nums);
+  }
+  if (!out.length) return 'Hãy nhập ít nhất một dòng số.';
+  return {lines: out};
+}
+function drawLink(d, g) {
+  if (g === 'power655') return '/vietlott-power-655';
+  if (g === 'mega645') return '/vietlott';
+  if (g === 'lotto535') return '/vietlott-lotto-535';
+  if (g === 'max3d') return '/vietlott-max-3d';
+  if (g === 'max3dpro') return '/vietlott-max-3d-pro';
+  const r = d && d.region || PROV.find(p => p.code === $('#prov').value)?.region; if (!r || !d?.draw_date) return '';
+  const [y, m, dd] = String(d.draw_date).split('-'); return `/xs${r}-${dd}-${m}-${y}`;
+}
+function render(data, g) {
+  const pub = data.published !== false, d = data.draw || {};
+  const rows = (data.lines || []).map(l => {
+    const ns = l.numbers || [], lot = g === 'lotto535' && ns.length === 6;
+    const nums = ns.map((n, k) => `<span class="ball"${lot && k === 5 ? ' style="background:var(--gold);border-color:var(--gold);color:#3a2a00"' : ''}>${esc(typeof n === 'number' ? pad(n) : n)}</span>`).join('');
+    const r = l.result; let st, win = false;
+    if (!pub || r == null) st = '<span class="pill">Kỳ này chưa có kết quả</span>';
+    else if (!r.length) st = '<span class="pill">Không trúng</span>';
+    else { win = true; st = r.map(p => `<span class="pill win">Trúng ${esc(p.name || p.code)}</span>`).join(' '); }
+    return `<div class="rs${win ? ' win' : ''}"><div class="nums">${nums}</div><div>${st}</div></div>`;
+  }).join('');
+  const link = drawLink(d, g);
+  $('#res').innerHTML = rows + (link ? `<p><a href="${link}">Xem kết quả kỳ quay này</a></p>` : '');
+  $('#resCard').hidden = false; $('#resCard').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+$('#form').addEventListener('submit', async e => {
+  e.preventDefault(); const msg = $('#fmsg'); msg.className = 'msg'; msg.textContent = '';
+  const v = validate(); if (typeof v === 'string') { msg.textContent = v; return; }
+  const g = game(), body = {game: g, draw_date: $('#date').value, lines: v.lines}; if (g === 'xs') body.province = $('#prov').value; if (g === 'lotto535') body.slot = $('#slot').value;
+  const done = window.lvBusy($('#go'), 'Đang dò…'); if (!done) return;
+  try {
+    const r = await fetch('/v1/check-ticket', {method: 'POST', cache: 'no-store', headers: {'Content-Type': 'application/json', 'X-LV-CSRF': '1'}, body: JSON.stringify(body)});
+    let d = null; try { d = await r.json(); } catch (x) {}
+    if (!r.ok) { const c = d?.error?.code || d?.code; const nf = nfMsg(g);
+      msg.textContent = c === 'draw_not_found' ? nf : ERR[c] || (r.status === 404 ? nf : r.status === 422 ? ERR.invalid_ticket : r.status === 429 ? ERR.rate_limited : window.lvErr({status: r.status, code: c, msg: d?.error?.message}, r.status, d)); }
+    else render(d, g);
+  } catch (x) { msg.textContent = window.lvErr(x); }
+  finally { done(); }
+});
+
+loadProv();
+</script>
+<script src="/assets/lv-colors.js"></script>
+<script src="/assets/lv-track.js" defer></script>
+<script src="/assets/lv-account.js" defer></script>
+</body>
+</html>

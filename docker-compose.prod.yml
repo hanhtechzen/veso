@@ -1,8 +1,22 @@
 # Bổ sung cho VPS: dùng Cloudflare Tunnel nên KHÔNG mở cổng 80/443 ra Internet.
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Log mỗi dịch vụ tối đa 3 tệp x 10 MB, để log không làm đầy ổ đĩa VPS theo thời gian.
+x-logging: &logging
+  driver: json-file
+  options: {max-size: "10m", max-file: "3"}
+
 services:
+  db:
+    logging: *logging
+  redis:
+    logging: *logging
+  api:
+    logging: *logging
+  worker:
+    logging: *logging
   caddy:
     ports: !reset []
+    logging: *logging
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -12,3 +26,4 @@ services:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?Đặt CLOUDFLARE_TUNNEL_TOKEN trong .env}
     depends_on:
       - caddy
+    logging: *logging

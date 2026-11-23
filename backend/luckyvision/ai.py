@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 import time
 from collections import defaultdict, deque
@@ -15,6 +16,8 @@ import httpx
 from .config import Settings
 from .domain.games import GAMES, game_of_region
 
+log = logging.getLogger(__name__)
+BUSY_MSG = "Trợ lý AI đang bận, thử lại sau ít phút."
 
 
 class AiError(Exception):
@@ -71,7 +74,9 @@ async def complete(settings: Settings, http: httpx.AsyncClient, system: str, use
     url, headers, body = build_request(settings, system, user, max_tokens)
     r = await http.post(url, timeout=60, headers=headers, json=body)
     if r.status_code != 200:
-        raise AiError(f"Dịch vụ AI ({settings.ai_provider}) trả lỗi HTTP {r.status_code}: {r.text[:300]}")
+        # Nội dung lỗi của nhà cung cấp chỉ ghi nhật ký, không trả cho người dùng
+        log.warning("Dịch vụ AI (%s) trả lỗi HTTP %s: %s", settings.ai_provider, r.status_code, r.text[:300])
+        raise AiError(BUSY_MSG)
     return read_response(settings.ai_provider, r.json())
 
 

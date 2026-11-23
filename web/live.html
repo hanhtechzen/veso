@@ -4,17 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>LuckyVision: tường thuật trực tiếp</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="preload" href="/assets/fonts/be-vietnam-pro-vietnamese-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css">
+<script src="/assets/lv-loading.js"></script>
+<link rel="stylesheet" href="/assets/lv-header.css">
 <style>
 :root{--bg:#EEF1F6;--surface:#fff;--ink:#141B2D;--muted:#5B6578;--line:#E0E5EC;--red:#D12A2A;--gold:#F2B01E;--good:#1F7A4C;--header:#9F1B1B;--header-2:#6E1010;color-scheme:light}
 @media (prefers-color-scheme:dark){:root{--bg:#0A0F1C;--surface:#121A2B;--ink:#E8ECF4;--muted:#98A3B9;--line:#263049;--good:#5CC48D;--header:#661515;--header-2:#3A0B0B;color-scheme:dark}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Be Vietnam Pro",system-ui,sans-serif}
-header{background:linear-gradient(120deg,var(--header),var(--header-2));color:#fff;padding:14px 20px}
-header .in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-header b{font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Be Vietnam Pro",system-ui,sans-serif}header.old-h{background:linear-gradient(120deg,var(--header),var(--header-2));color:#fff;padding:14px 20px}header.old-h .in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}header.old-h b{font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
 .conn{margin-left:auto;font-size:.85rem;display:flex;align-items:center;gap:8px}
 .dot{width:9px;height:9px;border-radius:50%;background:#999}
 .dot.on{background:#3DDC84;box-shadow:0 0 0 0 rgba(61,220,132,.7);animation:pulse 1.6s infinite}
@@ -51,18 +49,75 @@ tr.db .num.wait{color:transparent}
 .ball.sp{background:radial-gradient(circle at 50% 52%,#fff 0 46%,transparent 47%),radial-gradient(circle at 32% 24%,#FFE08A,#F2B01E 45%,#93650A)}
 .ball.wait{background:var(--bg);box-shadow:none;border:2px dashed var(--line);color:transparent}
 .ball.new{animation:pop .6s cubic-bezier(.3,1.5,.6,1)}
+
+.back{color:#fff;opacity:.85;text-decoration:none;font-size:.88rem}.back:hover{opacity:1}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.tbtn{border:1.5px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);color:#fff;font:600 .86rem "Be Vietnam Pro",sans-serif;padding:6px 12px;border-radius:999px;cursor:pointer}
+.tbtn[aria-pressed="true"]{background:#fff;color:var(--header)}
+.cd{display:flex;gap:10px;align-items:flex-end;margin:6px 0 12px}
+.cd .u{display:flex;flex-direction:column;align-items:center}
+.cd b{font:800 2.4rem "IBM Plex Mono",monospace;min-width:1.6em;text-align:center;padding:6px 8px;border-radius:12px;background:linear-gradient(180deg,#1A1446,#2B2170);color:#FFC233;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+.cd span{font-size:.75rem;color:var(--muted)}
+tr.drawing{background:linear-gradient(90deg,rgba(242,176,30,.18),transparent)}
+tr.drawing th{color:var(--red)}
+tr.drawing th::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:6px;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.2}}
+.num.roll{background:#1A1446;color:#FFC233;letter-spacing:.04em}
+.num.roll .d{display:inline-block;animation:flick .08s linear infinite}
+@keyframes flick{50%{transform:translateY(-2px)}}
+.ball.drop{animation:drop .7s cubic-bezier(.3,1.4,.5,1)}
+@keyframes drop{0%{transform:translateY(-120px) rotate(-200deg);opacity:0}70%{transform:translateY(6px) rotate(10deg);opacity:1}100%{transform:none}}
+.ball.spin{animation:spinb .12s linear infinite}
+@keyframes spinb{to{transform:rotate(360deg)}}
+.dlg{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(10,15,28,.55);padding:16px}
+.dlg[hidden]{display:none}
+.dlg .card{max-width:440px;width:100%}
+.dlg label{display:flex;gap:10px;align-items:center;padding:6px 0}
+.dlg select{padding:6px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit}
+.btn{border:none;border-radius:999px;padding:9px 16px;font:700 .92rem "Be Vietnam Pro",sans-serif;cursor:pointer;background:var(--red);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.remind-note{font-size:.84rem;color:var(--muted);margin:8px 0 0}
+.chip{display:inline-block;font-size:.78rem;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--gold);color:#141B2D}
+.demo-bar{background:#FFF4D6;color:#5c4400;text-align:center;font-size:.86rem;padding:6px 12px}
+@media (prefers-color-scheme:dark){.demo-bar{background:#3A311B;color:#F5DFA0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 .lvd,.lvd-btn{width:100%}
+header.top .live-tools{order:5;flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 0 10px}
+header.top .live-tools .conn{margin-left:0;font-size:.85rem;display:flex;align-items:center;gap:8px}
+header.top .live-tools .tools{margin-left:auto}
+
+.lv-filter{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-weight:700;color:var(--muted)}
+.lv-filter select{flex:1;font:inherit;font-weight:700;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:8px 10px}
+.sched-h{margin:12px 4px 4px;font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.sched-multi{margin:4px 6px 0}.sched-multi a{font-weight:700}
 </style>
 <link rel="stylesheet" href="/assets/lv-colors.css">
 <link rel="stylesheet" href="/assets/lv-date.css">
 </head>
 <body>
-<header><div class="in"><b>LuckyVision</b><span>Tường thuật trực tiếp</span><span class="conn"><span class="dot" id="dot"></span><span id="connText">Đang kết nối…</span></span></div></header>
+<div class="demo-bar" id="demoBar" hidden>Chế độ xem thử: kỳ quay được mô phỏng bằng số ngẫu nhiên, không phải kết quả thật.</div>
+<header class="top" id="lvHeader" data-section="kq" data-sub="live"><div class="live-tools" data-keep><span class="conn"><span class="dot" id="dot"></span><span id="connText">Đang kết nối…</span></span>
+  <span class="tools"><button class="tbtn" type="button" id="remindBtn">🔔 Nhắc tôi trước giờ quay</button><button class="tbtn" type="button" id="soundBtn" aria-pressed="false">🔈 Âm thanh</button></span></div></header>
+<script src="/nav.js"></script>
+<div class="dlg" id="remindDlg" hidden role="dialog" aria-modal="true" aria-labelledby="remindTitle"><div class="card">
+  <h2 id="remindTitle">Nhắc tôi trước giờ quay</h2>
+  <label><input type="checkbox" value="mn"> Miền Nam (16:15 hằng ngày)</label>
+  <label><input type="checkbox" value="mt"> Miền Trung (17:15 hằng ngày)</label>
+  <label><input type="checkbox" value="mb"> Miền Bắc (18:15 hằng ngày)</label>
+  <label><input type="checkbox" value="vl"> Vietlott Power 6/55 (18:00 thứ Ba, Năm, Bảy)</label>
+  <label><input type="checkbox" value="mega"> Vietlott Mega 6/45 (18:00 thứ Tư, Sáu, Chủ nhật)</label>
+  <label>Nhắc trước <select id="remindMin"><option>5</option><option selected>10</option><option>15</option><option>30</option></select> phút</label>
+  <p style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0"><button class="btn" type="button" id="remindSave">Bật nhắc trên trình duyệt</button><button class="btn ghost" type="button" id="remindIcs">Thêm vào lịch điện thoại</button><button class="btn ghost" type="button" id="remindClose">Đóng</button></p>
+  <p class="remind-note">Nhắc trên trình duyệt chỉ báo khi trang này đang mở. Muốn được nhắc cả khi tắt trang, bấm <b>Thêm vào lịch điện thoại</b>: điện thoại sẽ tự báo mỗi ngày.</p>
+  <p class="remind-note" id="remindMsg" role="status"></p>
+</div></div>
 <main>
   <aside class="card">
     <h2>Lịch quay</h2>
     <label class="sr" for="day" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Ngày</label><div style="margin-bottom:10px"><input type="date" id="day"></div>
+    <label class="lv-filter"><span>Xem</span><select id="regionFilter">
+      <option value="all">Tất cả</option><option value="mb">Miền Bắc</option><option value="mn">Miền Nam</option>
+      <option value="mt">Miền Trung</option><option value="vl">Vietlott</option></select></label>
     <div class="sched" id="sched"><p class="muted">Đang tải…</p></div>
   </aside>
   <section>
@@ -70,6 +125,7 @@ tr.db .num.wait{color:transparent}
       <h1 id="title">Chọn một kỳ quay</h1>
       <div class="muted" id="sub"></div>
       <div class="status" id="status"></div>
+      <div id="countdown"></div>
       <div id="board"></div>
     </div>
     <div class="card" style="margin-top:16px">
@@ -83,22 +139,45 @@ const qs = new URLSearchParams(location.search);
 const API = (qs.get('api') || '').replace(/\/$/, '');
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let current = null, drawData = null, es = null;
+let current = null, drawData = null, es = null, JUSTPUB = false;
+const DEMO = qs.get('demo') === '1';
 const STATE = {scheduled:['Chờ quay',''], live:['Đang quay','live'], published:['Đã công bố','published'], overdue:['Quá giờ','overdue']};
 
 function fmtTime(iso){ return new Date(iso).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Ho_Chi_Minh'}); }
 function log(text){ const el=$('#log'); el.textContent = new Date().toLocaleTimeString('vi-VN') + '  ' + text + '\n' + el.textContent; }
 
+// Nhóm theo miền, đúng thứ tự giờ quay; trò quay liên tục (Keno, Bingo18, Lotto) gộp thành một dòng
+const GROUPS = [['mn', 'Miền Nam'], ['mt', 'Miền Trung'], ['mb', 'Miền Bắc'], ['vl', 'Vietlott']];
+const MULTI = {keno: ['Keno', '/vietlott-keno'], bingo: ['Bingo18', '/vietlott-bingo18'], lotto: ['Lotto 5/35', '/vietlott-lotto-535']};
+const groupOf = x => ['mb', 'mn', 'mt'].includes(x.region) ? x.region : 'vl';
+let FILTER = (() => { try { return localStorage.getItem('lv-live-filter') || 'all'; } catch (e) { return 'all'; } })();
+let SCHED = [];
 async function loadSchedule(){
   const day = $('#day').value;
   try{
     const r = await fetch(`${API}/v1/schedule?date=${day}`, {cache:'no-store'}); const d = await r.json();
-    $('#sched').innerHTML = d.items.length ? d.items.map(x => {
-      const [label, cls] = STATE[x.state] || [x.state,''];
+    SCHED = d.items.filter(x => !MULTI[x.region]);
+    const multi = [...new Set(d.items.filter(x => MULTI[x.region]).map(x => x.region))];
+    const row = x => { const [label, cls] = STATE[x.state] || [x.state,''];
       return `<a href="?draw=${encodeURIComponent(x.id)}${API?'&api='+encodeURIComponent(API):''}" data-id="${esc(x.id)}" ${x.id===current?'aria-current="true"':''}>
-        <span>${esc(x.province.name)}<br><span class="muted">${fmtTime(x.draw_time)}</span></span><span class="pill ${cls}">${label}</span></a>`;
-    }).join('') : '<p class="muted">Không có kỳ quay nào trong ngày này.</p>';
-  }catch(e){ $('#sched').innerHTML = '<p class="muted">Không tải được lịch quay.</p>'; }
+        <span>${esc(x.province.name)}<br><span class="muted">${fmtTime(x.draw_time)}</span></span><span class="pill ${cls}">${label}</span></a>`; };
+    let html = GROUPS.filter(([g]) => FILTER === 'all' || FILTER === g).map(([g, name]) => {
+      const items = SCHED.filter(x => groupOf(x) === g).sort((a, b) => a.draw_time.localeCompare(b.draw_time));
+      return items.length ? `<h3 class="sched-h">${name}</h3>` + items.map(row).join('') : '';
+    }).join('');
+    if ((FILTER === 'all' || FILTER === 'vl') && multi.length)
+      html += `<h3 class="sched-h">Quay liên tục trong ngày</h3><p class="muted sched-multi">` +
+        multi.map(m => `<a href="${MULTI[m][1]}">${MULTI[m][0]}</a>`).join(' · ') + ' (xem kết quả từng kỳ)</p>';
+    $('#sched').innerHTML = html || '<p class="muted">Không có kỳ quay nào trong ngày này.</p>';
+    return SCHED;
+  }catch(e){ $('#sched').innerHTML = '<p class="muted">Không tải được lịch quay.</p>'; return []; }
+}
+// Không chọn kỳ nào: tự mở kỳ đang quay hoặc sắp quay gần nhất của bộ lọc (hết kỳ thì mở kỳ quay muộn nhất)
+function autoPick(){
+  const pool = SCHED.filter(x => FILTER === 'all' || groupOf(x) === FILTER).sort((a, b) => a.draw_time.localeCompare(b.draw_time));
+  if (!pool.length) return;
+  const next = pool.find(x => x.state !== 'published') || pool[pool.length - 1];
+  loadDraw(next.id);
 }
 
 function render(){
@@ -108,10 +187,10 @@ function render(){
   const st = d.provisional === false || d.version ? ['Đã xác minh và công bố','published'] :
              d.prizes.some(p=>p.numbers.length) ? ['Đang quay, chưa xác minh','live'] : ['Chờ quay',''];
   $('#status').innerHTML = `<span class="pill ${st[1]}">${st[0]}</span>` + (d.version ? `<span class="muted">Phiên bản ${d.version}</span>` : '');
-  if (d.region === 'vl') {
+  if (d.region === 'vl' || d.region === 'mega') {
     const main = d.prizes.find(p=>p.code==='main') || {numbers:[]}, sp = d.prizes.find(p=>p.code==='special') || {numbers:[]};
     const cells = [...Array(6)].map((_,i)=> main.numbers[i] ? `<span class="ball" data-k="main-${i}">${esc(main.numbers[i])}</span>` : '<span class="ball wait">00</span>');
-    cells.push(sp.numbers[0] ? `<span class="ball sp" data-k="special-0">${esc(sp.numbers[0])}</span>` : '<span class="ball sp wait">00</span>');
+    if (d.region === 'vl') cells.push(sp.numbers[0] ? `<span class="ball sp" data-k="special-0">${esc(sp.numbers[0])}</span>` : '<span class="ball sp wait">00</span>');
     $('#board').innerHTML = `<div class="balls">${cells.join('')}</div>`;
     return;
   }
@@ -119,21 +198,129 @@ function render(){
     const count = d.expected?.[p.code] || p.numbers.length || 1;
     const cells = [...Array(Math.max(count, p.numbers.length))].map((_,i)=> p.numbers[i]
       ? `<span class="num set" data-k="${esc(p.code)}-${i}">${esc(p.numbers[i])}</span>` : '<span class="num wait">0000</span>');
-    return `<tr class="${esc(p.code)}"><th>${esc(p.name)}</th><td>${cells.join('')}</td></tr>`;
+    const drawing = d.drawing === p.code;
+    return `<tr class="${esc(p.code)}${drawing ? ' drawing' : ''}"><th>${esc(p.name)}</th><td>${cells.join('')}</td></tr>`;
   }).join('') + '</tbody></table>';
 }
 
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function flash(key){ const el = document.querySelector(`[data-k="${key}"]`); if(el){ el.classList.remove('new'); void el.offsetWidth; el.classList.add('new'); } }
+// Hiệu ứng quay số: các chữ số chạy ngẫu nhiên rồi dừng lần lượt từ trái sang phải
+function rollNumber(key, final){
+  const el = document.querySelector(`[data-k="${key}"]`); if(!el) return;
+  if (RM) { flash(key); beep(); return; }
+  const n = final.length; let locked = 0, t = 0;
+  el.classList.add('roll'); el.classList.remove('set');
+  const tick = setInterval(() => {
+    t++;
+    if (t > 10 && t % 3 === 0) locked++;
+    el.innerHTML = [...final].map((c, i) => i < locked ? c : `<span class="d">${Math.floor(Math.random()*10)}</span>`).join('');
+    if (locked >= n) { clearInterval(tick); el.textContent = final; el.classList.remove('roll'); el.classList.add('set'); flash(key); beep(); }
+  }, 55);
+}
+// Bóng Vietlott rơi xuống lần lượt
+function dropBalls(){
+  const balls = [...document.querySelectorAll('#board .ball:not(.wait)')]; if (RM) return;
+  balls.forEach((b, i) => { const v = b.textContent; b.classList.add('spin'); b.textContent = '··';
+    setTimeout(() => { b.classList.remove('spin'); b.textContent = v; b.classList.add('drop'); beep(); }, 500 + i * 650); });
+}
+// Âm thanh (mặc định tắt)
+let SOUND = localStorage.getItem('lv-sound') === '1', AC = null;
+function beep(){ if(!SOUND) return; try{ AC = AC || new (window.AudioContext||window.webkitAudioContext)(); const o = AC.createOscillator(), g = AC.createGain();
+  o.type='sine'; o.frequency.value = 880; g.gain.setValueAtTime(.0001, AC.currentTime); g.gain.exponentialRampToValueAtTime(.2, AC.currentTime+.01); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime+.25);
+  o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime+.26); }catch(e){} }
+function paintSound(){ $('#soundBtn').setAttribute('aria-pressed', String(SOUND)); $('#soundBtn').textContent = SOUND ? '🔊 Âm thanh' : '🔈 Âm thanh'; }
+$('#soundBtn').addEventListener('click', () => { SOUND = !SOUND; try{ localStorage.setItem('lv-sound', SOUND ? '1' : '0'); }catch(e){} paintSound(); beep(); });
+paintSound();
+
+// Đếm ngược tới giờ quay của kỳ đang xem
+let cdTimer = null;
+function showCountdown(){
+  clearInterval(cdTimer); const box = $('#countdown'); box.innerHTML = '';
+  if (!drawData || drawData.prizes.some(p => p.numbers.length) || drawData.version) return;
+  const target = new Date(drawData.draw_time).getTime();
+  const paint = () => {
+    const ms = target - Date.now();
+    if (ms <= 0) { box.innerHTML = '<p class="muted">Đã tới giờ quay, đang chờ kết quả đầu tiên…</p>'; clearInterval(cdTimer); return; }
+    const h = Math.floor(ms/36e5), m = Math.floor(ms%36e5/6e4), sec = Math.floor(ms%6e4/1e3), p2 = x => String(x).padStart(2,'0');
+    box.innerHTML = `<div class="cd" aria-label="Còn ${h} giờ ${m} phút"><div class="u"><b>${p2(h)}</b><span>giờ</span></div><div class="u"><b>${p2(m)}</b><span>phút</span></div><div class="u"><b>${p2(sec)}</b><span>giây</span></div></div>`;
+  };
+  paint(); cdTimer = setInterval(paint, 1000);
+}
+
+// Nhắc trước giờ quay
+const REMIND_TIMES = {mn: [16,15,'*','Xổ số miền Nam'], mt: [17,15,'*','Xổ số miền Trung'], mb: [18,15,'*','Xổ số miền Bắc'],
+  vl: [18,0,[2,4,6],'Vietlott Power 6/55'], mega: [18,0,[3,5,0],'Vietlott Mega 6/45']};
+function remindPrefs(){ try{ return JSON.parse(localStorage.getItem('lv-remind') || '{}'); }catch(e){ return {}; } }
+let remindTimers = [];
+function vnNow(){ return new Date(new Date().toLocaleString('en-US', {timeZone: 'Asia/Ho_Chi_Minh'})); }
+function scheduleReminders(){
+  remindTimers.forEach(clearTimeout); remindTimers = [];
+  const pr = remindPrefs(); if (!pr.regions || !pr.regions.length) return;
+  const now = vnNow(), offset = Date.now() - now.getTime();
+  for (const r of pr.regions) {
+    const [h, m, days, name] = REMIND_TIMES[r];
+    for (let add = 0; add < 2; add++) {
+      const d = new Date(now); d.setDate(d.getDate() + add); d.setHours(h, m, 0, 0);
+      if (days !== '*' && !days.includes(d.getDay())) continue;
+      const fireAt = d.getTime() - pr.min * 6e4 + offset, wait = fireAt - Date.now();
+      if (wait > 0 && wait < 36 * 36e5) remindTimers.push(setTimeout(() => notify(`${name} quay sau ${pr.min} phút`, 'Mở trang tường thuật để xem trực tiếp.'), wait));
+    }
+  }
+}
+function notify(title, body){
+  beep();
+  try { if ('Notification' in window && Notification.permission === 'granted') new Notification(title, {body, icon: '/icons/icon-192.png'}); } catch(e) {}
+  let i = 0; const orig = document.title; const t = setInterval(() => { document.title = (i++ % 2) ? orig : '🔔 ' + title; if (i > 12) { clearInterval(t); document.title = orig; } }, 1000);
+  log('Nhắc: ' + title);
+}
+function paintRemind(){
+  const pr = remindPrefs(), on = pr.regions && pr.regions.length;
+  $('#remindBtn').textContent = on ? `🔔 Đang nhắc trước ${pr.min} phút` : '🔔 Nhắc tôi trước giờ quay';
+  $('#remindBtn').setAttribute('aria-pressed', String(!!on));
+}
+$('#remindBtn').addEventListener('click', () => {
+  const pr = remindPrefs(); document.querySelectorAll('#remindDlg input[type=checkbox]').forEach(c => c.checked = (pr.regions || []).includes(c.value));
+  if (pr.min) $('#remindMin').value = String(pr.min); $('#remindMsg').textContent = ''; $('#remindDlg').hidden = false;
+});
+$('#remindClose').addEventListener('click', () => $('#remindDlg').hidden = true);
+$('#remindDlg').addEventListener('click', e => { if (e.target.id === 'remindDlg') $('#remindDlg').hidden = true; });
+function chosen(){ return [...document.querySelectorAll('#remindDlg input[type=checkbox]:checked')].map(c => c.value); }
+$('#remindSave').addEventListener('click', async () => {
+  const regions = chosen(), min = +$('#remindMin').value;
+  try { localStorage.setItem('lv-remind', JSON.stringify({regions, min})); } catch(e) {}
+  let note = regions.length ? `Đã bật nhắc trước ${min} phút.` : 'Đã tắt nhắc.';
+  if (regions.length && 'Notification' in window && Notification.permission === 'default') { try { await Notification.requestPermission(); } catch(e) {} }
+  if (regions.length && (!('Notification' in window) || Notification.permission !== 'granted')) note += ' Trình duyệt chưa cho phép thông báo nên sẽ nhắc bằng tiếng chuông và tiêu đề trang nhấp nháy.';
+  $('#remindMsg').textContent = note; scheduleReminders(); paintRemind();
+});
+$('#remindIcs').addEventListener('click', () => {
+  const regions = chosen(), min = +$('#remindMin').value;
+  if (!regions.length) { $('#remindMsg').textContent = 'Hãy chọn ít nhất một loại xổ số.'; return; }
+  const p2 = x => String(x).padStart(2, '0'), today = vnNow(), ymd = today.getFullYear() + p2(today.getMonth()+1) + p2(today.getDate());
+  const BY = ['SU','MO','TU','WE','TH','FR','SA'];
+  const ev = regions.map(r => { const [h, m, days, name] = REMIND_TIMES[r];
+    return ['BEGIN:VEVENT', `UID:luckyvision-${r}@luckyvision`, `DTSTAMP:${ymd}T000000Z`, `DTSTART;TZID=Asia/Ho_Chi_Minh:${ymd}T${p2(h)}${p2(m)}00`,
+      `DURATION:PT30M`, days === '*' ? 'RRULE:FREQ=DAILY' : `RRULE:FREQ=WEEKLY;BYDAY=${days.map(d => BY[d]).join(',')}`,
+      `SUMMARY:${name}`, `DESCRIPTION:Xem trực tiếp: ${location.origin}/live.html`, 'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${name} quay sau ${min} phút`,
+      `TRIGGER:-PT${min}M`, 'END:VALARM', 'END:VEVENT'].join('\r\n'); });
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//LuckyVision//Nhac gio quay//VI', 'CALSCALE:GREGORIAN', ...ev, 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], {type: 'text/calendar'})); a.download = 'luckyvision-nhac-gio-quay.ics';
+  document.body.appendChild(a); a.click(); a.remove();
+  $('#remindMsg').textContent = 'Đã tải tệp lịch. Mở tệp để thêm vào lịch điện thoại hoặc máy tính.';
+});
+paintRemind(); scheduleReminders();
 
 const EXPECT = {mb:{db:1,g1:1,g2:2,g3:6,g4:4,g5:6,g6:3,g7:4}, mn:{g8:1,g7:1,g6:3,g5:1,g4:7,g3:2,g2:1,g1:1,db:1}};
 async function loadDraw(id){
   current = id;
   const r = await fetch(`${API}/v1/live/${encodeURIComponent(id)}`, {cache:'no-store'});
   if (!r.ok) { $('#title').textContent = 'Không tìm thấy kỳ quay'; return; }
-  drawData = await r.json();
+  drawData = await r.json(); drawData.justPublished = JUSTPUB; JUSTPUB = false;
   drawData.expected = EXPECT[drawData.region] || EXPECT.mn;
   if (!$('#day').value) $('#day').value = drawData.draw_date;
-  render(); loadSchedule(); connect(drawData.region);
+  render(); showCountdown(); if ((drawData.region === 'vl' || drawData.region === 'mega') && drawData.justPublished) dropBalls();
+  loadSchedule(); if (!DEMO) connect(drawData.region);
 }
 
 function connect(region){
@@ -146,21 +333,51 @@ function connect(region){
     const d = JSON.parse(e.data); log(`${d.draw_id}  ${d.prize} #${d.index+1}: ${d.number}  (chưa xác minh)`);
     if (!drawData || d.draw_id !== drawData.id) return;
     const p = drawData.prizes.find(x => x.code === d.prize); if (!p) return;
-    p.numbers[d.index] = d.number; drawData.provisional = true; render(); flash(`${d.prize}-${d.index}`);
+    p.numbers[d.index] = d.number; drawData.provisional = true; drawData.drawing = d.prize; render(); showCountdown(); rollNumber(`${d.prize}-${d.index}`, d.number);
   });
   es.addEventListener('draw.completed', e => log(`Đủ giải: ${JSON.parse(e.data).draw_id}, đang đối chiếu nguồn`));
   for (const t of ['draw.published','draw.corrected']) es.addEventListener(t, async e => {
     const d = JSON.parse(e.data); log(`${t === 'draw.published' ? 'Đã công bố' : 'Đã đính chính'} ${d.draw_id} (phiên bản ${d.version})`);
-    loadSchedule(); if (drawData && d.draw_id === drawData.id) loadDraw(d.draw_id);
+    loadSchedule(); if (drawData && d.draw_id === drawData.id) { JUSTPUB = true; loadDraw(d.draw_id); }
   });
 }
 
 $('#day').addEventListener('change', loadSchedule);
 const today = new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Ho_Chi_Minh'});
-if (qs.get('draw')) loadDraw(qs.get('draw')); else { $('#day').value = today; loadSchedule(); connect('all'); }
+// Chế độ xem thử (?demo=1): mô phỏng một kỳ quay miền Bắc để xem hiệu ứng, không gọi máy chủ
+function runDemo(){
+  $('#demoBar').hidden = false; $('#connText').textContent = 'Xem thử'; $('#dot').classList.add('on');
+  const names = {db:'Đặc biệt', g1:'Giải Nhất', g2:'Giải Nhì', g3:'Giải Ba', g4:'Giải Tư', g5:'Giải Năm', g6:'Giải Sáu', g7:'Giải Bảy'};
+  const width = {db:5, g1:5, g2:5, g3:5, g4:4, g5:4, g6:3, g7:2}, order = ['g1','g2','g3','g4','g5','g6','g7','db'];
+  const start = Date.now() + 6000;
+  drawData = {id:'demo', region:'mb', province:{name:'Xổ số miền Bắc (xem thử)'}, draw_date: today, draw_time: new Date(start).toISOString(),
+    prizes: ['db','g1','g2','g3','g4','g5','g6','g7'].map(c => ({code:c, name:names[c], numbers:[]})), expected: EXPECT.mb};
+  $('#sched').innerHTML = '<p class="muted">Lịch quay không hiển thị trong chế độ xem thử.</p>';
+  render(); showCountdown();
+  const queue = []; order.forEach(c => { for (let i = 0; i < EXPECT.mb[c]; i++) queue.push([c, i]); });
+  setTimeout(function next(){
+    const it = queue.shift(); if (!it) { log('Đủ giải (xem thử)'); drawData.version = 1; drawData.provisional = false; drawData.drawing = null; render();
+      $('#status').insertAdjacentHTML('beforeend', '<button class="btn ghost" type="button" id="demoAgain">Xem quay lại</button>');
+      $('#demoAgain').addEventListener('click', () => location.reload()); return; }
+    const [c, i] = it, num = Array.from({length: width[c]}, () => Math.floor(Math.random()*10)).join('');
+    log(`Xem thử  ${names[c]} #${i+1}: ${num}`);
+    const p = drawData.prizes.find(x => x.code === c); p.numbers[i] = num; drawData.provisional = true; drawData.drawing = c;
+    render(); showCountdown(); rollNumber(`${c}-${i}`, num);
+    setTimeout(next, c === 'db' ? 2600 : 1500);
+  }, 6200);
+}
+if (DEMO) { $('#day').value = today; runDemo(); }
+else if (qs.get('draw')) loadDraw(qs.get('draw')); else { $('#day').value = today; loadSchedule().then(autoPick); connect('all'); }
+$('#regionFilter').value = FILTER;
+$('#regionFilter').addEventListener('change', e => {
+  FILTER = e.target.value; try { localStorage.setItem('lv-live-filter', FILTER); } catch (er) {}
+  loadSchedule().then(() => { const cur = SCHED.find(x => x.id === current);
+    if (!cur || (FILTER !== 'all' && groupOf(cur) !== FILTER)) autoPick(); });
+});
 </script>
 <script src="/assets/lv-colors.js"></script>
 <script src="/assets/lv-date.js"></script>
 <script src="/assets/lv-track.js" defer></script>
+<script src="/assets/lv-account.js" defer></script>
 </body>
 </html>

@@ -260,6 +260,15 @@ async def remove_set(request: Request, set_id: int, u: dict = Depends(need_user)
     return {"ok": True}
 
 
+@router.get("/my-numbers")
+async def my_numbers(request: Request, response: Response, u: dict = Depends(need_user)):
+    """Thống kê lịch sử các bộ số lô yêu thích: [{scope, label, numbers:[{number,last_date,gan_days,count30,count90}]}]."""
+    from ..site.personal import my_numbers as build
+    response.headers["Cache-Control"] = "private, no-store"
+    async with request.app.state.pool.connection() as conn:
+        return {"sets": await build(conn, u["id"])}
+
+
 @router.get("/dashboard")
 async def dashboard(request: Request, response: Response, u: dict = Depends(need_user)):
     from ..site.personal import dashboard as build

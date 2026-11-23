@@ -36,11 +36,17 @@
     if (!data.topic) { m.textContent = 'Hãy chọn chủ đề.'; m.className = 'msg bad'; return; }
     if (!data.name || !data.email || (data.message || '').trim().length < 5) { m.textContent = 'Hãy điền họ tên, email và nội dung.'; m.className = 'msg bad'; return; }
     data.t = opened; data.page = ref;
+    var btn = f.querySelector('button[type=submit]');
+    var restore = window.lvBusy ? window.lvBusy(btn, 'Đang gửi…') : null;
+    if (window.lvBusy && !restore) return;
+    if (!restore) btn.disabled = true;
     m.textContent = 'Đang gửi…'; m.className = 'msg';
+    function done() { if (restore) restore(); else btn.disabled = false; }
     fetch('/v1/contact', {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'X-LV-CSRF': '1'}, body: JSON.stringify(data)})
-      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error((d.error && d.error.message) || 'Chưa gửi được, hãy thử lại'); }); })
-      .then(function () { f.hidden = true; document.getElementById('contactDone').hidden = false; })
-      .catch(function (er) { m.textContent = er.message; m.className = 'msg bad'; });
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) { var e = new Error((d.error && d.error.message) || 'Chưa gửi được, hãy thử lại sau ít phút.'); e.status = r.status; e.body = d; throw e; } }); })
+      .then(function () { f.hidden = true; document.getElementById('contactDone').hidden = false; if (window.lvToast) window.lvToast('Đã gửi tin cho quản trị', 'ok'); })
+      .catch(function (er) { done(); m.textContent = window.lvErr ? window.lvErr(er, er.status, er.body) : (er.status ? er.message : 'Không kết nối được máy chủ, hãy thử lại.'); m.className = 'msg bad'; });
   });
 })();
 </script>

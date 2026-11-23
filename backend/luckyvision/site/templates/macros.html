@@ -14,11 +14,21 @@
 </table></div>
 {%- endmacro %}
 
+{# Chip số kèm nhãn đếm nhỏ; pairs là danh sách (số, đếm). Số nguyên được đệm thành 2 chữ số. #}
+{% macro num_chips(pairs, unit='', cls='') -%}
+<div class="rk-nums cnt-grid">{% for n, c in pairs %}{% set label = n if n is string else '%02d' % n %}<span class="rk-n has-cnt qs-c {{ cls }}" title="Số {{ label }}: {{ c }}{% if unit %} {{ unit }}{% endif %}"><b class="bl">{{ label }}</b><small class="rk-cnt">{{ c }}{% if unit %} {{ unit }}{% endif %}</small></span>{% endfor %}</div>
+{%- endmacro %}
+
+{# Lô tô dạng chip; số về nhiều lần hiện ×n #}
+{% macro loto_chips(loto_list) -%}
+{% set seen = namespace(c={}) %}{% for x in loto_list %}{% set _ = seen.c.update({x: seen.c.get(x, 0) + 1}) %}{% endfor %}<div class="lt">{% for x in seen.c|dictsort %}<span class="lt-n{% if x[1] > 1 %} dup{% endif %}" title="Lô {{ '%02d' % x[0] }}{% if x[1] > 1 %}: về {{ x[1] }} lần{% endif %}">{{ '%02d' % x[0] }}{% if x[1] > 1 %}<sup>×{{ x[1] }}</sup>{% endif %}</span>{% endfor %}</div>
+{%- endmacro %}
+
 {% macro loto_table(draws) -%}
 <div class="tablewrap"><table class="lt">
   <caption>Bảng lô tô đầu – đuôi</caption>
   <thead><tr><th scope="col">Đầu</th>{% for d in draws %}<th scope="col">{{ d.pname }}</th>{% endfor %}</tr></thead>
-  <tbody>{% for h in range(10) %}<tr><th scope="row">{{ h }}</th>{% for d in draws %}<td>{% set t = d.loto | select('ge', h*10) | select('lt', h*10+10) | list %}{% if t %}{% for x in t %}{{ x % 10 }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}–{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  <tbody>{% for h in range(10) %}<tr><th scope="row">{{ h }}</th>{% for d in draws %}<td>{% set t = d.loto | select('ge', h*10) | select('lt', h*10+10) | list %}{% if t %}<div class="lt">{% for x in t %}<span class="lt-n">{{ x % 10 }}</span>{% endfor %}</div>{% else %}–{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
 </table></div>
 {%- endmacro %}
 

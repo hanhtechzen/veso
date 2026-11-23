@@ -136,3 +136,27 @@ def test_vietlott_mega645_parse():
     p = ad.parse(FetchResult("u", 200, MEGA.encode()), ref)
     assert p.prizes == {"main": ["05", "09", "17", "18", "34", "36"]} and p.meta == {"draw_seq": 1583}
     assert validate(DEFAULT_STRUCTURES["mega"], p.prizes) == []
+
+
+def _minified_xsmt(cols: dict[str, dict[str, list[str]]]) -> str:
+    """Bảng như trang thật: HTML nén, không có </th>, </td>, </tr>; số nằm trong span data-loto."""
+    names = list(cols)
+    head = '<th class=name-prize>G' + "".join(
+        f'<th class=prize-col3><h3><a title="Xổ số {n}" href=/x>{n}</a></h3>' for n in names)
+    rows = ""
+    for label, prize in [("8", "g8"), ("7", "g7"), ("6", "g6"), ("5", "g5"), ("4", "g4"),
+                         ("3", "g3"), ("2", "g2"), ("1", "g1"), ("ĐB", "db")]:
+        rows += f"<tr><th>{label}" + "".join(
+            "<td>" + " ".join(f"<span class=xs_prize1 data-loto={x}>{x} </span>" for x in cols[n][prize])
+            for n in names)
+    return f'<table class="table-result table-xsmn"><thead><tr>{head}<tbody>{rows}</table><table class=table-loto><tr><td>9</table>'
+
+
+def test_xosocomvn_multi_without_closing_tags():
+    dn = {"g8": ["57"], "g7": ["429"], "g6": ["6883", "9774", "8737"], "g5": ["6931"],
+          "g4": ["26722", "36639", "40294", "81038", "89750", "79884", "75924"],
+          "g3": ["12345", "06240"], "g2": ["54321"], "g1": ["11223"], "db": ["012345"]}
+    qn = {k: [x[::-1] for x in v] for k, v in dn.items()}
+    t = parse_multi(_minified_xsmt({"Đà Nẵng": dn, "Quảng Ngãi": qn}))
+    assert t["danang"] == dn and t["quangngai"] == qn
+    assert validate(DEFAULT_STRUCTURES["mt"], t["danang"]) == []

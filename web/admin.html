@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>LuckyVision: Quản trị</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="preload" href="/assets/fonts/be-vietnam-pro-vietnamese-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css">
+<script src="/assets/lv-loading.js"></script>
 <style>
 :root{--bg:#EEF1F6;--surface:#fff;--surface-2:#F4F6F9;--ink:#141B2D;--muted:#5B6578;--line:#E0E5EC;--red:#C62828;--red-soft:#FDE7E5;--gold:#F2B01E;--gold-soft:#FFF4D6;--good:#1F7A4C;--good-soft:#E3F4EA;--side:#1A1F2E;--side-ink:#C9D0DD;--focus:#2356C9;color-scheme:light}
 @media (prefers-color-scheme:dark){:root{--bg:#0A0F1C;--surface:#121A2B;--surface-2:#1A2336;--ink:#E8ECF4;--muted:#98A3B9;--line:#263049;--red:#EF5350;--red-soft:#3A1E22;--gold-soft:#3A311B;--good:#5CC48D;--good-soft:#173326;--side:#070B16;--focus:#7FA6FF;color-scheme:dark}}
@@ -129,6 +129,7 @@ svg.an rect.bar:hover{opacity:.8}
       <a href="#queue">Hàng chờ</a>
       <a href="#stats">Truy cập</a>
       <a href="#contacts">Liên hệ <span class="badge" id="ctBadge" hidden></span></a>
+      <a href="#news">Tin tức</a>
       <a href="#draw">Kỳ quay</a>
       <a href="#entry" data-role="editor">Nhập kết quả</a>
       <a href="#sources">Nguồn dữ liệu</a>
@@ -184,6 +185,22 @@ svg.an rect.bar:hover{opacity:.8}
         <div style="flex:none"><button class="btn ghost" type="button" id="ctGo">Tìm</button></div>
       </div></div>
       <div id="ctList"></div>
+    </section>
+
+    <!-- Tin tức -->
+    <section data-v="news" hidden>
+      <h1>Tin tức</h1>
+      <p class="lead">Bài tự tạo từ kết quả đã công bố và liên kết bài của các báo. Ẩn một bài để gỡ khỏi trang công khai.</p>
+      <div class="card"><div class="row">
+        <div style="flex:none"><label for="nwKind">Loại</label><select id="nwKind"><option value="">Tất cả</option><option value="auto">Tự tạo</option><option value="external">Báo chí</option></select></div>
+        <div style="flex:none"><label for="nwHidden">Trạng thái</label><select id="nwHidden"><option value="">Tất cả</option><option value="false">Đang hiện</option><option value="true">Đã ẩn</option></select></div>
+        <div><label for="nwQ">Tìm theo tiêu đề</label><input type="text" id="nwQ"></div>
+        <div style="flex:none"><button class="btn ghost" type="button" id="nwGo">Tìm</button> <button class="btn ghost" type="button" id="nwSweep" data-role="editor">Tạo bài ngay</button></div>
+      </div></div>
+      <div class="card"><div class="tw"><table><thead><tr><th>Thời gian</th><th>Loại</th><th>Tiêu đề</th><th>Trạng thái</th><th></th></tr></thead><tbody id="nwBody"></tbody></table></div></div>
+      <div class="card"><h2>Nguồn báo (RSS)</h2>
+        <p class="lead" style="font-size:.88rem">Chỉ bật nguồn sau khi đã duyệt pháp lý. RSS của báo chí thường chỉ miễn phí cho cá nhân hoặc phi lợi nhuận; trang thương mại cần xin phép trước.</p>
+        <div class="tw"><table><thead><tr><th>Nguồn</th><th>Địa chỉ</th><th>Lọc</th><th>Pháp lý</th><th>Trạng thái</th><th>Lần lấy gần nhất</th><th></th></tr></thead><tbody id="nfBody"></tbody></table></div></div>
     </section>
 
     <!-- Thành viên -->
@@ -314,28 +331,33 @@ function show(which) {
 // ---------- Đăng nhập ----------
 $('#loginForm').addEventListener('submit', async e => {
   e.preventDefault(); msg($('#lMsg'), '');
+  const done = lvBusy(e.target.querySelector('button[type=submit]'), 'Đang đăng nhập…'); if (!done) return;
   try {
     const d = await api('POST', '/v1/auth/login', {username: $('#lUser').value, password: $('#lPass').value, otp: $('#lOtp').value || null});
     $('#lPass').value = ''; $('#lOtp').value = ''; $('#otpWrap').hidden = true;
     await boot(d.user);
   } catch (err) {
     if (err.code === 'otp_required') { $('#otpWrap').hidden = false; $('#lOtp').focus(); msg($('#lMsg'), err.message); }
-    else msg($('#lMsg'), err.message, false);
-  }
+    else msg($('#lMsg'), err.status ? err.message : lvErr(err), false);
+  } finally { done(); }
 });
 $('#forceForm').addEventListener('submit', async e => {
   e.preventDefault();
   if ($('#fNew').value !== $('#fNew2').value) return msg($('#fMsg'), 'Hai lần nhập mật khẩu mới không khớp', false);
+  const done = lvBusy(e.target.querySelector('button[type=submit]'), 'Đang lưu…'); if (!done) return;
   try { await api('POST', '/v1/auth/password', {current_password: $('#fCur').value, new_password: $('#fNew').value});
         const d = await api('GET', '/v1/auth/me'); await boot(d.user); }
-  catch (err) { msg($('#fMsg'), err.message, false); }
+  catch (err) { msg($('#fMsg'), err.status ? err.message : lvErr(err), false); }
+  finally { done(); }
 });
+const fail = e => lvToast(e && e.status && e.message ? e.message : lvErr(e), 'err');
 $('#logout').addEventListener('click', async () => { try { await api('POST', '/v1/auth/logout'); } catch (e) {} ME = null; show('login'); });
 
 async function boot(user) {
   ME = user;
   if (user.must_change_password) return show('force');
   $('#whoName').textContent = user.display_name; $('#whoRole').textContent = `${user.username} · ${user.role}`;
+  document.querySelectorAll('#nwSweep[data-role]').forEach(b => b.hidden = RANK[user.role] < RANK[b.dataset.role]);
   document.querySelectorAll('#nav a[data-role]').forEach(a => a.hidden = RANK[user.role] < RANK[a.dataset.role]);
   if (!PROVS.length) { try { PROVS = (await api('GET', '/v1/provinces')).items; } catch (e) {} }
   show('app'); route();
@@ -343,14 +365,14 @@ async function boot(user) {
 }
 
 // ---------- Điều hướng ----------
-const VIEWS = ['queue','stats','contacts','members','draw','entry','sources','users','audit','me'];
+const VIEWS = ['queue','stats','contacts','news','members','draw','entry','sources','users','audit','me'];
 function route() {
   if (!ME) return;
   const [v, arg] = (location.hash.slice(1) || 'queue').split('/');
   const view = VIEWS.includes(v) ? v : 'queue';
   document.querySelectorAll('main section').forEach(s => s.hidden = s.dataset.v !== view);
   document.querySelectorAll('#nav a').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + view));
-  ({queue: loadQueue, stats: loadStats, contacts: loadContacts, members: loadMembers, draw: () => { if (arg) { $('#dId').value = decodeURIComponent(arg); loadDraw(); } },
+  ({queue: loadQueue, stats: loadStats, contacts: loadContacts, news: loadNews, members: loadMembers, draw: () => { if (arg) { $('#dId').value = decodeURIComponent(arg); loadDraw(); } },
     entry: initEntry, sources: loadSources, users: loadUsers, audit: loadAudit, me: loadMe})[view]?.();
 }
 window.addEventListener('hashchange', route);
@@ -401,18 +423,23 @@ async function loadDraw() {
     out.querySelectorAll('[data-verify]').forEach(b => b.addEventListener('click', async () => {
       const reason = out.querySelector(`[data-reason="${b.dataset.verify}"]`).value.trim() || null;
       if (!confirm('Công bố bản kết quả này? Thao tác sẽ được ghi vào nhật ký.')) return;
+      const done = lvBusy(b, 'Đang công bố…'); if (!done) return;
       try { const r = await api('POST', `/v1/admin/draws/${encodeURIComponent(id)}/verify`, {candidate_id: +b.dataset.verify, reason});
-            msg($('#dMsg'), `Đã công bố phiên bản ${r.version}.`, true); setTimeout(loadDraw, 600); }
-      catch (e) { msg($('#dMsg'), e.message, false); }
+            lvToast(`Đã công bố kết quả, phiên bản ${r.version}.`, 'ok'); loadDraw(); }
+      catch (e) { done(); msg($('#dMsg'), e.message, false); fail(e); }
     }));
     $('#dAudit').addEventListener('click', () => { $('#aFilter').value = d.draw.id; location.hash = 'audit'; });
-    $('#dCollect')?.addEventListener('click', async () => {
-      try { await api('POST', '/v1/admin/collect', {draw_id: id}); msg($('#dMsg'), 'Đã yêu cầu tải lại. Mở lại sau ít giây.', true); }
-      catch (e) { msg($('#dMsg'), e.message, false); } });
-    $('#dReview')?.addEventListener('click', async () => {
+    $('#dCollect')?.addEventListener('click', async ev => {
+      const done = lvBusy(ev.currentTarget, 'Đang yêu cầu…'); if (!done) return;
+      try { await api('POST', '/v1/admin/collect', {draw_id: id}); msg($('#dMsg'), 'Đã yêu cầu tải lại. Mở lại sau ít giây.', true); lvToast('Đã yêu cầu tải lại từ nguồn.', 'ok'); }
+      catch (e) { msg($('#dMsg'), e.message, false); fail(e); }
+      finally { done(); } });
+    $('#dReview')?.addEventListener('click', async ev => {
+      const btn = ev.currentTarget;
       const reason = prompt('Lý do chuyển sang cần kiểm tra:'); if (!reason) return;
-      try { await api('POST', `/v1/admin/draws/${encodeURIComponent(id)}/needs-review`, {reason}); loadDraw(); }
-      catch (e) { msg($('#dMsg'), e.message, false); } });
+      const done = lvBusy(btn, 'Đang chuyển…'); if (!done) return;
+      try { await api('POST', `/v1/admin/draws/${encodeURIComponent(id)}/needs-review`, {reason}); lvToast('Đã chuyển sang cần kiểm tra.', 'ok'); loadDraw(); }
+      catch (e) { done(); msg($('#dMsg'), e.message, false); fail(e); } });
   } catch (e) { out.innerHTML = `<div class="card msg bad">${esc(e.message)}</div>`; }
 }
 
@@ -434,14 +461,16 @@ function drawGrid() {
     <div class="row">${Array.from({length: cnt}, (_, i) => `<input type="text" inputmode="numeric" maxlength="${dg}" style="max-width:${dg * 1.1 + 2}em" data-code="${code}" aria-label="${name} số ${i + 1}">`).join('')}</div>`).join('');
 }
 $('#eRegion').addEventListener('change', () => { fillProv(); drawGrid(); });
-$('#eSave').addEventListener('click', async () => {
+$('#eSave').addEventListener('click', async ev => {
+  const done = lvBusy(ev.currentTarget, 'Đang lưu…'); if (!done) return;
   const prizes = {};
   document.querySelectorAll('#eGrid input').forEach(i => { (prizes[i.dataset.code] ||= []).push(i.value.trim()); });
   const id = `${$('#eRegion').value}-${$('#eProv').value}-${$('#eDate').value}`;
   try {
     await api('PUT', `/v1/admin/draws/${encodeURIComponent(id)}/results`, {prizes, reason: $('#eReason').value.trim() || null});
-    msg($('#eMsg'), `Đã lưu ${id}, đang chờ xác minh.`, true); setTimeout(() => location.hash = 'draw/' + encodeURIComponent(id), 800);
-  } catch (e) { msg($('#eMsg'), e.message + (e.details ? ': ' + [].concat(e.details).map(x => x.msg || x).join('; ') : ''), false); }
+    msg($('#eMsg'), `Đã lưu ${id}, đang chờ xác minh.`, true); lvToast(`Đã lưu ${id}, đang chờ xác minh.`, 'ok'); setTimeout(() => location.hash = 'draw/' + encodeURIComponent(id), 800);
+  } catch (e) { msg($('#eMsg'), (e.status ? e.message : lvErr(e)) + (e.details ? ': ' + [].concat(e.details).map(x => x.msg || x).join('; ') : ''), false); }
+  finally { done(); }
 });
 
 // ---------- Nguồn ----------
@@ -458,10 +487,16 @@ async function loadSources() {
         ${s.legal_approved ? '' : `<button class="btn ghost small" data-approve="${esc(s.code)}">Duyệt</button>`}
         <button class="btn small ${s.enabled ? 'ghost' : 'good'}" data-toggle="${esc(s.code)}" data-on="${s.enabled ? 0 : 1}" ${!s.legal_approved && !s.enabled ? 'disabled title="Cần duyệt trước"' : ''}>${s.enabled ? 'Tắt' : 'Bật'}</button>` : ''}</td></tr>`).join('');
     tb.querySelectorAll('[data-toggle]').forEach(b => b.addEventListener('click', async () => {
-      try { await api('PATCH', `/v1/admin/sources/${b.dataset.toggle}`, {enabled: b.dataset.on === '1'}); loadSources(); } catch (e) { alert(e.message); } }));
+      const on = b.dataset.on === '1';
+      if (!on && !confirm(`Tắt nguồn ${b.dataset.toggle}? Hệ thống sẽ ngừng lấy dữ liệu từ nguồn này.`)) return;
+      const done = lvBusy(b, on ? 'Đang bật…' : 'Đang tắt…'); if (!done) return;
+      try { await api('PATCH', `/v1/admin/sources/${b.dataset.toggle}`, {enabled: on}); lvToast(on ? 'Đã bật nguồn.' : 'Đã tắt nguồn.', 'ok'); loadSources(); }
+      catch (e) { done(); fail(e); } }));
     tb.querySelectorAll('[data-approve]').forEach(b => b.addEventListener('click', async () => {
       if (!confirm('Xác nhận bạn đã xem điều khoản sử dụng và được phép lấy dữ liệu từ nguồn này?')) return;
-      try { await api('PATCH', `/v1/admin/sources/${b.dataset.approve}`, {legal_approved: true}); loadSources(); } catch (e) { alert(e.message); } }));
+      const done = lvBusy(b, 'Đang lưu…'); if (!done) return;
+      try { await api('PATCH', `/v1/admin/sources/${b.dataset.approve}`, {legal_approved: true}); lvToast('Đã duyệt nguồn.', 'ok'); loadSources(); }
+      catch (e) { done(); fail(e); } }));
     tb.querySelectorAll('[data-probe]').forEach(b => b.addEventListener('click', () => probe(b.dataset.probe)));
   } catch (e) { tb.innerHTML = `<tr><td colspan="8" class="msg bad">${esc(e.message)}</td></tr>`; }
 }
@@ -493,22 +528,41 @@ async function loadUsers() {
       <td style="white-space:nowrap">${u.id === ME.id ? '<span class="lead">Bạn</span>' : `<button class="btn ghost small" data-reset="${u.id}">Đặt lại mật khẩu</button>
         ${u.totp_enabled ? `<button class="btn ghost small" data-totp="${u.id}">Tắt 2 lớp</button>` : ''}
         <button class="btn ghost small" data-active="${u.id}" data-to="${u.active ? 0 : 1}">${u.active ? 'Khóa' : 'Mở khóa'}</button>`}</td></tr>`).join('');
-    const patch = async (id, body) => { try { const r = await api('PATCH', `/v1/admin/users/${id}`, body);
-      if (r.temporary_password) showTemp(r.user.username, r.temporary_password); loadUsers(); } catch (e) { alert(e.message); } };
-    tb.querySelectorAll('[data-role]').forEach(s => s.addEventListener('change', () => patch(s.dataset.role, {role: s.value})));
-    tb.querySelectorAll('[data-reset]').forEach(b => b.addEventListener('click', () => confirm('Tạo mật khẩu tạm mới cho tài khoản này?') && patch(b.dataset.reset, {reset_password: true})));
-    tb.querySelectorAll('[data-totp]').forEach(b => b.addEventListener('click', () => confirm('Tắt xác thực hai lớp của tài khoản này?') && patch(b.dataset.totp, {reset_totp: true})));
-    tb.querySelectorAll('[data-active]').forEach(b => b.addEventListener('click', () => patch(b.dataset.active, {active: b.dataset.to === '1'})));
+    const patch = async (id, body, btn, label, okMsg) => {
+      const done = btn ? lvBusy(btn, label) : () => {}; if (!done) return false;
+      try { const r = await api('PATCH', `/v1/admin/users/${id}`, body);
+        if (r.temporary_password) showTemp(r.user.username, r.temporary_password); lvToast(okMsg, 'ok'); loadUsers(); return true; }
+      catch (e) { done(); fail(e); return false; } };
+    const uname = id => (d.items.find(u => String(u.id) === String(id)) || {}).username || 'tài khoản này';
+    tb.querySelectorAll('select[data-role]').forEach(s => {
+      const prev = s.value;
+      s.addEventListener('change', async () => {
+        const to = s.value;
+        if (!confirm(`Đổi quyền của ${uname(s.dataset.role)} thành ${to}?`)) { s.value = prev; return; }
+        s.disabled = true;
+        const ok = await patch(s.dataset.role, {role: to}, null, '', `Đã đổi quyền thành ${to}.`);
+        if (!ok) { s.value = prev; s.disabled = false; }
+      });
+    });
+    tb.querySelectorAll('[data-reset]').forEach(b => b.addEventListener('click', () => confirm('Tạo mật khẩu tạm mới cho tài khoản này?') && patch(b.dataset.reset, {reset_password: true}, b, 'Đang tạo…', 'Đã tạo mật khẩu tạm.')));
+    tb.querySelectorAll('[data-totp]').forEach(b => b.addEventListener('click', () => confirm('Tắt xác thực hai lớp của tài khoản này?') && patch(b.dataset.totp, {reset_totp: true}, b, 'Đang tắt…', 'Đã tắt xác thực hai lớp.')));
+    tb.querySelectorAll('[data-active]').forEach(b => b.addEventListener('click', () => {
+      const lock = b.dataset.to !== '1';
+      if (lock && !confirm(`Khóa tài khoản ${uname(b.dataset.active)}? Họ sẽ không đăng nhập được nữa.`)) return;
+      patch(b.dataset.active, {active: !lock}, b, lock ? 'Đang khóa…' : 'Đang mở…', lock ? 'Đã khóa tài khoản.' : 'Đã mở khóa tài khoản.');
+    }));
   } catch (e) { tb.innerHTML = `<tr><td colspan="6" class="msg bad">${esc(e.message)}</td></tr>`; }
 }
 function showTemp(username, pw) {
   $('#uTemp').innerHTML = `<div class="temp">Mật khẩu tạm của <b>${esc(username)}</b>: <span class="secret">${esc(pw)}</span><br>
     Gửi riêng cho người dùng. Mật khẩu này chỉ hiện một lần; họ phải đổi khi đăng nhập lần đầu.</div>`;
 }
-$('#uCreate').addEventListener('click', async () => {
+$('#uCreate').addEventListener('click', async ev => {
+  const done = lvBusy(ev.currentTarget, 'Đang tạo…'); if (!done) return;
   try { const r = await api('POST', '/v1/admin/users', {username: $('#uName').value.trim().toLowerCase(), display_name: $('#uDisp').value.trim(), role: $('#uRole').value});
         msg($('#uMsg'), `Đã tạo ${r.user.username}.`, true); showTemp(r.user.username, r.temporary_password); $('#uName').value = ''; $('#uDisp').value = ''; loadUsers(); }
-  catch (e) { msg($('#uMsg'), e.code === 'invalid_param' ? 'Tên đăng nhập 3–40 ký tự: chữ thường, số, dấu chấm, gạch.' : e.message, false); }
+  catch (e) { msg($('#uMsg'), e.code === 'invalid_param' ? 'Tên đăng nhập 3–40 ký tự: chữ thường, số, dấu chấm, gạch.' : (e.status ? e.message : lvErr(e)), false); }
+  finally { done(); }
 });
 
 // ---------- Nhật ký ----------
@@ -528,10 +582,12 @@ async function loadAudit() {
 }
 
 // ---------- Của tôi ----------
-$('#mSave').addEventListener('click', async () => {
+$('#mSave').addEventListener('click', async ev => {
+  const done = lvBusy(ev.currentTarget, 'Đang lưu…'); if (!done) return;
   try { await api('POST', '/v1/auth/password', {current_password: $('#mCur').value, new_password: $('#mNew').value});
         $('#mCur').value = ''; $('#mNew').value = ''; msg($('#mMsg'), 'Đã đổi mật khẩu. Các phiên đăng nhập khác đã bị đăng xuất.', true); }
-  catch (e) { msg($('#mMsg'), e.message, false); }
+  catch (e) { msg($('#mMsg'), e.status ? e.message : lvErr(e), false); }
+  finally { done(); }
 });
 async function loadMe() {
   const me = (await api('GET', '/v1/auth/me')).user; ME = me;
@@ -541,23 +597,26 @@ async function loadMe() {
       <div class="row"><div><label for="tdPw">Mật khẩu</label><input type="password" id="tdPw"></div>
       <div><label for="tdOtp">Mã hiện tại</label><input type="text" id="tdOtp" inputmode="numeric" maxlength="6"></div>
       <div style="flex:none"><button class="btn ghost" id="tdGo">Tắt xác thực hai lớp</button></div></div>`;
-    $('#tdGo').addEventListener('click', async () => {
+    $('#tdGo').addEventListener('click', async ev => {
+      const done = lvBusy(ev.currentTarget, 'Đang tắt…'); if (!done) return;
       try { await api('POST', '/v1/auth/totp/disable', {password: $('#tdPw').value, otp: $('#tdOtp').value}); msg($('#tMsg'), 'Đã tắt.', true); loadMe(); }
-      catch (e) { msg($('#tMsg'), e.message, false); } });
+      catch (e) { done(); msg($('#tMsg'), e.status ? e.message : lvErr(e), false); } });
   } else {
     box.innerHTML = `<p>Nên bật để bảo vệ tài khoản: dùng Google Authenticator, Microsoft Authenticator hoặc ứng dụng tương tự.</p>
       <button class="btn" id="tsGo">Thiết lập</button><div id="tsOut"></div>`;
-    $('#tsGo').addEventListener('click', async () => {
+    $('#tsGo').addEventListener('click', async ev => {
+      const doneS = lvBusy(ev.currentTarget, 'Đang tạo mã…'); if (!doneS) return;
       try {
         const s = await api('POST', '/v1/auth/totp/setup');
         $('#tsOut').innerHTML = `<p>1. Quét mã QR bằng ứng dụng xác thực, hoặc nhập khóa thủ công:</p><div id="qr"></div><br><span class="secret">${esc(s.secret)}</span>
           <div class="row" style="margin-top:12px"><div><label for="teOtp">2. Nhập mã 6 số ứng dụng hiển thị</label><input type="text" id="teOtp" inputmode="numeric" maxlength="6"></div>
           <div style="flex:none"><button class="btn good" id="teGo">Bật</button></div></div>`;
         if (window.QRCode) new QRCode($('#qr'), {text: s.otpauth_uri, width: 180, height: 180}); else $('#qr').hidden = true;
-        $('#teGo').addEventListener('click', async () => {
+        $('#teGo').addEventListener('click', async ev2 => {
+          const done = lvBusy(ev2.currentTarget, 'Đang bật…'); if (!done) return;
           try { await api('POST', '/v1/auth/totp/enable', {otp: $('#teOtp').value}); msg($('#tMsg'), 'Đã bật xác thực hai lớp.', true); loadMe(); }
-          catch (e) { msg($('#tMsg'), e.message, false); } });
-      } catch (e) { msg($('#tMsg'), e.message, false); }
+          catch (e) { done(); msg($('#tMsg'), e.status ? e.message : lvErr(e), false); } });
+      } catch (e) { doneS(); msg($('#tMsg'), e.status ? e.message : lvErr(e), false); }
     });
   }
 }
@@ -623,17 +682,29 @@ async function loadMembers() {
 }
 $('#mbBody').addEventListener('click', async e => {
   const r = e.target.closest('[data-mreset]'), l = e.target.closest('[data-mlock]'), x = e.target.closest('[data-mdel]');
+  const btn = r || l || x; if (!btn) return;
+  let done = null;
   try {
     if (r) {
       if (!confirm(`Tạo mật khẩu tạm cho ${r.dataset.email}? Mọi phiên đăng nhập của thành viên này sẽ bị đăng xuất.`)) return;
+      if (!(done = lvBusy(r, 'Đang tạo…'))) return;
       const d = await api('PATCH', `/v1/admin/members/${r.dataset.mreset}`, {reset_password: true});
       $('#mbTemp').innerHTML = `<div class="temp">Mật khẩu tạm của <b>${esc(d.member.email)}</b>: <span class="secret">${esc(d.temporary_password)}</span><br>
         Gửi riêng cho thành viên. Mật khẩu này chỉ hiện một lần; khi đăng nhập, họ sẽ được nhắc đặt mật khẩu mới.</div>`;
     }
-    if (l) await api('PATCH', `/v1/admin/members/${l.dataset.mlock}`, {disabled: l.dataset.to === '1'});
-    if (x) { if (!confirm(`Xóa vĩnh viễn tài khoản ${x.dataset.email} cùng dữ liệu đã lưu?`)) return; await api('DELETE', `/v1/admin/members/${x.dataset.mdel}`); }
-    if (r || l || x) loadMembers();
-  } catch (er) { msg($('#mbMsg'), er.message, false); }
+    if (l) {
+      const lock = l.dataset.to === '1';
+      if (lock && !confirm('Khóa thành viên này? Họ sẽ không đăng nhập được nữa.')) return;
+      if (!(done = lvBusy(l, lock ? 'Đang khóa…' : 'Đang mở…'))) return;
+      await api('PATCH', `/v1/admin/members/${l.dataset.mlock}`, {disabled: lock});
+      lvToast(lock ? 'Đã khóa thành viên.' : 'Đã mở khóa thành viên.', 'ok');
+    }
+    if (x) { if (!confirm(`Xóa vĩnh viễn tài khoản ${x.dataset.email} cùng dữ liệu đã lưu?`)) return;
+      if (!(done = lvBusy(x, 'Đang xóa…'))) return;
+      await api('DELETE', `/v1/admin/members/${x.dataset.mdel}`); lvToast('Đã xóa thành viên.', 'ok'); }
+    if (r) lvToast('Đã tạo mật khẩu tạm.', 'ok');
+    loadMembers();
+  } catch (er) { if (done) done(); msg($('#mbMsg'), er.status ? er.message : lvErr(er), false); fail(er); }
 });
 
 
@@ -669,11 +740,83 @@ $('#ctList').addEventListener('click', async e => {
   const card = e.target.closest('.ct'); if (!card) return;
   const id = card.dataset.id, note = card.querySelector('[data-note]').value;
   const m = e.target.closest('[data-member]');
-  if (m) { await api('PATCH', `/v1/admin/contacts/${id}`, {status: 'doing', admin_note: note}); $('#mbQ').value = m.dataset.member; location.hash = 'members'; return; }
+  if (m) {
+    const done = lvBusy(m, 'Đang mở…'); if (!done) return;
+    try { await api('PATCH', `/v1/admin/contacts/${id}`, {status: 'doing', admin_note: note}); $('#mbQ').value = m.dataset.member; location.hash = 'members'; }
+    catch (er) { fail(er); }
+    finally { done(); }
+    return;
+  }
   const s = e.target.closest('[data-st]'), sv = e.target.closest('[data-save]');
   if (!s && !sv) return;
-  try { await api('PATCH', `/v1/admin/contacts/${id}`, s ? {status: s.dataset.st, admin_note: note} : {admin_note: note}); loadContacts(); }
-  catch (er) { alert(er.message); }
+  const done = lvBusy(s || sv, 'Đang lưu…'); if (!done) return;
+  try { await api('PATCH', `/v1/admin/contacts/${id}`, s ? {status: s.dataset.st, admin_note: note} : {admin_note: note});
+        lvToast(s ? 'Đã cập nhật trạng thái.' : 'Đã lưu ghi chú.', 'ok'); loadContacts(); }
+  catch (er) { done(); fail(er); }
+});
+
+// ---------- Tin tức ----------
+const canEdit = () => ME && RANK[ME.role] >= RANK.editor, canAdmin = () => ME && RANK[ME.role] >= RANK.admin;
+$('#nwGo').addEventListener('click', loadNews);
+$('#nwQ').addEventListener('keydown', e => { if (e.key === 'Enter') loadNews(); });
+$('#nwKind').addEventListener('change', loadNews); $('#nwHidden').addEventListener('change', loadNews);
+async function loadNews() {
+  const tb = $('#nwBody'); tb.innerHTML = '<tr><td colspan="5">Đang tải…</td></tr>';
+  const qs = new URLSearchParams();
+  [['kind', $('#nwKind').value], ['hidden', $('#nwHidden').value], ['q', $('#nwQ').value.trim()]].forEach(([k, v]) => { if (v) qs.set(k, v); });
+  try {
+    const d = await api('GET', '/v1/admin/news' + (qs.toString() ? '?' + qs : ''));
+    tb.innerHTML = d.items.length ? d.items.map(a => {
+      const link = a.kind === 'external' ? a.source_url : (a.slug ? '/tin-tuc/' + a.slug : '');
+      const safe = /^(https?:\/\/|\/)/.test(link || '') ? link : '';
+      return `<tr data-id="${a.id}" data-hidden="${a.hidden ? 1 : 0}"><td>${fmtTime(a.published_at)}</td><td>${a.kind === 'auto' ? 'Tự tạo' : 'Báo chí'}</td>
+        <td>${safe ? `<a href="${esc(safe)}" target="_blank" rel="noopener noreferrer">${esc(a.title)}</a>` : esc(a.title)}</td>
+        <td><span class="pill ${a.hidden ? 'bad' : 'good'}">${a.hidden ? 'Đã ẩn' : 'Đang hiện'}</span></td>
+        <td>${canEdit() ? `<button class="btn ghost small" type="button" data-toggle-hide>${a.hidden ? 'Hiện' : 'Ẩn'}</button>` : ''}</td></tr>`;
+    }).join('') : '<tr><td colspan="5">Chưa có bài nào.</td></tr>';
+  } catch (e) { tb.innerHTML = `<tr><td colspan="5" class="msg bad">${esc(e.message)}</td></tr>`; }
+  loadFeeds();
+}
+$('#nwBody').addEventListener('click', async e => {
+  const b = e.target.closest('[data-toggle-hide]'); if (!b) return;
+  const tr = b.closest('tr'), hide = tr.dataset.hidden !== '1';
+  const done = lvBusy(b, 'Đang lưu…'); if (!done) return;
+  try { await api('PATCH', `/v1/admin/news/${tr.dataset.id}`, {hidden: hide}); lvToast(hide ? 'Đã ẩn bài.' : 'Đã hiện bài.', 'ok'); loadNews(); }
+  catch (er) { done(); fail(er); }
+});
+$('#nwSweep').addEventListener('click', async e => {
+  const done = lvBusy(e.currentTarget, 'Đang tạo…'); if (!done) return;
+  try { await api('POST', '/v1/admin/news/sweep'); lvToast('Đã tạo bài.', 'ok'); loadNews(); }
+  catch (er) { if (er.status === 404) lvToast('Chưa hỗ trợ.', 'err'); else fail(er); }
+  finally { done(); }
+});
+async function loadFeeds() {
+  const tb = $('#nfBody'); tb.innerHTML = '<tr><td colspan="7">Đang tải…</td></tr>';
+  try {
+    const d = await api('GET', '/v1/admin/news-feeds');
+    const items = d.items || d.feeds || [];
+    tb.innerHTML = items.length ? items.map(f => {
+      const state = f.last_error ? `<span class="pill bad" title="${esc(f.last_error)}">Lỗi</span>` : f.last_ok ? '<span class="pill good">Ổn</span>' : '';
+      return `<tr data-code="${esc(f.code)}" data-legal="${f.legal_approved ? 1 : 0}" data-enabled="${f.enabled ? 1 : 0}"><td>${esc(f.name)}</td><td class="mono">${esc(f.url)}</td>
+        <td class="mono">${esc(f.include_pattern || '')}</td><td><span class="pill ${f.legal_approved ? 'good' : 'warn'}">${f.legal_approved ? 'Đã duyệt' : 'Chưa duyệt'}</span></td>
+        <td><span class="pill ${f.enabled ? 'good' : ''}">${f.enabled ? 'Đang bật' : 'Đang tắt'}</span></td>
+        <td>${fmtTime(f.last_fetched_at)} ${state}${f.last_error ? `<div class="lead" style="font-size:.8rem">${esc(f.last_error)}</div>` : ''}</td>
+        <td>${canAdmin() ? `<button class="btn ghost small" type="button" data-legal-btn>${f.legal_approved ? 'Bỏ duyệt pháp lý' : 'Đã duyệt pháp lý'}</button> <button class="btn ghost small" type="button" data-enable-btn>${f.enabled ? 'Tắt' : 'Bật'}</button>` : ''}</td></tr>`;
+    }).join('') : '<tr><td colspan="7">Chưa có nguồn nào.</td></tr>';
+  } catch (e) { tb.innerHTML = `<tr><td colspan="7" class="msg bad">${esc(e.message)}</td></tr>`; }
+}
+$('#nfBody').addEventListener('click', async e => {
+  const tr = e.target.closest('tr[data-code]'); if (!tr) return;
+  const lg = e.target.closest('[data-legal-btn]'), en = e.target.closest('[data-enable-btn]'); if (!lg && !en) return;
+  let body;
+  if (lg) {
+    const v = tr.dataset.legal !== '1';
+    if (v && !confirm('Xác nhận đã duyệt pháp lý cho nguồn này?\n\nRSS của báo chí thường chỉ miễn phí cho cá nhân hoặc phi lợi nhuận; trang thương mại cần xin phép trước khi sử dụng. Chỉ bấm đồng ý khi đã có sự cho phép.')) return;
+    body = {legal_approved: v};
+  } else body = {enabled: tr.dataset.enabled !== '1'};
+  const done = lvBusy(lg || en, 'Đang lưu…'); if (!done) return;
+  try { await api('PATCH', `/v1/admin/news-feeds/${encodeURIComponent(tr.dataset.code)}`, body); lvToast('Đã cập nhật nguồn.', 'ok'); loadFeeds(); }
+  catch (er) { done(); if (er.code === 'legal_not_approved') lvToast(er.message || 'Cần duyệt pháp lý trước khi bật nguồn.', 'err'); else fail(er); }
 });
 
 // ---------- Khởi động ----------

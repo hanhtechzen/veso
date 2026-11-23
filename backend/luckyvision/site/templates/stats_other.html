@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% from "macros.html" import num_chips %}
+{% block content %}
+<h1>{{ h1 }}</h1>
+{% include "_stats_scope.html" %}
+{% if not draws %}<section class="card"><h2>Chưa có dữ liệu</h2><p>Máy chủ chưa có kết quả {{ g.name }}.</p></section>
+{% else %}
+<p class="lead">Thống kê {{ draws }} kỳ gần nhất. Số liệu chỉ mô tả quá khứ; mỗi kỳ quay độc lập với các kỳ trước. {{ note }}</p>
+<section class="card"><h2>{{ bars_title }}</h2>
+  <div class="freq">{% for k, c in bars %}<div class="fc" title="{{ k }}: {{ c }} lần"><span class="track"><span class="bar" style="height:{{ (c * 100 / bars_max)|round(1) }}%"></span></span><b>{{ k }}</b><small>{{ c }}</small></div>{% endfor %}</div>
+</section>
+{% if bars2 %}<section class="card"><h2>{{ bars2_title }}</h2>
+  <div class="freq">{% for k, c in bars2 %}<div class="fc" title="{{ k }}: {{ c }} lần"><span class="track"><span class="bar" style="height:{{ (c * 100 / bars2_max)|round(1) }}%"></span></span><b>{{ k }}</b><small>{{ c }}</small></div>{% endfor %}</div>
+</section>{% endif %}
+{% if hot %}<section class="card"><h2>Số về nhiều nhất ({{ draws }} kỳ)</h2>
+  {{ num_chips(hot, 'lần', 'hi') }}
+  <p class="hint">Số về nhiều chỉ mô tả quá khứ, không làm thay đổi cơ hội ở kỳ tới.</p></section>{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,16 +1,16 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% from "macros.html" import loto_chips %}
 {% block content %}
 <h1>{{ h1 }}</h1>
 <p class="lead">{{ summary }}</p>
 <div class="bar print-hide"><div class="seg">{% for n in (30, 60, 90) %}<a href="/so-ket-qua-{{ slug }}-{{ n }}-ngay"{% if n == days %} aria-current="page"{% endif %}>{{ n }} ngày</a>{% endfor %}</div>
 <button class="btn ghost" type="button" data-print>In sổ kết quả</button></div>
 <div class="tablewrap"><table class="list so">
-  <thead><tr><th>Ngày</th>{% if slug != "xsmb" %}<th>Đài</th>{% endif %}<th>Đặc biệt</th><th>Giải nhất</th><th>Lô tô (2 số cuối)</th></tr></thead>
+  <thead><tr><th>Ngày</th>{% if slug != "xsmb" %}<th>Đài</th>{% endif %}<th>Đặc biệt</th><th>Giải nhất</th><th>Lô tô (2 số cuối, ×2 = về 2 lần)</th></tr></thead>
   <tbody>
   {% for g in groups %}{% for d in g.draws %}
-    <tr>{% if loop.first %}<td rowspan="{{ g.draws|length }}"><a href="/{{ slug }}-{{ g.day.strftime('%d-%m-%Y') }}">{{ weekday(g.day) }} {{ g.day.strftime('%d/%m/%Y') }}</a></td>{% endif %}
+    <tr>{% if loop.first %}<td rowspan="{{ g.draws|length }}" class="so-day"><a href="/{{ slug }}-{{ g.day.strftime('%d-%m-%Y') }}"><b>{{ g.day.strftime('%d/%m') }}</b><small>{{ weekday(g.day) }}</small></a></td>{% endif %}
     {% if slug != "xsmb" %}<td>{{ d.pname }}</td>{% endif %}<td class="mono db">{{ d.prizes.get('db', [''])[0] }}</td><td class="mono">{{ d.prizes.get('g1', [''])[0] }}</td>
-    <td class="mono small">{% for x in d.loto %}{{ '%02d' % x }}{% if not loop.last %} {% endif %}{% endfor %}</td></tr>
+    <td>{{ loto_chips(d.loto) }}</td></tr>
   {% endfor %}{% endfor %}
   </tbody></table></div>
 {% endblock %}

@@ -41,7 +41,10 @@ async def ingest_rows(ctx, src: dict, rows) -> tuple[int, int]:
     for row in sorted(rows, key=lambda r: (r.day, r.seq)):
         did = draw_id_for(game, row.day, row.seq)
         async with ctx.pool.connection() as conn:
-            ex = await (await conn.execute("SELECT current_version FROM lottery_draws WHERE id = %s", (did,))).fetchone()
+            ex = await (await conn.execute("SELECT current_version, draw_seq FROM lottery_draws WHERE id = %s", (did,))).fetchone()
+            if ex and row.seq and ex["draw_seq"] != row.seq:
+                # Số kỳ chính thức từ Vietlott luôn đúng hơn số kỳ planner tự đoán (đoán sai khi thiếu dữ liệu vài kỳ)
+                await conn.execute("UPDATE lottery_draws SET draw_seq = %s WHERE id = %s", (row.seq, did))
             if ex and ex["current_version"]:
                 known += 1
                 continue
@@ -61,7 +64,7 @@ async def run_feed(ctx, game_code: str | None = None, pages: int = 1, force: boo
     for src in await feed_sources(ctx, game_code):
         code = src["config"]["game"]
         now = _time.monotonic()
-        if not force and now - _LAST.get(code, 0) < MIN_INTERVAL.get(code, 900):
+        if not force and now - _LAST.get(code, float("-inf")) < MIN_INTERVAL.get(code, 900):
             continue
         _LAST[code] = now
         adapter = build(src, ctx.settings)

@@ -15,8 +15,8 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, Query, Request, Response
 
 from ..config import VN_TZ
+from .admin import Admin, require
 from .errors import ApiError
-from .user import need_user
 
 router = APIRouter(tags=["tools"])
 # Thứ tự giải khi ghép thành chuỗi số, khớp với trang Công cụ (MB_ENC, MN_ENC)
@@ -71,7 +71,28 @@ async def build_export(conn, years: int) -> dict:
             rg["mb"].append(item)
         else:
             rg[x["region"]].setdefault(x["prov"], []).append(item)
-    return {"generated_at": datetime.now(VN_TZ).isoformat(timespec="seconds"), "power": power, "rg": rg}
+    # Mega 6/45, Lotto 5/35, Max 3D, Max 3D Pro cho công cụ dò vé và máy thời gian
+    vl: dict = {"mega645": [], "lotto535": [], "max3d": [], "max3dpro": []}
+    rows = await (await conn.execute(
+        """SELECT d.id, d.province_code, d.draw_seq, d.draw_date, r.prize_code, r.position, r.number FROM lottery_draws d
+             JOIN lottery_results r ON r.draw_id = d.id AND r.version = d.current_version
+            WHERE d.province_code IN ('mega645', 'lotto535', 'max3d', 'max3dpro') AND d.current_version IS NOT NULL
+              AND d.draw_seq IS NOT NULL ORDER BY d.draw_date, d.draw_seq, r.prize_code, r.position""")).fetchall()
+    gd: dict = {}
+    for r in rows:
+        x = gd.setdefault(r["id"], {"g": r["province_code"], "seq": r["draw_seq"], "date": r["draw_date"].isoformat(), "pr": {}})
+        x["pr"].setdefault(r["prize_code"], []).append(r["number"])
+    for x in gd.values():
+        pr, g = x["pr"], x["g"]
+        if g == "mega645" and len(pr.get("main", [])) == 6:
+            vl[g].append([x["seq"], x["date"], *[int(n) for n in pr["main"]]])
+        elif g == "lotto535" and len(pr.get("main", [])) == 5 and len(pr.get("special", [])) == 1:
+            vl[g].append([x["seq"], x["date"], *[int(n) for n in pr["main"]], int(pr["special"][0])])
+        elif g in ("max3d", "max3dpro"):
+            parts = [pr.get(k, []) for k in ("db", "g1", "g2", "g3")]
+            if [len(p) for p in parts] == [2, 4, 6, 8]:
+                vl[g].append([x["seq"], x["date"], "".join(n for p in parts for n in p)])
+    return {"generated_at": datetime.now(VN_TZ).isoformat(timespec="seconds"), "power": power, "rg": rg, "vl": vl}
 
 
 @router.get("/v1/export/tools")
@@ -79,7 +100,7 @@ async def export_tools(request: Request, response: Response, years: int = Query(
     async with request.app.state.pool.connection() as conn:
         mark = await (await conn.execute(
             """SELECT count(*) AS n, max(published_at) AS p FROM lottery_draws
-                WHERE current_version IS NOT NULL AND region_code IN ('mb', 'mn', 'mt', 'vl')""")).fetchone()
+                WHERE current_version IS NOT NULL AND region_code IN ('mb', 'mn', 'mt', 'vl', 'mega', 'lotto', 'max3d', 'max3dpro')""")).fetchone()
         key = f"{years}|{mark['n']}|{mark['p']}"
         etag = '"' + hashlib.sha1(key.encode()).hexdigest()[:16] + '"'
         if request.headers.get("if-none-match") == etag:
@@ -154,25 +175,29 @@ def validate_doc(old: dict, new: dict, latest_power: int, now: datetime) -> dict
 
 
 @router.put("/v1/user/predictions")
-async def save_predictions(request: Request, u: dict = Depends(need_user)):
+async def save_predictions(request: Request, response: Response, u: Admin = Depends(require("admin"))):
+    # Quy định: chỉ quản trị viên; dữ liệu cũ giữ nguyên trong DB
+    response.headers["Cache-Control"] = "private, no-store"
+    if u.user_id is None:
+        raise ApiError(403, "forbidden", "Cần đăng nhập bằng tài khoản quản trị để ghi sổ")
     try:
         new = json.loads((await request.body())[:500_000] or b"{}")
     except ValueError:
         raise ApiError(422, "invalid_doc", "Dữ liệu không hợp lệ")
     async with request.app.state.pool.connection() as conn:
-        row = await (await conn.execute("SELECT doc FROM user_prediction_docs WHERE user_id = %s FOR UPDATE", (u["id"],))).fetchone()
+        row = await (await conn.execute("SELECT doc FROM user_prediction_docs WHERE user_id = %s FOR UPDATE", (u.user_id,))).fetchone()
         doc = validate_doc(row["doc"] if row else {}, new, await _locked_power(conn), datetime.now(VN_TZ))
         await conn.execute("""INSERT INTO user_prediction_docs (user_id, doc, updated_at) VALUES (%s, %s, now())
                               ON CONFLICT (user_id) DO UPDATE SET doc = EXCLUDED.doc, updated_at = now()""",
-                           (u["id"], json.dumps(doc)))
+                           (u.user_id, json.dumps(doc)))
     return {"doc": doc}
 
 
 @router.get("/v1/predictions/board")
-async def board(request: Request, response: Response):
+async def board(request: Request, response: Response, _: Admin = Depends(require("admin"))):
     async with request.app.state.pool.connection() as conn:
         rows = await (await conn.execute(
             """SELECT u.id, u.display_name, p.doc FROM user_prediction_docs p JOIN users u ON u.id = p.user_id
                 WHERE NOT u.disabled ORDER BY p.updated_at DESC LIMIT 1000""")).fetchall()
-    response.headers["Cache-Control"] = "private, no-cache"
+    response.headers["Cache-Control"] = "private, no-store"
     return {"items": [{"id": f"u{r['id']}", "name": r["display_name"], "data": r["doc"]} for r in rows]}

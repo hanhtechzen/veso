@@ -15,6 +15,10 @@ from ..events import emit
 log = logging.getLogger(__name__)
 
 
+class AlreadyPublishedError(ValueError):
+    """Ứng viên trùng nội dung với phiên bản đang công bố."""
+
+
 async def get_draw(conn, draw_id: str, lock: bool = False) -> dict | None:
     cur = await conn.execute("SELECT * FROM lottery_draws WHERE id = %s" + (" FOR UPDATE" if lock else ""), (draw_id,))
     return await cur.fetchone()
@@ -71,7 +75,14 @@ async def ingest(conn, settings: Settings, draw_id: str, source_code: str, raw_p
         (draw_id, source_code, fetch_id, Jsonb(prizes), complete, checksum(prizes), created_by))
     ins = await cur.fetchone()
     await mark_fetch("ok" if complete else "partial")
-    out["candidate_id"] = ins["id"] if ins else None
+    if ins:
+        out["candidate_id"] = ins["id"]
+    else:  # trùng nội dung: trả về ứng viên đã có
+        cur = await conn.execute(
+            "SELECT id FROM result_candidates WHERE draw_id = %s AND source_code = %s AND checksum = %s",
+            (draw_id, source_code, checksum(prizes)))
+        existing = await cur.fetchone()
+        out["candidate_id"] = existing["id"] if existing else None
     region = draw["region_code"]
     base = {"draw_id": draw_id, "region": region, "province": draw["province_code"]}
 
@@ -141,10 +152,17 @@ async def publish(conn, draw_id: str, candidate_id: int, actor: str, reason: str
     draw = await get_draw(conn, draw_id, lock=True)
     if not draw:
         raise ValueError("Không có kỳ quay")
-    cur = await conn.execute("SELECT payload FROM result_candidates WHERE id = %s AND draw_id = %s", (candidate_id, draw_id))
+    cur = await conn.execute("SELECT payload, checksum FROM result_candidates WHERE id = %s AND draw_id = %s", (candidate_id, draw_id))
     cand = await cur.fetchone()
     if not cand:
         raise ValueError("Ứng viên không thuộc kỳ quay này")
+    if draw["current_version"] is not None:
+        cur = await conn.execute(
+            """SELECT c.checksum FROM draw_versions v JOIN result_candidates c ON c.id = v.candidate_id
+                WHERE v.draw_id = %s AND v.version = %s""", (draw_id, draw["current_version"]))
+        pub = await cur.fetchone()
+        if pub and pub["checksum"] == cand["checksum"]:
+            raise AlreadyPublishedError("Ứng viên trùng phiên bản đang công bố")
     cur = await conn.execute("SELECT coalesce(max(version), 0) + 1 AS v FROM draw_versions WHERE draw_id = %s", (draw_id,))
     version = (await cur.fetchone())["v"]
     await conn.execute("UPDATE draw_versions SET status = 'superseded' WHERE draw_id = %s AND status = 'published'", (draw_id,))

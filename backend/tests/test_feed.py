@@ -50,3 +50,49 @@ def test_draw_ids():
 def test_odds():
     assert GAMES["lotto535"].jackpot_odds == 324632 * 12
     assert GAMES["power655"].jackpot_odds == 28989675 and GAMES["dt6x36"].jackpot_odds == 1947792
+
+
+# --- Max 3D / Max 3D Pro: trang mới nhất là PageIndex=0 (trước đây đọc từ trang 1 nên chậm ~2 tuần) ---
+import asyncio as _asyncio
+import json as _json
+
+
+class _Resp:
+    status_code = 200
+    headers: dict = {}
+
+    def json(self):
+        return {"value": {"HtmlContent": ""}}
+
+
+class _Http:
+    def __init__(self):
+        self.bodies = []
+
+    async def post(self, url, content=None, headers=None):
+        self.bodies.append(_json.loads(content))
+        return _Resp()
+
+    async def get(self, *a, **k):
+        return _Resp()
+
+
+def test_max3d_first_page_is_page_index_0():
+    from luckyvision.config import Settings
+    from luckyvision.sources.vietlott_feed import VietlottFeedAdapter
+    for game, gid in (("max3d", "5"), ("max3dpro", "7")):
+        a = VietlottFeedAdapter("vietlott-" + game, {"game": game, "respect_robots": False}, Settings())
+
+        async def _noguard(http, url):
+            return None
+        a.guard = _noguard
+        http = _Http()
+        _asyncio.run(a.fetch_page(http, 0))
+        assert http.bodies[-1]["PageIndex"] == 0 and http.bodies[-1]["GameId"] == gid
+
+
+def test_worker_scheduler_runs_missed_jobs_after_sleep():
+    from luckyvision.worker import Worker
+    import inspect
+    src = inspect.getsource(Worker.__init__)
+    assert "misfire_grace_time" in src and "coalesce" in src

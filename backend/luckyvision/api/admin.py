@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import hmac
+import logging
 from dataclasses import dataclass
 
 from datetime import date
@@ -17,7 +18,7 @@ from psycopg.types.json import Jsonb
 
 from ..audit import audit
 from ..collector.live import collect_draws, pending_draws
-from ..collector.pipeline import get_draw, ingest, load_candidates, publish
+from ..collector.pipeline import AlreadyPublishedError, get_draw, ingest, load_candidates, publish
 from ..collector.planner import parse_draw_id
 from ..config import VN_TZ, WINDOWS, get_settings
 from ..db import load_structure
@@ -30,6 +31,7 @@ from .serialize import iso
 
 router = APIRouter(prefix="/v1/admin", tags=["admin"])
 RANK = {"viewer": 0, "editor": 1, "admin": 2}
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -109,6 +111,14 @@ async def candidates(request: Request, draw_id: str, _: Admin = Depends(require(
     }
 
 
+def _require_reason(draw: dict, reason: str | None) -> str | None:
+    """Sửa kết quả đã công bố bắt buộc có lý do (>= 3 ký tự sau khi bỏ khoảng trắng đầu/cuối)."""
+    r = reason.strip() if reason is not None else None
+    if draw["current_version"] is not None and (r is None or len(r) < 3):
+        raise ApiError(400, "invalid_param", "Sửa kết quả đã công bố cần ghi lý do (reason), tối thiểu 3 ký tự")
+    return r or None
+
+
 class VerifyIn(BaseModel):
     candidate_id: int
     reason: str | None = None
@@ -128,9 +138,11 @@ async def verify(request: Request, draw_id: str, body: VerifyIn, who: Admin = De
         errs = validate(structure, c["payload"])
         if errs:
             raise ApiError(422, "validation_failed", "Bản ứng viên sai cơ cấu giải", errs)
-        if d["current_version"] is not None and not body.reason:
-            raise ApiError(400, "invalid_param", "Sửa kết quả đã công bố cần ghi lý do (reason)")
-        version = await publish(conn, draw_id, body.candidate_id, who.actor, body.reason)
+        reason = _require_reason(d, body.reason)
+        try:
+            version = await publish(conn, draw_id, body.candidate_id, who.actor, reason)
+        except AlreadyPublishedError:
+            raise ApiError(409, "already_published", "Bản này trùng với phiên bản đang công bố")
     return {"draw_id": draw_id, "version": version, "status": "published"}
 
 
@@ -180,8 +192,7 @@ async def put_results(request: Request, draw_id: str, body: ResultsIn, who: Admi
             d = await get_draw(conn, draw_id, lock=True)
         if if_match and if_match != etag_of(d):
             raise ApiError(409, "version_conflict", "Kỳ quay đã thay đổi, tải lại rồi thử lại")
-        if d["current_version"] is not None and not body.reason:
-            raise ApiError(400, "invalid_param", "Sửa kết quả đã công bố cần ghi lý do (reason)")
+        reason = _require_reason(d, body.reason)
         structure = await load_structure(conn, d["region_code"], d["draw_date"])
         prizes = normalize(body.prizes)
         if structure.game in GAMES and GAMES[structure.game].kind == "pick":  # cho phép gõ 9 thay vì 09
@@ -193,7 +204,7 @@ async def put_results(request: Request, draw_id: str, body: ResultsIn, who: Admi
         out = await ingest(conn, request.app.state.settings, draw_id, "manual", prizes, created_by=who.actor)
         await conn.execute("UPDATE lottery_draws SET status = 'needs_review', updated_at = now() WHERE id = %s", (draw_id,))
         await audit(conn, who.actor, "manual_entry", "lottery_draws", draw_id, None,
-                    {"candidate_id": out["candidate_id"], "reason": body.reason, "prizes": prizes})
+                    {"candidate_id": out["candidate_id"], "reason": reason, "prizes": prizes})
     return {"draw_id": draw_id, "candidate_id": out["candidate_id"], "status": "needs_review"}
 
 
@@ -204,12 +215,29 @@ class CollectIn(BaseModel):
 @router.post("/collect", status_code=202)
 async def collect(request: Request, body: CollectIn, who: Admin = Depends(require("editor"))):
     ctx = request.app.state.collector
+    tasks: dict[str, asyncio.Task] = getattr(request.app.state, "collect_tasks", None)
+    if tasks is None:
+        tasks = request.app.state.collect_tasks = {}
+    running = tasks.get(body.draw_id)
+    if running is not None and not running.done():
+        raise ApiError(409, "collect_in_progress", "Kỳ quay này đang được thu thập")
     draws = await pending_draws(ctx, draw_ids=[body.draw_id], include_published=True)
     if not draws:
         raise ApiError(404, "draw_not_found", "Không có kỳ quay này hoặc chưa tới giờ quay")
     async with request.app.state.pool.connection() as conn:
         await audit(conn, who.actor, "collect", "lottery_draws", body.draw_id)
-    asyncio.create_task(collect_draws(ctx, draws))
+    draw_id = body.draw_id
+    task = asyncio.create_task(collect_draws(ctx, draws))
+    tasks[draw_id] = task
+
+    def _done(t: asyncio.Task) -> None:
+        if tasks.get(draw_id) is t:
+            del tasks[draw_id]
+        if not t.cancelled() and t.exception() is not None:
+            exc = t.exception()
+            log.error("Thu thập thủ công %s lỗi: %s", draw_id, exc, exc_info=exc)
+
+    task.add_done_callback(_done)
     return {"draw_id": body.draw_id, "queued": True}
 
 
@@ -537,3 +565,110 @@ async def patch_contact(request: Request, cid: int, body: ContactPatch, who: Adm
         await audit(conn, who.actor, "update_contact", "contact_messages", str(cid), {"status": r["status"]},
                     {k: v for k, v in body.model_dump().items() if v is not None})
     return {"ok": True}
+
+
+# ===================== Tin tức =====================
+def _jv(v):
+    """Giá trị cột -> JSON (datetime theo giờ Việt Nam, date dạng ISO)."""
+    from datetime import datetime
+    if isinstance(v, datetime):
+        return iso(v)
+    if isinstance(v, date):
+        return v.isoformat()
+    return v
+
+
+def _row_out(r: dict) -> dict:
+    return {k: _jv(v) for k, v in r.items()}
+
+
+NEWS_LIST_COLS = ("id, kind, topic, dedupe_key, slug, title, summary, region_code, ref_date, source_name, source_url, feed_code, "
+                  "published_at, updated_at, hidden, hidden_at")
+
+
+@router.get("/news")
+async def list_news(request: Request, kind: str = "", hidden: bool | None = None, q: str = "",
+                    limit: int = Query(50, ge=1, le=200), _: Admin = Depends(require("viewer"))):
+    cond, args = ["true"], []
+    if kind in ("auto", "external"):
+        cond.append("kind = %s"); args.append(kind)
+    if hidden is not None:
+        cond.append("hidden = %s"); args.append(hidden)
+    if q.strip():
+        cond.append("lower(title) LIKE %s"); args.append(f"%{q.strip().lower()}%")
+    async with request.app.state.pool.connection() as conn:
+        rows = await (await conn.execute(
+            f"SELECT {NEWS_LIST_COLS} FROM news_articles WHERE {' AND '.join(cond)} ORDER BY published_at DESC, id DESC LIMIT %s",
+            (*args, limit))).fetchall()
+    return {"items": [_row_out(r) for r in rows]}
+
+
+class NewsPatch(BaseModel):
+    hidden: bool
+
+
+@router.patch("/news/{news_id}")
+async def patch_news(request: Request, news_id: int, body: NewsPatch, who: Admin = Depends(require("editor"))):
+    async with request.app.state.pool.connection() as conn:
+        r = await (await conn.execute("SELECT * FROM news_articles WHERE id = %s FOR UPDATE", (news_id,))).fetchone()
+        if not r:
+            raise ApiError(404, "not_found", "Không có bài tin này")
+        await conn.execute("UPDATE news_articles SET hidden = %s, hidden_at = CASE WHEN %s THEN now() ELSE NULL END WHERE id = %s",
+                           (body.hidden, body.hidden, news_id))
+        await audit(conn, who.actor, "hide_news" if body.hidden else "unhide_news", "news_articles", str(news_id),
+                    {"hidden": r["hidden"], "title": r["title"]}, {"hidden": body.hidden})
+    return {"id": news_id, "hidden": body.hidden}
+
+
+@router.post("/news/sweep")
+async def sweep_news(request: Request, who: Admin = Depends(require("admin"))):
+    from datetime import datetime
+    from ..news.service import sweep
+    n = await sweep(request.app.state.pool, datetime.now(VN_TZ).date())
+    async with request.app.state.pool.connection() as conn:
+        await audit(conn, who.actor, "news_sweep", "news_articles", "-", None, {"written": n})
+    return {"written": n}
+
+
+@router.get("/news-feeds")
+async def list_news_feeds(request: Request, _: Admin = Depends(require("viewer"))):
+    async with request.app.state.pool.connection() as conn:
+        rows = await (await conn.execute("SELECT * FROM news_feeds ORDER BY code")).fetchall()
+    return {"items": [_row_out(r) for r in rows]}
+
+
+class NewsFeedPatch(BaseModel):
+    enabled: bool | None = None
+    legal_approved: bool | None = None
+    include_pattern: str | None = Field(None, max_length=300)
+
+
+@router.patch("/news-feeds/{code}")
+async def patch_news_feed(request: Request, code: str, body: NewsFeedPatch, who: Admin = Depends(require("admin"))):
+    import re
+    changes = {k: v for k, v in body.model_dump(exclude_unset=True).items() if k == "include_pattern" or v is not None}
+    if not changes:
+        raise ApiError(400, "invalid_param", "Không có thay đổi")
+    if "include_pattern" in changes:
+        changes["include_pattern"] = (changes["include_pattern"] or "").strip() or None
+        if changes["include_pattern"]:
+            try:
+                re.compile(changes["include_pattern"])
+            except re.error:
+                raise ApiError(400, "invalid_param", "include_pattern không phải biểu thức chính quy hợp lệ")
+    async with request.app.state.pool.connection() as conn:
+        r = await (await conn.execute("SELECT * FROM news_feeds WHERE code = %s FOR UPDATE", (code,))).fetchone()
+        if not r:
+            raise ApiError(404, "not_found", "Không có nguồn tin này")
+        legal = changes.get("legal_approved", r["legal_approved"])
+        if changes.get("enabled") is True and not legal:
+            raise ApiError(409, "legal_not_approved",
+                           "Nguồn chưa được duyệt pháp lý (giấy phép dùng lại RSS). Duyệt trước khi bật.")
+        if not legal and "enabled" not in changes and r.get("enabled"):
+            changes["enabled"] = False   # thu hồi duyệt pháp lý thì tự tắt nguồn
+        sets, args = [], []
+        for k, v in changes.items():
+            sets.append(f"{k} = %s"); args.append(v)
+        await conn.execute(f"UPDATE news_feeds SET {', '.join(sets)} WHERE code = %s", (*args, code))
+        await audit(conn, who.actor, "update_news_feed", "news_feeds", code, {k: r.get(k) for k in changes}, changes)
+    return {"code": code, "updated": list(changes)}

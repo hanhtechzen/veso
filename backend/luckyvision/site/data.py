@@ -1,7 +1,7 @@
 """Truy vấn dữ liệu cho các trang công khai (đã công bố)."""
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from ..domain.games import GAMES
 
@@ -102,6 +102,41 @@ async def game_draws(conn, game: str, limit: int = 20, day: date | None = None) 
     return await _draws(conn, "d.province_code = %s", (game,), limit=limit, order="d.draw_date DESC, d.draw_seq DESC NULLS LAST")
 
 
+async def next_draws(conn, now: datetime | None = None, games: list[str] | None = None, horizon: int = 8) -> dict[str, datetime]:
+    """Giờ quay kế tiếp theo lịch (đã loại ngày nghỉ) của từng trò chơi Vietlott; dùng lại planner.day_slots.
+    Trò chơi không có lịch trong draw_schedules (ví dụ Keno, Bingo18) sẽ không có trong kết quả."""
+    from ..collector.planner import day_slots
+    from ..config import VN_TZ
+    now = (now or datetime.now(VN_TZ)).astimezone(VN_TZ)
+    want = set(games or [g.code for g in GAMES.values() if g.family == "vietlott"])
+    out: dict[str, datetime] = {}
+    for i in range(horizon):
+        day = now.date() + timedelta(days=i)
+        for s in await day_slots(conn, day):
+            code = s["province_code"]
+            if code not in want:
+                continue
+            at = datetime.combine(day, s["draw_time"], VN_TZ)
+            if at > now and (code not in out or at < out[code]):
+                out[code] = at
+        if want <= set(out):
+            break
+    return out
+
+
+async def scheduled_count(conn, code: str, after: date, upto: date, limit: int = 120) -> int | None:
+    """Số kỳ theo lịch (đã loại ngày nghỉ) của một trò chơi trong khoảng (after, upto]; None nếu khoảng quá dài.
+    Dùng để tính số kỳ kế tiếp đúng cả khi dữ liệu đang thiếu vài kỳ gần nhất."""
+    from ..collector.planner import day_slots
+    if (upto - after).days > limit:
+        return None
+    n, day = 0, after + timedelta(days=1)
+    while day <= upto:
+        n += sum(1 for s in await day_slots(conn, day) if s["province_code"] == code)
+        day += timedelta(days=1)
+    return n
+
+
 async def provinces_of(conn, region: str) -> list[dict]:
     return await (await conn.execute(
         """SELECT p.code, p.name, array_agg(DISTINCT s.iso_weekday ORDER BY s.iso_weekday) AS days
@@ -127,6 +162,60 @@ def gan_stats(draws_oldest_first: list[dict], top: int = 15) -> dict:
     return {"gan": gan, "hot": hot, "cold": cold, "draws": n_draws, "recent": len(recent)}
 
 
+def head_tail(lotos: list[str]) -> dict:
+    """Đếm theo chữ số đầu và chữ số cuối của các lô 2 chữ số: {"dau": {0..9: n}, "duoi": {0..9: n}}."""
+    dau = {i: 0 for i in range(10)}
+    duoi = {i: 0 for i in range(10)}
+    for n in lotos:
+        dau[int(n[0])] += 1
+        duoi[int(n[-1])] += 1
+    return {"dau": dau, "duoi": duoi}
+
+
+def snapshot_from_draws(region: str, draws: list[dict], top: int = 5) -> dict:
+    """Thống kê nhanh của một miền từ các kỳ đã công bố (mọi đài). Đơn vị "gan" là số NGÀY quay của miền."""
+    by_day: dict[date, list[int]] = {}
+    for d in draws:
+        by_day.setdefault(d["draw_date"], []).extend(d["loto"])
+    days = sorted(by_day, reverse=True)           # mới nhất trước
+    if not days:
+        return {"region": region, "region_name": REGION_NAMES.get(region, region), "unit": "ngày", "as_of": None,
+                "days": 0, "gan_top": [], "hot30": [], "head_tail": head_tail([])}
+    gap: dict[int, int] = {}
+    for i, day in enumerate(days):
+        for n in set(by_day[day]):
+            gap.setdefault(n, i)
+    gan = sorted(((n, gap.get(n, len(days))) for n in range(100)), key=lambda x: (-x[1], x[0]))[:top]
+    cut = days[0] - timedelta(days=30)
+    freq = {n: 0 for n in range(100)}
+    for day in days:
+        if day > cut:
+            for n in by_day[day]:
+                freq[n] += 1
+    hot = sorted(((n, c) for n, c in freq.items() if c), key=lambda x: (-x[1], x[0]))[:top]
+    return {"region": region, "region_name": REGION_NAMES.get(region, region), "unit": "ngày", "as_of": days[0].isoformat(),
+            "days": len(days), "gan_top": [{"number": f"{n:02d}", "days": g} for n, g in gan],
+            "hot30": [{"number": f"{n:02d}", "count": c} for n, c in hot],
+            "head_tail": head_tail([f"{n:02d}" for n in by_day[days[0]]])}
+
+
+_SNAP_CACHE: dict[str, tuple[tuple, dict]] = {}
+
+
+async def region_snapshot(conn, region: str) -> dict:
+    """Thống kê nhanh của miền; lưu cache theo (số kỳ đã công bố, mốc công bố mới nhất) nên chỉ tính lại khi có kỳ mới/sửa."""
+    mark = await (await conn.execute(
+        "SELECT count(*) AS n, max(published_at) AS p FROM lottery_draws WHERE region_code = %s AND current_version IS NOT NULL",
+        (region,))).fetchone()
+    key = (mark["n"], mark["p"])
+    hit = _SNAP_CACHE.get(region)
+    if hit and hit[0] == key:
+        return hit[1]
+    snap = snapshot_from_draws(region, await region_range(conn, region, 365))
+    _SNAP_CACHE[region] = (key, snap)
+    return snap
+
+
 async def sitemap_entries(conn) -> list[tuple[str, date | None]]:
     out: list[tuple[str, date | None]] = []
     for region, slug in REGION_SLUG.items():
@@ -144,6 +233,7 @@ async def sitemap_entries(conn) -> list[tuple[str, date | None]]:
                 out.append((f"/xs-{p['code']}", None))
                 out.append((f"/thong-ke-xs-{p['code']}", None))
     out += [("/vietlott", None), ("/xs-dien-toan", None)]
+    out += await news_sitemap_entries(conn)
     for g in GAMES.values():
         days = await (await conn.execute(
             """SELECT DISTINCT draw_date FROM lottery_draws WHERE province_code = %s AND current_version IS NOT NULL
@@ -155,6 +245,52 @@ async def sitemap_entries(conn) -> list[tuple[str, date | None]]:
             if g.code in ("power655", "mega645"):
                 out.append((f"/thong-ke-{g.slug}", days[0]["draw_date"]))
         out += [(f"/{g.slug}-{slug_date(r['draw_date'])}", r["draw_date"]) for r in days]
+    return out
+
+
+# ---------------- tin tức ----------------
+NEWS_COLS = ("id, kind, topic, slug, title, summary, body, region_code, draw_ids, ref_date, source_name, source_url, "
+             "feed_code, published_at, updated_at")
+NEWS_TOPICS = {"ket-qua": ["region_day"], "vietlott": ["vietlott_draw"], "thong-ke": ["weekly_stats"], "bao-chi": ["external"]}
+NEWS_TOPIC_LABEL = {"region_day": "Kết quả", "vietlott_draw": "Vietlott", "weekly_stats": "Thống kê", "external": "Báo chí"}
+
+
+async def news_count(conn, topics: list[str] | None = None) -> int:
+    if topics:
+        sql, args = "SELECT count(*) AS n FROM news_articles WHERE NOT hidden AND topic = ANY(%s)", (topics,)
+    else:
+        sql, args = "SELECT count(*) AS n FROM news_articles WHERE NOT hidden", ()
+    r = await (await conn.execute(sql, args)).fetchone()
+    return int(r["n"]) if r else 0
+
+
+async def news_list(conn, limit: int = 20, offset: int = 0, topics: list[str] | None = None) -> tuple[list[dict], int]:
+    """Bài hiển thị được, mới nhất trước; trả (danh sách, tổng số)."""
+    where = "NOT hidden" + (" AND topic = ANY(%s)" if topics else "")
+    args = ((topics,) if topics else ()) + (int(limit), int(offset))
+    rows = await (await conn.execute(
+        f"SELECT {NEWS_COLS} FROM news_articles WHERE {where} ORDER BY published_at DESC, id DESC LIMIT %s OFFSET %s", args)).fetchall()
+    return list(rows), await news_count(conn, topics)
+
+
+async def news_by_slug(conn, slug: str) -> dict | None:
+    return await (await conn.execute(
+        f"SELECT {NEWS_COLS} FROM news_articles WHERE NOT hidden AND kind = 'auto' AND slug = %s LIMIT 1", (slug,))).fetchone()
+
+
+async def news_sitemap_entries(conn) -> list[tuple[str, date | None]]:
+    out: list[tuple[str, date | None]] = []
+    latest = await (await conn.execute("SELECT max(published_at) AS d FROM news_articles WHERE NOT hidden")).fetchone()
+    d = latest.get("d") if latest else None
+    out.append(("/tin-tuc", d.date() if isinstance(d, datetime) else d))
+    rows = await (await conn.execute(
+        "SELECT slug, published_at, updated_at FROM news_articles WHERE NOT hidden AND kind = 'auto' AND slug IS NOT NULL "
+        "ORDER BY published_at DESC LIMIT 5000")).fetchall()
+    for r in rows:
+        if not r.get("slug"):
+            continue
+        t = r.get("updated_at") or r.get("published_at")
+        out.append((f"/tin-tuc/{r['slug']}", t.date() if isinstance(t, datetime) else None))
     return out
 
 

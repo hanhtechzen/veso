@@ -88,7 +88,7 @@ class MinhNgocAdapter(ScrapeAdapter):
         await self.guard(http, url)
         r = await http.get(url, headers=self.headers({"Accept": "text/html", "Referer": "https://www.minhngoc.net/"}))
         self.check_blocked(r)
-        return FetchResult(url, r.status_code, r.content if r.status_code == 200 else b"", "text/html")
+        return FetchResult(url, r.status_code, r.content if r.status_code == 200 else b"", "text/html", dict(r.headers))
 
     def parse(self, result: FetchResult, draw: DrawRef) -> Parsed:
         text = strip_tags(result.body.decode("utf-8", errors="replace"))

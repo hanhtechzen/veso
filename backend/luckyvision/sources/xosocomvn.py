@@ -53,6 +53,13 @@ class _Table(HTMLParser):
         self.rows: list[list[str]] = []
         self._cell: list[str] | None = None
 
+    def _flush(self):
+        """Đóng ô đang mở. Trang thường bỏ thẻ đóng </td>, </th>, </tr> (HTML nén), nên ô cũng được
+        đóng khi gặp ô mới, dòng mới hoặc hết bảng."""
+        if self._cell is not None:
+            self.rows[-1].append(" ".join("".join(self._cell).split()))
+            self._cell = None
+
     def handle_starttag(self, tag, attrs):
         if self.done:
             return
@@ -61,9 +68,11 @@ class _Table(HTMLParser):
                 self.depth += 1
             elif "table-result" in (dict(attrs).get("class") or "").split():
                 self.depth = 1
-        elif self.depth and tag == "tr":
+        elif self.depth == 1 and tag == "tr":
+            self._flush()
             self.rows.append([])
-        elif self.depth and tag in ("td", "th") and self.rows:
+        elif self.depth == 1 and tag in ("td", "th") and self.rows:
+            self._flush()
             self._cell = []
         elif self.depth and tag == "br" and self._cell is not None:
             self._cell.append(" ")
@@ -71,10 +80,11 @@ class _Table(HTMLParser):
     def handle_endtag(self, tag):
         if self.done or not self.depth:
             return
-        if tag in ("td", "th") and self._cell is not None:
-            self.rows[-1].append(" ".join("".join(self._cell).split()))
-            self._cell = None
+        if self.depth == 1 and tag in ("td", "th", "tr", "thead", "tbody"):
+            self._flush()
         elif tag == "table":
+            if self.depth == 1:
+                self._flush()
             self.depth -= 1
             if self.depth == 0:
                 self.done = True
@@ -134,7 +144,7 @@ class XosoComVnAdapter(ScrapeAdapter):
         await self.guard(http, url)
         r = await http.get(url, headers=self.headers({"Accept": "text/html"}))
         self.check_blocked(r)
-        return FetchResult(url, r.status_code, r.content if r.status_code == 200 else b"", "text/html")
+        return FetchResult(url, r.status_code, r.content if r.status_code == 200 else b"", "text/html", dict(r.headers))
 
     def parse(self, result: FetchResult, draw: DrawRef) -> Parsed:
         markup = result.body.decode("utf-8", errors="replace")
