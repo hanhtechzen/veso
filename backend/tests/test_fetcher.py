@@ -13,8 +13,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from luckyvision.collector import fetcher
-from luckyvision.sources.base import DrawRef, FetchResult
+from xs247.collector import fetcher
+from xs247.sources.base import DrawRef, FetchResult
 
 DRAW = DrawRef("mb-mb-2026-11-02", "xs", "mb", "mb", date(2026, 11, 2))
 SRC = {"code": "srcA", "rate_limit_ms": 0}

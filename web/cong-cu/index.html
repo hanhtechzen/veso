@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LuckyVision: tra cứu, thống kê và phân tích xổ số minh bạch</title>
+<title>XS247: tra cứu, thống kê và phân tích xổ số minh bạch</title>
+<meta property="og:site_name" content="XS247">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/be-vietnam-pro-vietnamese-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/fonts.css">
 <script src="/assets/lv-loading.js"></script>
@@ -270,10 +274,15 @@ h2{font-weight:700;letter-spacing:-0.01em;font-size:1.15rem}
   linear-gradient(120deg,var(--header) 0%,var(--header-2) 100%);
   box-shadow:0 1px 0 rgba(0,0,0,.2),0 10px 30px -18px rgba(80,0,0,.8)}
 .brand{font-weight:800;letter-spacing:-0.03em;font-size:1.35rem}
-.brand-ball{width:32px;height:32px;font-size:.72rem;font-weight:700;color:#141B2D;
+.brand-ball{position:relative;width:32px;height:32px;font:800 .8rem "Be Vietnam Pro",system-ui,sans-serif;color:#1A1446;
   background:radial-gradient(circle at 50% 52%,#fff 0 44%,transparent 45%),radial-gradient(circle at 32% 24%,#FFE08A 0,var(--gold) 45%,#9A6A00 100%);
   box-shadow:inset -2px -3px 5px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.3);transition:transform .5s var(--ease)}
 .brand:hover .brand-ball{transform:rotate(-200deg)}
+.brand-name{white-space:nowrap}
+.brand-dot{position:absolute;top:-2px;right:-3px;width:10px;height:10px;border-radius:50%;background:#FF2D55;border:2px solid #fff;box-shadow:0 0 0 0 rgba(255,45,85,.6);animation:lvLive 1.8s infinite}
+@keyframes lvLive{70%{box-shadow:0 0 0 7px rgba(255,45,85,0)}100%{box-shadow:0 0 0 0 rgba(255,45,85,0)}}
+.brand-live{display:inline-block;margin-left:4px;padding:1px 8px 2px;border-radius:999px;background:#FF2D55;color:#fff;font-weight:800;font-size:.85em;line-height:1.3}
+@media (prefers-reduced-motion:reduce){.brand-dot{animation:none}}
 .regions{background:rgba(0,0,0,.22);box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
 .regions a{transition:background .25s var(--ease),color .25s var(--ease)}
 .regions a[aria-current]{background:#fff;color:var(--header);box-shadow:0 2px 8px -2px rgba(0,0,0,.35)}
@@ -775,7 +784,7 @@ main{max-width:1140px;padding:24px 16px 56px}
       <div class="count" id="hCount" aria-live="off"></div>
       <div class="count-when" id="hWhen"></div>
       <div class="tagline">Số liệu minh bạch, đối chiếu công khai.
-        <span>Mọi thống kê và phân tích trên LuckyVision đều dựa trên kết quả thật, kể cả khi kết quả không đẹp.</span></div>
+        <span>Mọi thống kê và phân tích trên XS247 đều dựa trên kết quả thật, kể cả khi kết quả không đẹp.</span></div>
     </div>
     <div class="ticket">
       <div class="t-head"><b id="hLastTitle"></b><span id="hLastDate"></span></div>
@@ -873,7 +882,7 @@ main{max-width:1140px;padding:24px 16px 56px}
 <!-- ============ MAY THOI GIAN ============ -->
 <section class="view" data-view="may-thoi-gian" aria-label="Máy thời gian">
   <h1 class="page">Máy thời gian</h1>
-  <p class="lead">Nhập một bộ 6 số, chẳng hạn ngày sinh hay số may mắn của bạn. LuckyVision sẽ cho bạn biết nếu chơi đúng bộ đó mỗi kỳ trong quá khứ thì kết quả ra sao.</p>
+  <p class="lead">Nhập một bộ 6 số, chẳng hạn ngày sinh hay số may mắn của bạn. XS247 sẽ cho bạn biết nếu chơi đúng bộ đó mỗi kỳ trong quá khứ thì kết quả ra sao.</p>
   <div class="card">
     <div class="cols">
       <div><label class="fld" for="tmNums">Bộ số của bạn</label><input type="text" id="tmNums" class="nums-in" placeholder="Gõ 6 số bất kỳ, vd: 3 15 8 28 19 21" inputmode="numeric" autocomplete="off">
@@ -1083,7 +1092,8 @@ main{max-width:1140px;padding:24px 16px 56px}
 </main>
 
 <footer class="foot">
-  <p>LuckyVision là trang tra cứu, thống kê và phân tích tham khảo; không bán vé, không nhận đặt cược. Kết quả xổ số là ngẫu nhiên, và mọi số liệu phân tích trên trang chỉ để tham khảo. Hãy chơi trong mức chi tiêu bạn đã định trước.</p>
+  <p>Liên hệ: <a href="tel:0865556800">0865 556 800</a> · <a href="mailto:nguyenhanh7654@gmail.com">nguyenhanh7654@gmail.com</a></p>
+  <p>XS247 là trang tra cứu, thống kê và phân tích tham khảo; không bán vé, không nhận đặt cược. Kết quả xổ số là ngẫu nhiên, và mọi số liệu phân tích trên trang chỉ để tham khảo. Hãy chơi trong mức chi tiêu bạn đã định trước.</p>
   <p id="footData"></p>
 </footer>
 <script>
@@ -1492,7 +1502,7 @@ function runTimeMachine(){
   const zeroY=H-(0-minP)/span*H;
   const tierOrder=['Jackpot 1','Jackpot 2','Giải Nhất','Giải Nhì','Giải Ba'];
   const tierTxt=tierOrder.filter(t=>tiers[t]).map(t=>t+': '+tiers[t]+' lần').join(', ')||'Chưa trúng giải nào';
-  const share='Nếu chơi bộ '+pick.map(pad).join(' ')+' mỗi kỳ Power 6/55 từ '+dmy(R[0].t)+', tôi đã chi '+vnd(cost)+' và trúng '+vnd(win)+' ('+tierTxt.toLowerCase()+'). Thử bộ số của bạn trên LuckyVision.';
+  const share='Nếu chơi bộ '+pick.map(pad).join(' ')+' mỗi kỳ Power 6/55 từ '+dmy(R[0].t)+', tôi đã chi '+vnd(cost)+' và trúng '+vnd(win)+' ('+tierTxt.toLowerCase()+'). Thử bộ số của bạn trên XS247.';
   $('#tmOut').innerHTML=
    '<div class="cols">'+
     '<div class="ticket"><div class="t-head"><span class="balls">'+ballsHTML(pick,{size:'sm'})+'</span><span>'+intf(R.length)+' kỳ, từ '+dmy(R[0].t)+' đến '+dmy(lastRes().t)+'</span></div>'+
@@ -1834,7 +1844,7 @@ function rgPrelude(viewName){
   const r=CUR_REGION;const sec=$('.view[data-view="'+viewName+'"]');
   sec.querySelectorAll('[data-only]').forEach(el=>el.hidden=!el.dataset.only.split(' ').includes(r));
   const nd=sec.querySelector('.rg-nodata');const dt=sec.querySelector('.rg-data');
-  if(REG[r].nodata){if(dt)dt.hidden=true;if(nd){nd.hidden=false;nd.innerHTML=REG[r].nodataMsg||'<div class="card empty"><h2>Chưa có dữ liệu miền Trung</h2><p>LuckyVision chưa có nguồn dữ liệu kết quả miền Trung được phép sử dụng và đã kiểm tra chất lượng, nên chưa hiển thị kết quả, thống kê hay phân tích cho khu vực này.</p><p class="hint">Chủ trang có thể bổ sung khi có nguồn dữ liệu phù hợp. Trong lúc chờ, bạn có thể xem <a href="#mb-'+viewName.slice(3)+'">miền Bắc</a> hoặc <a href="#mn-'+viewName.slice(3)+'">miền Nam</a>.</p></div>';}return false;}
+  if(REG[r].nodata){if(dt)dt.hidden=true;if(nd){nd.hidden=false;nd.innerHTML=REG[r].nodataMsg||'<div class="card empty"><h2>Chưa có dữ liệu miền Trung</h2><p>XS247 chưa có nguồn dữ liệu kết quả miền Trung được phép sử dụng và đã kiểm tra chất lượng, nên chưa hiển thị kết quả, thống kê hay phân tích cho khu vực này.</p><p class="hint">Chủ trang có thể bổ sung khi có nguồn dữ liệu phù hợp. Trong lúc chờ, bạn có thể xem <a href="#mb-'+viewName.slice(3)+'">miền Bắc</a> hoặc <a href="#mn-'+viewName.slice(3)+'">miền Nam</a>.</p></div>';}return false;}
   if(dt)dt.hidden=false;if(nd)nd.hidden=true;return true;
 }
 function prizeTable(d,lo){
@@ -1855,7 +1865,7 @@ renderers['rg-tong-quan']=function(){
   const r=CUR_REGION;const R=REG[r];
   $('#tqTitle').textContent='Xổ số '+rn(r);
   if(!rgPrelude('rg-tong-quan')){$('#tqLead').textContent='';
-    $('#tqBody').innerHTML=REG[r].nodataMsg||'<div class="card empty"><h2>Chưa có dữ liệu miền Trung</h2><p>LuckyVision chưa có nguồn dữ liệu kết quả miền Trung được phép sử dụng và đã kiểm tra chất lượng. Vì vậy trang chưa hiển thị kết quả, thống kê hay phân tích cho khu vực này.</p><p class="hint">Trong lúc chờ, bạn có thể xem <a href="#mb-tong-quan">miền Bắc</a> hoặc <a href="#mn-tong-quan">miền Nam</a>.</p></div>';return;}
+    $('#tqBody').innerHTML=REG[r].nodataMsg||'<div class="card empty"><h2>Chưa có dữ liệu miền Trung</h2><p>XS247 chưa có nguồn dữ liệu kết quả miền Trung được phép sử dụng và đã kiểm tra chất lượng. Vì vậy trang chưa hiển thị kết quả, thống kê hay phân tích cho khu vực này.</p><p class="hint">Trong lúc chờ, bạn có thể xem <a href="#mb-tong-quan">miền Bắc</a> hoặc <a href="#mn-tong-quan">miền Nam</a>.</p></div>';return;}
   const lt=latestDate(r);
   $('#tqLead').textContent='Quay lúc '+R.timeLabel+(r==='mb'?' hằng ngày':' theo lịch từng tỉnh')+'. Dữ liệu có đến ngày '+dmy(lt)+'.';
   let html='';
@@ -1905,7 +1915,7 @@ renderers['rg-ket-qua']=function(){
   msg.textContent=(($('#rkDate').value||lo!=null)?intf(L.length)+' kỳ quay phù hợp'+(lo!=null?', lô '+pad(lo)+' được tô vàng':'')+'.':intf(L.length)+' kỳ quay của '+provName(r,p)+'.');
   if(!L.length)msg.textContent=$('#rkDate').value?'Không có kỳ quay nào'+(p!=='all'?' của '+provName(r,p):'')+' vào ngày '+dmy(Date.parse($('#rkDate').value+'T00:00:00Z'))+'.':'Không có kỳ quay nào phù hợp.';
   $('#rkList').innerHTML='<div class="rk-grid">'+sl.map(d=>'<div class="ticket"><div class="t-head"><b>'+esc(provName(r,d.prov))+'</b><span>'+fullDate(d.t)+'</span></div>'+prizeTable(d,lo)+
-    '<details class="det"><summary>Chi tiết kỳ quay</summary><dl><dt>Mã kỳ quay</dt><dd class="mono">'+esc(r+'-'+d.key)+'</dd><dt>Tỉnh/đài</dt><dd>'+esc(provName(r,d.prov))+'</dd><dt>Ngày quay</dt><dd>'+fullDate(d.t)+', '+REG[r].timeLabel+'</dd><dt>Nguồn</dt><dd>'+esc(d.src==='emb'?REG[r].source:'Quản trị viên LuckyVision')+'</dd><dt>Xác minh</dt><dd>'+esc(drawStatus(d))+'</dd></dl>'+lotoByHead(d)+'</details></div>').join('')+'</div>';
+    '<details class="det"><summary>Chi tiết kỳ quay</summary><dl><dt>Mã kỳ quay</dt><dd class="mono">'+esc(r+'-'+d.key)+'</dd><dt>Tỉnh/đài</dt><dd>'+esc(provName(r,d.prov))+'</dd><dt>Ngày quay</dt><dd>'+fullDate(d.t)+', '+REG[r].timeLabel+'</dd><dt>Nguồn</dt><dd>'+esc(d.src==='emb'?REG[r].source:'Quản trị viên XS247')+'</dd><dt>Xác minh</dt><dd>'+esc(drawStatus(d))+'</dd></dl>'+lotoByHead(d)+'</details></div>').join('')+'</div>';
   $('#rkPage').textContent='Trang '+(rkPage+1)+' / '+pages;$('#rkPrev').disabled=rkPage===0;$('#rkNext').disabled=rkPage>=pages-1;
 };
 ['rkProv','rkDate','rkLo'].forEach(id=>$('#'+id).addEventListener('input',()=>{rkPage=0;if(id==='rkProv')rgSel[CUR_REGION]=$('#rkProv').value;renderers['rg-ket-qua']();}));
@@ -1918,7 +1928,7 @@ $('#rkExport').addEventListener('click',async()=>{
   const lines=['ma_ky_quay,mien,tinh_dai,ngay_quay,giai,so,nguon'];
   rkLast.forEach(d=>REG[r].enc.forEach(([k])=>d.pr[k].forEach(x=>lines.push([r+'-'+d.key,REG[r].name,provName(r,d.prov),d.iso,TIER_NAME[k],'="'+x+'"',d.src==='emb'?'nguon-mo':'quan-tri'].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')))));
   const msg=$('#rkMsg');
-  try{const res=await DOWNLOADS.save({filename:'luckyvision-'+r+'-ket-qua.csv',data:'\ufeff'+lines.join('\n')});msg.className='msg good';msg.textContent=res&&res.status==='saved'?'Đã xuất '+intf(rkLast.length)+' kỳ quay ra tệp CSV.':'Đã gửi tệp CSV.';}
+  try{const res=await DOWNLOADS.save({filename:'xs247-'+r+'-ket-qua.csv',data:'\ufeff'+lines.join('\n')});msg.className='msg good';msg.textContent=res&&res.status==='saved'?'Đã xuất '+intf(rkLast.length)+' kỳ quay ra tệp CSV.':'Đã gửi tệp CSV.';}
   catch(e){msg.className='msg bad';msg.textContent=e&&e.code==='cancelled'?'Đã hủy xuất tệp.':'Không xuất được tệp CSV.';if(e&&e.code==='unavailable')$('#rkExport').hidden=true;}
 });
 
@@ -2693,7 +2703,7 @@ const PRIZE_VND = {
 const PRIZE_LABEL = {db: 'Đặc biệt', g1: 'Giải Nhất', g2: 'Giải Nhì', g3: 'Giải Ba', g4: 'Giải Tư', g5: 'Giải Năm', g6: 'Giải Sáu', g7: 'Giải Bảy', g8: 'Giải Tám'};
 const ticketLen = r => r === 'mb' ? 5 : 6;
 const XS_LEADS = {
-  'may-thoi-gian': 'Nhập dãy số vé bạn hay mua và chọn đài. LuckyVision tính nếu kỳ nào cũng mua đúng tờ vé đó thì đã trúng gì, tốn bao nhiêu, nhận lại bao nhiêu.',
+  'may-thoi-gian': 'Nhập dãy số vé bạn hay mua và chọn đài. XS247 tính nếu kỳ nào cũng mua đúng tờ vé đó thì đã trúng gì, tốn bao nhiêu, nhận lại bao nhiêu.',
   'do-ve': 'Nhập số trên vé (mỗi dòng một vé), chọn ngày và đài để biết vé trúng giải nào.',
   'tao-so': 'Gợi ý dãy số vé theo ý thích của bạn. Với vé số kiến thiết, giải thưởng không bị chia nên dãy số nào cũng có cơ hội và giá trị như nhau.',
   'so-du-doan': 'Khóa tối đa 5 số lô (2 số cuối) cho kỳ quay tới của một đài, trước giờ quay. Sau khi có kết quả, hệ thống tự chấm số lô trùng.',
@@ -2810,7 +2820,7 @@ function xtmRun() {
   const poly = pts.map((v, i) => (i / (pts.length - 1 || 1) * W).toFixed(1) + ',' + (H - (v - mn) / sp * H).toFixed(1)).join(' ');
   const tierTxt = REG[r].display.slice().reverse().filter(k => tiers[k]).map(k => PRIZE_LABEL[k] + ' ' + tiers[k] + ' lần').join(', ') || 'chưa trúng giải nào';
   const where = p === 'all' ? 'mỗi đài của ' + rn(r) : provName(r, p);
-  const share = 'Nếu mua vé số ' + ticket + ' ở ' + where + ' mỗi kỳ từ ' + dmy(D[0].t) + ', tôi đã chi ' + vnd(cost) + ' và nhận ' + vnd(win) + ' (' + tierTxt + '). Thử số của bạn trên LuckyVision.';
+  const share = 'Nếu mua vé số ' + ticket + ' ở ' + where + ' mỗi kỳ từ ' + dmy(D[0].t) + ', tôi đã chi ' + vnd(cost) + ' và nhận ' + vnd(win) + ' (' + tierTxt + '). Thử số của bạn trên XS247.';
   $('#xtmOut').innerHTML = '<div class="cols"><div class="ticket"><div class="t-head"><b>Vé ' + ticket + '</b><span>' + esc(where) + ', ' + intf(D.length) + ' kỳ từ ' + dmy(D[0].t) + '</span></div>' +
     '<div class="cols" style="gap:10px"><div><div class="hint" style="margin:0">Tiền vé</div><div class="stat-big">' + vnd(cost) + '</div></div><div><div class="hint" style="margin:0">Tiền thưởng</div><div class="stat-big">' + vnd(win) + '</div></div></div>' +
     '<p style="margin:14px 0 4px;font-weight:700;color:' + (pl >= 0 ? 'var(--good)' : 'var(--bad)') + '">' + (pl >= 0 ? 'Lời ' : 'Lỗ ') + vnd(Math.abs(pl)) + ' (' + dec(win / cost * 100) + '% số tiền quay về)</p>' +
@@ -3147,7 +3157,7 @@ function lvApply(d) {
   lvPowerGuard();
   LV_SRV.at = d.generated_at;
   const f = $('#footData');
-  if (f) f.textContent = 'Kết quả lấy từ máy chủ LuckyVision (đối chiếu nhiều nguồn trước khi công bố), cập nhật lúc ' +
+  if (f) f.textContent = 'Kết quả lấy từ máy chủ XS247 (đối chiếu nhiều nguồn trước khi công bố), cập nhật lúc ' +
     new Date(d.generated_at).toLocaleString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh'}) + '. Hãy đối chiếu với công ty xổ số trước khi lĩnh thưởng.';
 }
 async function lvFetch() {

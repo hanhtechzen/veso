@@ -1,4 +1,4 @@
-﻿# Cập nhật LuckyVision lên bản mới trên máy Windows (Docker Desktop).
+﻿# Cập nhật XS247 lên bản mới trên máy Windows (Docker Desktop).
 # Cách dùng: giải nén Luckey.zip mới ĐÈ lên thư mục cũ (giữ nguyên tệp .env), rồi chạy:  .\update.ps1
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
@@ -17,7 +17,7 @@ docker compose up -d --force-recreate --no-deps caddy
 Start-Sleep -Seconds 8
 
 Write-Host "3/3 Tự kiểm tra..." -ForegroundColor Cyan
-docker compose exec -T api python -m luckyvision.cli migrate
-docker compose exec -T api python -m luckyvision.cli doctor
+docker compose exec -T api python -m xs247.cli migrate
+docker compose exec -T api python -m xs247.cli doctor
 Write-Host ""
 Write-Host "Xong. Mở http://localhost và nhấn Ctrl+F5 để trình duyệt tải bản mới." -ForegroundColor Green

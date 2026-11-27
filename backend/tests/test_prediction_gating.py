@@ -12,10 +12,10 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-from luckyvision.api import admin, ai as ai_api, tools
-from luckyvision.api.errors import install
-from luckyvision.auth import token_hash
-from luckyvision.config import Settings
+from xs247.api import admin, ai as ai_api, tools
+from xs247.api.errors import install
+from xs247.auth import token_hash
+from xs247.config import Settings
 
 TOK = {"viewer": "v" * 32, "editor": "e" * 32, "admin": "a" * 32}
 CSRF = {"X-LV-CSRF": "1"}

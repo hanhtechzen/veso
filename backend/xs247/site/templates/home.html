@@ -1,0 +1,112 @@
+{% extends "base.html" %}{% from "macros.html" import result_table, num_chips %}{% from "macros_game.html" import game_result %}
+{% block content %}
+<h1>Kết quả xổ số hôm nay: miền Bắc, miền Nam, miền Trung và Vietlott</h1>
+<p class="lead">Kết quả được đối chiếu từ nhiều nguồn trước khi công bố, kèm thống kê lô gan, sổ kết quả và phân tích số liệu minh bạch.</p>
+<section class="dv-hero" aria-labelledby="dvTitle">
+  <div class="dv-head">
+    <h2 id="dvTitle">Dò vé số ngay</h2>
+    <a class="btn dv-cam" href="/do-ve-anh.html">📷 Chụp ảnh vé để dò</a>
+  </div>
+  <form class="dv-form" id="dvForm" autocomplete="off">
+    <label><span>Số vé</span><input id="dvNum" inputmode="numeric" pattern="[0-9]{5,6}" maxlength="6" placeholder="5 hoặc 6 chữ số" required></label>
+    <label><span>Đài</span><select id="dvProv"><option value="mb">Miền Bắc</option></select></label>
+    <label><span>Ngày quay</span><input id="dvDate" type="date" required></label>
+    <button class="btn" type="submit">Dò ngay</button>
+  </form>
+  <div id="dvOut" class="dv-out" aria-live="polite"></div>
+  <p class="hint">Vé Vietlott hoặc nhiều vé một lúc: dùng <a href="/do-ve-anh.html">Dò vé</a>. Kết quả chỉ để tham khảo, hãy đối chiếu với công ty xổ số trước khi lĩnh thưởng.</p>
+</section>
+<script>
+(() => {
+  const $ = s => document.getElementById(s), esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
+  const vn = new Date(Date.now() + 7 * 3600e3); $('dvDate').value = vn.toISOString().slice(0, 10);
+  fetch('/v1/provinces').then(r => r.json()).then(d => {
+    const by = {mn: [], mt: []};
+    (d.items || []).forEach(p => { if (by[p.region]) by[p.region].push(p); });
+    [['mn', 'Miền Nam'], ['mt', 'Miền Trung']].forEach(([r, name]) => {
+      if (!by[r].length) return;
+      const g = document.createElement('optgroup'); g.label = name;
+      by[r].sort((a, b) => a.name.localeCompare(b.name, 'vi')).forEach(p => g.append(new Option(p.name, p.code)));
+      $('dvProv').append(g);
+    });
+  }).catch(() => {});
+  const box = (kind, icon, title, body) => '<div class="dv-msg dv-' + kind + '" role="status"><span class="dv-ico" aria-hidden="true">' + icon + '</span><div><b>' + title + '</b>' + (body ? '<p>' + body + '</p>' : '') + '</div></div>';
+  $('dvNum').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
+  $('dvForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const num = $('dvNum').value, prov = $('dvProv').value, out = $('dvOut');
+    const need = prov === 'mb' ? 5 : 6;
+    if (num.length !== need) { out.innerHTML = box('bad', '⚠️', 'Số vé chưa đúng', 'Vé ' + (prov === 'mb' ? 'miền Bắc có 5' : 'miền Nam, miền Trung có 6') + ' chữ số.'); return; }
+    const btn = e.submitter || $('dvForm').querySelector('button[type=submit]');
+    const restore = window.lvBusy ? window.lvBusy(btn, 'Đang dò…') : null;
+    if (window.lvBusy && !restore) return;
+    if (!restore) btn.disabled = true;
+    out.innerHTML = box('wait', '⏳', 'Đang dò vé…', '');
+    try {
+      const r = await fetch('/v1/check-ticket', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({game: 'xs', province: prov, draw_date: $('dvDate').value, lines: [num]})});
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        const c = d.error && d.error.code;
+        out.innerHTML = box('bad', '⚠️', c === 'draw_not_found' ? 'Không có kỳ quay này' : 'Chưa dò được', c === 'draw_not_found' ? 'Đài này không quay vào ngày đã chọn. Kiểm tra lại đài và ngày trên vé.' : c === 'rate_limited' ? 'Bạn dò hơi nhanh, thử lại sau ít phút.' : 'Kiểm tra lại số vé, đài và ngày.');
+        return;
+      }
+      const ln = (d.lines || [])[0] || {};
+      if (!d.published) out.innerHTML = box('wait', '⏰', 'Kỳ này chưa có kết quả', 'Vé ' + esc(num) + ' sẽ dò được sau giờ quay' + (prov === 'mb' ? ' (18:15)' : '') + '. Hãy quay lại sau nhé.');
+      else if (ln.result && ln.result.length) out.innerHTML = box('win', '🎉', 'Chúc mừng! Vé ' + esc(num) + ' trúng thưởng', ln.result.map(x => '<b>' + esc(x.name || x.code) + '</b>').join(', '));
+      else out.innerHTML = box('lose', '🍀', 'Vé ' + esc(num) + ' chưa trúng kỳ này', 'Chúc bạn may mắn lần sau.');
+    } catch (err) { out.innerHTML = box('bad', '⚠️', 'Không kết nối được máy chủ', 'Thử lại sau ít phút.'); }
+    finally { if (restore) restore(); else btn.disabled = false; }
+  });
+})();
+</script>
+<div class="grid2">
+{% for s in sections %}
+  <section class="card" data-region="{{ s.region }}">
+    <h2><a href="{{ s.url }}">{{ s.title }}</a></h2>
+    <p class="hint">{{ s.when }}</p>
+    {% if s.draws %}{{ result_table(s.region, s.draws, s.display, short) }}{% else %}<p>Chưa có kết quả.</p>{% endif %}
+    <div class="qs" data-quick-stats="{{ s.region }}">
+      <div class="qs-head"><h3>Thống kê nhanh</h3>{% if s.snap.as_of %}<span class="qs-date">đến {{ s.snap.as_of[8:10] }}/{{ s.snap.as_of[5:7] }}/{{ s.snap.as_of[0:4] }}</span>{% endif %}</div>
+      {% if s.snap.as_of %}
+      <div class="qs-sec"><div class="qs-lab">Lô lâu chưa về <span>số {{ s.snap.unit }} chưa xuất hiện</span></div>
+        {% set gp = [] %}{% for g in s.snap.gan_top %}{% set _ = gp.append((g.number, g.days)) %}{% endfor %}{{ num_chips(gp, s.snap.unit) }}</div>
+      <div class="qs-sec"><div class="qs-lab">Về nhiều trong 30 {{ s.snap.unit }} <span>số lần xuất hiện</span></div>
+        {% set hp = [] %}{% for h in s.snap.hot30 %}{% set _ = hp.append((h.number, h.count)) %}{% endfor %}{{ num_chips(hp, 'lần', 'hi') }}</div>
+      <div class="qs-sec"><div class="qs-lab">Đầu / đuôi kỳ mới nhất <span>số lô theo chữ số</span></div>
+        {% set dau = s.snap.head_tail.dau %}{% set duoi = s.snap.head_tail.duoi %}
+        {% set mx = namespace(dau=0, duoi=0) %}{% for i in range(10) %}{% if dau[i] > mx.dau %}{% set mx.dau = dau[i] %}{% endif %}{% if duoi[i] > mx.duoi %}{% set mx.duoi = duoi[i] %}{% endif %}{% endfor %}
+        <table class="qs-ht"><thead><tr><th></th>{% for i in range(10) %}<th>{{ i }}</th>{% endfor %}</tr></thead>
+          <tbody><tr><th>Đầu</th>{% for i in range(10) %}<td{% if dau[i] == mx.dau and mx.dau %} class="mx"{% endif %}>{{ dau[i] }}</td>{% endfor %}</tr>
+          <tr><th>Đuôi</th>{% for i in range(10) %}<td{% if duoi[i] == mx.duoi and mx.duoi %} class="mx"{% endif %}>{{ duoi[i] }}</td>{% endfor %}</tr></tbody></table></div>
+      <p class="qs-note">Số liệu quá khứ từ kết quả đã công bố; mỗi kỳ quay độc lập với các kỳ trước.</p>
+      {% else %}<p class="qs-note">Chưa đủ dữ liệu để thống kê.</p>{% endif %}
+      <p class="qs-links"><a href="/thong-ke-{{ s.slug }}">Thống kê chi tiết {{ s.snap.region_name }} →</a></p>
+    </div>
+    <p class="more"><a href="{{ s.url }}">Xem đầy đủ và bảng lô tô</a> · <a href="/thong-ke-{{ s.slug }}">Thống kê lô gan</a></p>
+  </section>
+{% endfor %}
+{% for g in games %}
+  <section class="card">
+    <h2><a href="/{{ g.slug }}">{{ g.name }}</a></h2>
+    {% if g.draw %}<p class="hint">Kỳ {{ '%05d' % g.draw.draw_seq if g.draw.draw_seq else '' }}, {{ g.when }}</p>{{ game_result(g.g, g.draw) }}{% else %}<p>Chưa có kết quả.</p>{% endif %}
+    <p class="more"><a href="/{{ g.slug }}">Các kỳ trước</a> · <a href="/do-ve-anh.html">Dò vé</a></p>
+  </section>
+{% endfor %}
+  <section class="card"><h2><a href="/vietlott">Các trò chơi Vietlott khác</a></h2><p>Lotto 5/35, Max 3D, Max 3D Pro, Keno, Bingo18.</p><h2 style="margin-top:14px"><a href="/xs-dien-toan">Xổ số điện toán</a></h2><p>1*2*3, Thần Tài 4, 6x36.</p></section>
+</div>
+{% if news %}
+<section class="card">
+  <h2>Tin mới</h2>
+  <ul class="links news-mini">
+    {% for n in news %}<li>{% if n.kind == 'external' and n.source_url %}<a href="{{ n.source_url }}" target="_blank" rel="nofollow noopener noreferrer">{{ n.title }}</a>{% elif n.slug %}<a href="/tin-tuc/{{ n.slug }}">{{ n.title }}</a>{% else %}{{ n.title }}{% endif %} <span class="hint">{{ news_time(n.published_at) }}</span></li>{% endfor %}
+  </ul>
+  <p class="more"><a href="/tin-tuc">Xem tất cả tin tức →</a></p>
+</section>
+{% endif %}
+<section class="card prose">
+  <h2>XS247 khác gì các trang xổ số khác?</h2>
+  <p>Mọi số liệu thống kê trên XS247 được tính từ kết quả thật đã công bố. Trang cũng cho biết xác suất lý thuyết của từng số và mức chênh lệch thực tế, để bạn tự đánh giá thay vì tin vào “soi cầu”.</p>
+  <p>Công cụ <a href="/cong-cu/#may-thoi-gian">Máy thời gian</a> cho biết nếu mua đều một dãy số trong nhiều năm thì lời lỗ ra sao, áp dụng cho cả Vietlott lẫn vé số kiến thiết ba miền.</p>
+</section>
+{% endblock %}

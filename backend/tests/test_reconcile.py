@@ -1,4 +1,4 @@
-from luckyvision.domain.reconcile import Candidate, diff, reconcile
+from xs247.domain.reconcile import Candidate, diff, reconcile
 
 A = {"db": ["111111"], "g8": ["12"]}
 B = {"db": ["111112"], "g8": ["12"]}

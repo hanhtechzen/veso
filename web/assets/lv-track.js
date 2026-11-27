@@ -1,4 +1,4 @@
-// LuckyVision: đếm lượt xem trang. Không cookie, không lưu IP; tôn trọng "Do Not Track".
+// XS247: đếm lượt xem trang. Không cookie, không lưu IP; tôn trọng "Do Not Track".
 (function () {
   if (navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.globalPrivacyControl) return;
   var last = '';

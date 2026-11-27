@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cập nhật LuckyVision trên Linux/WSL: chép bản mới đè lên (giữ .env) rồi chạy  bash update.sh
+# Cập nhật XS247 trên Linux/WSL: chép bản mới đè lên (giữ .env) rồi chạy  bash update.sh
 set -euo pipefail
 cd "$(dirname "$0")"
 [ -f .env ] || { echo "Không thấy .env: chạy bash start.sh cho lần đầu"; exit 1; }
@@ -13,6 +13,6 @@ docker compose up -d --build
 docker compose up -d --force-recreate --no-deps caddy
 sleep 8
 echo "3/3 Tự kiểm tra..."
-docker compose exec -T api python -m luckyvision.cli migrate
-docker compose exec -T api python -m luckyvision.cli doctor
+docker compose exec -T api python -m xs247.cli migrate
+docker compose exec -T api python -m xs247.cli doctor
 echo "Xong. Mở http://localhost và nhấn Ctrl+F5."

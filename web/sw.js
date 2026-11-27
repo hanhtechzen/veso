@@ -1,5 +1,5 @@
-// LuckyVision service worker: dùng được khi mạng chập chờn, mở lại trang đã xem khi mất mạng.
-const VERSION = 'lv-7';
+// XS247 service worker: dùng được khi mạng chập chờn, mở lại trang đã xem khi mất mạng.
+const VERSION = 'lv-9';
 const CORE = ['/offline.html', '/assets/site.css', '/assets/lv-date.css', '/assets/lv-date.js', '/icons/icon-192.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

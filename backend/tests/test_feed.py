@@ -1,9 +1,9 @@
 from datetime import date
 
-from luckyvision.domain.games import GAMES
-from luckyvision.domain.prizes import DEFAULT_STRUCTURES, validate
-from luckyvision.collector.feed import draw_id_for
-from luckyvision.sources.vietlott_feed import parse_link_rows, parse_max3d_rows, parse_pick_rows
+from xs247.domain.games import GAMES
+from xs247.domain.prizes import DEFAULT_STRUCTURES, validate
+from xs247.collector.feed import draw_id_for
+from xs247.sources.vietlott_feed import parse_link_rows, parse_max3d_rows, parse_pick_rows
 
 LOTTO = """<table><tr><th>Ngày</th></tr><tr><td>02/11/2026</td><td><a>00984</a></td><td>
 <span class="bong_tron">04</span><span class="bong_tron">19</span><span class="bong_tron">25</span><span class="bong_tron">33</span>
@@ -78,8 +78,8 @@ class _Http:
 
 
 def test_max3d_first_page_is_page_index_0():
-    from luckyvision.config import Settings
-    from luckyvision.sources.vietlott_feed import VietlottFeedAdapter
+    from xs247.config import Settings
+    from xs247.sources.vietlott_feed import VietlottFeedAdapter
     for game, gid in (("max3d", "5"), ("max3dpro", "7")):
         a = VietlottFeedAdapter("vietlott-" + game, {"game": game, "respect_robots": False}, Settings())
 
@@ -92,7 +92,7 @@ def test_max3d_first_page_is_page_index_0():
 
 
 def test_worker_scheduler_runs_missed_jobs_after_sleep():
-    from luckyvision.worker import Worker
+    from xs247.worker import Worker
     import inspect
     src = inspect.getsource(Worker.__init__)
     assert "misfire_grace_time" in src and "coalesce" in src

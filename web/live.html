@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LuckyVision: tường thuật trực tiếp</title>
+<title>XS247: tường thuật trực tiếp</title>
+<meta property="og:site_name" content="XS247">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/be-vietnam-pro-vietnamese-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/fonts.css">
 <script src="/assets/lv-loading.js"></script>
@@ -300,12 +304,12 @@ $('#remindIcs').addEventListener('click', () => {
   const p2 = x => String(x).padStart(2, '0'), today = vnNow(), ymd = today.getFullYear() + p2(today.getMonth()+1) + p2(today.getDate());
   const BY = ['SU','MO','TU','WE','TH','FR','SA'];
   const ev = regions.map(r => { const [h, m, days, name] = REMIND_TIMES[r];
-    return ['BEGIN:VEVENT', `UID:luckyvision-${r}@luckyvision`, `DTSTAMP:${ymd}T000000Z`, `DTSTART;TZID=Asia/Ho_Chi_Minh:${ymd}T${p2(h)}${p2(m)}00`,
+    return ['BEGIN:VEVENT', `UID:xs247-${r}@xs247.mobi`, `DTSTAMP:${ymd}T000000Z`, `DTSTART;TZID=Asia/Ho_Chi_Minh:${ymd}T${p2(h)}${p2(m)}00`,
       `DURATION:PT30M`, days === '*' ? 'RRULE:FREQ=DAILY' : `RRULE:FREQ=WEEKLY;BYDAY=${days.map(d => BY[d]).join(',')}`,
       `SUMMARY:${name}`, `DESCRIPTION:Xem trực tiếp: ${location.origin}/live.html`, 'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${name} quay sau ${min} phút`,
       `TRIGGER:-PT${min}M`, 'END:VALARM', 'END:VEVENT'].join('\r\n'); });
-  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//LuckyVision//Nhac gio quay//VI', 'CALSCALE:GREGORIAN', ...ev, 'END:VCALENDAR'].join('\r\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], {type: 'text/calendar'})); a.download = 'luckyvision-nhac-gio-quay.ics';
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//XS247//Nhac gio quay//VI', 'CALSCALE:GREGORIAN', ...ev, 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], {type: 'text/calendar'})); a.download = 'xs247-nhac-gio-quay.ics';
   document.body.appendChild(a); a.click(); a.remove();
   $('#remindMsg').textContent = 'Đã tải tệp lịch. Mở tệp để thêm vào lịch điện thoại hoặc máy tính.';
 });

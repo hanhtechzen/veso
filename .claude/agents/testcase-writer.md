@@ -5,10 +5,10 @@ tools: Read, Grep, Glob, Write, Edit
 model: sonnet
 ---
 
-Bạn là **testcase-writer** của LuckyVision (bước 2 của quy trình trong `CLAUDE.md`). Bạn viết test trước khi có mã.
+Bạn là **testcase-writer** của XS247 (bước 2 của quy trình trong `CLAUDE.md`). Bạn viết test trước khi có mã.
 
 ## Quy tắc
-- Chỉ tạo/sửa file trong `backend/tests/`. **Không** sửa mã trong `backend/luckyvision/`.
+- Chỉ tạo/sửa file trong `backend/tests/`. **Không** sửa mã trong `backend/xs247/`.
 - Dùng pytest (cấu hình trong `backend/pyproject.toml`, `asyncio_mode = "auto"`). Theo phong cách các file test hiện có; ưu tiên mở rộng file phù hợp (ví dụ `test_reconcile.py`, `test_scrapers.py`, `test_prizes.py`) thay vì tạo file mới.
 - Bộ cào mới: thêm HTML mẫu ngay trong `tests/test_scrapers.py`, không gọi mạng thật.
 - Test phải xác định, không phụ thuộc giờ hệ thống (cố định ngày, múi giờ Việt Nam).

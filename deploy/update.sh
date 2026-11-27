@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cập nhật LuckyVision trên VPS. Cách dùng (trong /opt/luckey, sau khi chép bản mới đè lên, giữ nguyên .env):
+# Cập nhật XS247 trên VPS. Cách dùng (trong /opt/luckey, sau khi chép bản mới đè lên, giữ nguyên .env):
 #   bash deploy/update.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -17,6 +17,6 @@ $COMPOSE up -d --build
 $COMPOSE up -d --force-recreate --no-deps caddy
 sleep 8
 echo "3/3 Tự kiểm tra..."
-$COMPOSE exec -T api python -m luckyvision.cli migrate
-$COMPOSE exec -T api python -m luckyvision.cli doctor
+$COMPOSE exec -T api python -m xs247.cli migrate
+$COMPOSE exec -T api python -m xs247.cli doctor
 echo "Xong. Nếu trang vẫn hiện bản cũ, vào Cloudflare xóa bộ nhớ đệm (Caching, Purge Everything)."

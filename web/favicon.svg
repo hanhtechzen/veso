@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>XS247</title>
+  <defs>
+    <radialGradient id="g" cx="35%" cy="28%" r="75%">
+      <stop offset="0" stop-color="#FFF0A8"/><stop offset=".5" stop-color="#FFC233"/><stop offset="1" stop-color="#A06A00"/>
+    </radialGradient>
+  </defs>
+  <circle cx="30" cy="34" r="27" fill="url(#g)"/>
+  <circle cx="30" cy="34" r="16.5" fill="#fff"/>
+  <text x="30" y="41.5" text-anchor="middle" font-family="'Be Vietnam Pro',Arial,Helvetica,sans-serif" font-weight="800" font-size="22" fill="#1A1446">X</text>
+  <circle cx="51" cy="12" r="8" fill="#FF2D55" stroke="#fff" stroke-width="3"/>
+</svg>

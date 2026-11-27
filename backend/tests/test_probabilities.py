@@ -1,4 +1,4 @@
-from luckyvision.forecast.probabilities import calibration_bins, theory_prob, wilson
+from xs247.forecast.probabilities import calibration_bins, theory_prob, wilson
 
 
 def test_theory():

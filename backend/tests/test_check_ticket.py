@@ -1,4 +1,4 @@
-"""Dò vé giấy công khai: POST /v1/check-ticket (module luckyvision.api.check, biến `router`, đối tượng `LIMIT`).
+"""Dò vé giấy công khai: POST /v1/check-ticket (module xs247.api.check, biến `router`, đối tượng `LIMIT`).
 
 Giả định (lỏng, theo từ khóa SQL; không Postgres thật):
   * "lottery_results"  -> các hàng {draw_id, prize_code, number, position} của phiên bản hiện hành của kỳ quay
@@ -7,8 +7,8 @@ Giả định (lỏng, theo từ khóa SQL; không Postgres thật):
   * "lottery_draws"    -> hàng kỳ quay {id, game, region_code, province_code, draw_date, scheduled_at,
                           current_version, status} theo mã kỳ (tham số đầu); không có -> không hàng.
   * Không được ghi gì (chỉ SELECT): không INSERT/UPDATE/DELETE.
-Giới hạn tần suất: 30 lần/phút theo IP (header cf-connecting-ip hoặc client.host), bằng `luckyvision.api.check.LIMIT`
-(một `luckyvision.ai.RateLimiter`). Test đặt lại bằng cách monkeypatch thuộc tính module `LIMIT` thành RateLimiter() mới.
+Giới hạn tần suất: 30 lần/phút theo IP (header cf-connecting-ip hoặc client.host), bằng `xs247.api.check.LIMIT`
+(một `xs247.ai.RateLimiter`). Test đặt lại bằng cách monkeypatch thuộc tính module `LIMIT` thành RateLimiter() mới.
 Ngày cố định, không phụ thuộc giờ hệ thống.
 """
 from __future__ import annotations
@@ -20,9 +20,9 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-from luckyvision.api.errors import install
-from luckyvision.collector.planner import make_draw_id
-from luckyvision.config import VN_TZ
+from xs247.api.errors import install
+from xs247.collector.planner import make_draw_id
+from xs247.config import VN_TZ
 
 DAY = date(2026, 11, 12)
 MB = {"db": ["12345"], "g1": ["67890"], "g4": ["1234", "5678"], "g7": ["45", "99", "05"]}
@@ -119,13 +119,13 @@ class FakePool:
 
 @pytest.fixture(autouse=True)
 def fresh_limiter(monkeypatch):
-    from luckyvision.ai import RateLimiter
-    from luckyvision.api import check as check_api
+    from xs247.ai import RateLimiter
+    from xs247.api import check as check_api
     monkeypatch.setattr(check_api, "LIMIT", RateLimiter())
 
 
 def make_app(db):
-    from luckyvision.api import check as check_api
+    from xs247.api import check as check_api
     a = FastAPI()
     install(a)
     a.include_router(check_api.router)

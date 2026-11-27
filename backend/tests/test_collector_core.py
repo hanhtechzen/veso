@@ -6,10 +6,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from luckyvision.collector import context
-from luckyvision.collector.context import SourceGate
-from luckyvision.collector.planner import parse_draw_id
-from luckyvision.config import Settings
+from xs247.collector import context
+from xs247.collector.context import SourceGate
+from xs247.collector.planner import parse_draw_id
+from xs247.config import Settings
 
 
 # ---------- SourceGate ----------

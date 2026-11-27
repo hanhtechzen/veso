@@ -3,9 +3,9 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "luckyvision"
+name = "xs247"
 version = "0.1.0"
-description = "LuckyVision: bộ thu thập kết quả xổ số, API và luồng realtime"
+description = "XS247: bộ thu thập kết quả xổ số, API và luồng realtime"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115",
@@ -25,10 +25,10 @@ dependencies = [
 dev = ["pytest>=8", "pytest-asyncio>=0.23"]
 
 [tool.setuptools.packages.find]
-include = ["luckyvision*"]
+include = ["xs247*"]
 
 [tool.setuptools.package-data]
-luckyvision = ["migrations/*.sql", "site/templates/*.html"]
+xs247 = ["migrations/*.sql", "site/templates/*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

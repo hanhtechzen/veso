@@ -6,9 +6,9 @@ from datetime import time
 import httpx
 from fastapi import FastAPI
 
-from luckyvision.config import Settings
-from luckyvision.domain import rules as R
-from luckyvision.site import routes
+from xs247.config import Settings
+from xs247.domain import rules as R
+from xs247.site import routes
 
 
 def test_money_format():

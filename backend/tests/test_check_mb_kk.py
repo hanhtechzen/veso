@@ -1,5 +1,5 @@
 """Miền Bắc: giải Khuyến khích (trùng 2 số cuối giải ĐB) và tên giải ĐB phụ thuộc ký hiệu; Lotto KK khi chỉ trùng số ĐB."""
-from luckyvision.domain.play import check_ticket
+from xs247.domain.play import check_ticket
 
 MB = {"db": ["12345"], "g1": ["67890"], "g7": ["45", "99", "05", "11"]}
 

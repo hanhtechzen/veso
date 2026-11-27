@@ -8,10 +8,10 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-from luckyvision import ai as ai_mod
-from luckyvision.api import ai as ai_api
-from luckyvision.api.errors import install
-from luckyvision.config import Settings
+from xs247 import ai as ai_mod
+from xs247.api import ai as ai_api
+from xs247.api.errors import install
+from xs247.config import Settings
 
 SECRET = "SECRET-PROVIDER-BODY quota exceeded for key sk-abc123"
 FRIENDLY = "Trợ lý AI đang bận, thử lại sau ít phút."
@@ -53,7 +53,7 @@ def app(monkeypatch):
 
 async def test_complete_hides_provider_body_and_logs_it(caplog):
     settings = Settings(_env_file=None, ai_api_key="k")
-    with caplog.at_level(logging.WARNING, logger="luckyvision.ai"):
+    with caplog.at_level(logging.WARNING, logger="xs247.ai"):
         with pytest.raises(ai_mod.AiError) as ei:
             await ai_mod.complete(settings, FakeHttp(), "s", "u")
     assert str(ei.value) == FRIENDLY and "SECRET" not in str(ei.value)

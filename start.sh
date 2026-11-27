@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chạy LuckyVision trên Linux, WSL (Ubuntu trong Windows) hoặc VPS thử nghiệm.
+# Chạy XS247 trên Linux, WSL (Ubuntu trong Windows) hoặc VPS thử nghiệm.
 #   cd ~/luckey && bash start.sh
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -37,14 +37,14 @@ done
 
 if [ "$FIRST" = 1 ]; then
   # Dữ liệu mẫu để xem thử giao diện
-  docker compose exec -T api python -m luckyvision.cli collect --date 2026-10-26
-  docker compose exec -T api python -m luckyvision.cli collect --date 2026-10-29
+  docker compose exec -T api python -m xs247.cli collect --date 2026-10-26
+  docker compose exec -T api python -m xs247.cli collect --date 2026-10-29
   echo
   # Tài khoản quản trị đầu tiên (mật khẩu tạm, bắt đổi ở lần đăng nhập đầu)
-  docker compose exec -T api python -m luckyvision.cli create-admin --username admin --name "Quản trị"
+  docker compose exec -T api python -m xs247.cli create-admin --username admin --name "Quản trị"
   echo "Hãy chép lại mật khẩu tạm ở trên."
 fi
-docker compose exec -T api python -m luckyvision.cli forecast
+docker compose exec -T api python -m xs247.cli forecast
 
 cat << 'MSG'
 
@@ -56,5 +56,5 @@ Mở trên trình duyệt Windows:
   Quản trị:         http://localhost/admin.html  (tên đăng nhập: admin)
 
 Hiện mới có dữ liệu mẫu 2 ngày. Bước tiếp theo: mục 6 trong HUONG-DAN-CHAY.md để bật nguồn và tải lịch sử.
-Tự kiểm tra: docker compose exec api python -m luckyvision.cli doctor
+Tự kiểm tra: docker compose exec api python -m xs247.cli doctor
 MSG

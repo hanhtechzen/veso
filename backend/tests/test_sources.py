@@ -3,12 +3,12 @@ from datetime import date
 
 import pytest
 
-from luckyvision.collector.context import SourceGate
-from luckyvision.collector.planner import make_draw_id, parse_draw_id
-from luckyvision.config import Settings
-from luckyvision.sources.base import DrawRef, FetchResult, ParseError
-from luckyvision.sources.fixture import FixtureAdapter
-from luckyvision.sources.http_json import HttpJsonAdapter
+from xs247.collector.context import SourceGate
+from xs247.collector.planner import make_draw_id, parse_draw_id
+from xs247.config import Settings
+from xs247.sources.base import DrawRef, FetchResult, ParseError
+from xs247.sources.fixture import FixtureAdapter
+from xs247.sources.http_json import HttpJsonAdapter
 from pathlib import Path
 
 FX = str(Path(__file__).resolve().parents[1] / "fixtures")

@@ -1,7 +1,7 @@
 from datetime import date
 
-from luckyvision.site.compare import analyze, parse_numbers
-from luckyvision.site.search import norm, parse
+from xs247.site.compare import analyze, parse_numbers
+from xs247.site.search import norm, parse
 
 PROVS = [{"code": "tp-hcm", "name": "TP. Hồ Chí Minh", "region_code": "mn"}, {"code": "da-nang", "name": "Đà Nẵng", "region_code": "mt"},
          {"code": "dong-nai", "name": "Đồng Nai", "region_code": "mn"}, {"code": "dak-nong", "name": "Đắk Nông", "region_code": "mt"}]

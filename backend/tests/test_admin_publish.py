@@ -26,11 +26,11 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-from luckyvision.api import admin
-from luckyvision.api.errors import install
-from luckyvision.collector import pipeline
-from luckyvision.config import VN_TZ, Settings
-from luckyvision.domain.prizes import DEFAULT_STRUCTURES, checksum
+from xs247.api import admin
+from xs247.api.errors import install
+from xs247.collector import pipeline
+from xs247.config import VN_TZ, Settings
+from xs247.domain.prizes import DEFAULT_STRUCTURES, checksum
 
 FX = Path(__file__).resolve().parents[1] / "fixtures"
 DRAW_ID = "mn-tp-hcm-2026-10-26"

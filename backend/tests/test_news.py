@@ -27,10 +27,10 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-from luckyvision.api import admin
-from luckyvision.api.errors import install
-from luckyvision.config import VN_TZ, Settings
-from luckyvision.site import routes
+from xs247.api import admin
+from xs247.api.errors import install
+from xs247.config import VN_TZ, Settings
+from xs247.site import routes
 
 BACKEND = Path(__file__).resolve().parents[1]
 
@@ -42,19 +42,19 @@ BANNED_SAMPLES = ["Dự báo kết quả hôm nay", "DỰ ĐOÁN XSMB", "du-doan
 
 @pytest.mark.parametrize("text", BANNED_SAMPLES)
 def test_filter_blocks_banned_phrases(text):
-    from luckyvision.news.filter import BANNED, is_clean
+    from xs247.news.filter import BANNED, is_clean
     assert BANNED.search(text)
     assert is_clean(text) is False
 
 
 def test_filter_allows_plain_result_text():
-    from luckyvision.news.filter import is_clean
+    from xs247.news.filter import is_clean
     assert is_clean("Kết quả xổ số miền Bắc ngày 10/11/2026") is True
     assert is_clean("") is True
 
 
 def test_banned_regex_is_case_insensitive():
-    from luckyvision.news.filter import BANNED
+    from xs247.news.filter import BANNED
     assert BANNED.flags & re.IGNORECASE
 
 
@@ -73,7 +73,7 @@ def _mn_draw(code, name, special, day=date(2026, 11, 10)):
 
 
 def test_region_day_article_mb_fields():
-    from luckyvision.news.articles import region_day_article
+    from xs247.news.articles import region_day_article
     day = date(2026, 11, 10)
     a = region_day_article("mb", day, [_mb_draw(day)])
     assert a["dedupe_key"] == "region_day:mb:2026-11-10"
@@ -88,7 +88,7 @@ def test_region_day_article_mb_fields():
 
 
 def test_region_day_article_mn_lists_every_station_special():
-    from luckyvision.news.articles import region_day_article
+    from xs247.news.articles import region_day_article
     day = date(2026, 11, 10)
     draws = [_mn_draw("tp-hcm", "TP. Hồ Chí Minh", "472899"), _mn_draw("dong-thap", "Đồng Tháp", "929097")]
     a = region_day_article("mn", day, draws)
@@ -101,7 +101,7 @@ def test_region_day_article_mn_lists_every_station_special():
 
 
 def test_region_day_article_mt_name():
-    from luckyvision.news.articles import region_day_article
+    from xs247.news.articles import region_day_article
     a = region_day_article("mt", date(2026, 11, 3), [_mn_draw("da-nang", "Đà Nẵng", "123456", date(2026, 11, 3))])
     assert "Miền Trung" in a["title"] and "03/11/2026" in a["title"]
     assert a["slug"] == "ket-qua-xsmt-03-11-2026"
@@ -113,7 +113,7 @@ def _vl_draw(game="power655", seq=1422, special=("18",)):
 
 
 def test_vietlott_power_article():
-    from luckyvision.news.articles import vietlott_article
+    from xs247.news.articles import vietlott_article
     d = _vl_draw()
     a = vietlott_article("power655", d)
     assert a["dedupe_key"] == f"vietlott_draw:{d['id']}"
@@ -125,7 +125,7 @@ def test_vietlott_power_article():
 
 
 def test_vietlott_mega_article_has_no_money_claims():
-    from luckyvision.news.articles import vietlott_article
+    from xs247.news.articles import vietlott_article
     d = _vl_draw("mega645", 1300, special=())
     d["prizes"] = {"main": ["01", "09", "16", "27", "33", "45"]}
     a = vietlott_article("mega645", d)
@@ -138,13 +138,13 @@ def test_vietlott_mega_article_has_no_money_claims():
 
 
 def test_vietlott_article_rejects_other_games():
-    from luckyvision.news.articles import vietlott_article
+    from xs247.news.articles import vietlott_article
     with pytest.raises(ValueError):
         vietlott_article("lotto535", _vl_draw("lotto535"))
 
 
 def test_weekly_article_fields_and_monday_rule():
-    from luckyvision.news.articles import weekly_article
+    from xs247.news.articles import weekly_article
     monday = date(2026, 11, 9)
     draws = [_mb_draw(monday + timedelta(days=i), special=f"1000{i}") for i in range(7)]
     a = weekly_article("mb", monday, draws)
@@ -158,8 +158,8 @@ def test_weekly_article_fields_and_monday_rule():
 
 
 def test_all_generated_articles_are_clean():
-    from luckyvision.news.articles import region_day_article, vietlott_article, weekly_article
-    from luckyvision.news.filter import is_clean
+    from xs247.news.articles import region_day_article, vietlott_article, weekly_article
+    from xs247.news.filter import is_clean
     monday = date(2026, 11, 9)
     arts = [region_day_article("mb", date(2026, 11, 10), [_mb_draw()]),
             region_day_article("mn", date(2026, 11, 10), [_mn_draw("tp-hcm", "TP. Hồ Chí Minh", "472899")]),
@@ -190,7 +190,7 @@ ATOM = """<?xml version="1.0" encoding="utf-8"?>
 
 
 def test_parse_feed_rss_basic_fields():
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     items = parse_feed(RSS, "Báo A")
     first = items[0]
     assert first["title"] == "Kết quả xổ số miền Bắc hôm nay"
@@ -201,14 +201,14 @@ def test_parse_feed_rss_basic_fields():
 
 
 def test_parse_feed_skips_items_without_title_or_link():
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     titles = [i["title"] for i in parse_feed(RSS, "Báo A")]
     assert "Tin không có liên kết" not in titles
     assert len(titles) == 3
 
 
 def test_parse_feed_atom_entries():
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     items = parse_feed(ATOM, "Báo B")
     assert len(items) == 1
     it = items[0]
@@ -219,13 +219,13 @@ def test_parse_feed_atom_entries():
 
 
 def test_parse_feed_missing_date_is_none():
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     xml = "<rss><channel><item><title>T</title><link>https://a.vn/1</link></item></channel></rss>"
     assert parse_feed(xml, "A")[0]["published_at"] is None
 
 
 def test_parse_feed_truncates_long_summary():
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     xml = ("<rss><channel><item><title>T</title><link>https://a.vn/1</link><description>" + "a" * 900 +
            "</description></item></channel></rss>")
     s = parse_feed(xml, "A")[0]["summary"]
@@ -233,32 +233,32 @@ def test_parse_feed_truncates_long_summary():
 
 
 def test_parse_feed_short_summary_not_truncated():
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     xml = "<rss><channel><item><title>T</title><link>https://a.vn/1</link><description>ngắn</description></item></channel></rss>"
     assert parse_feed(xml, "A")[0]["summary"] == "ngắn"
 
 
 @pytest.mark.parametrize("decl", ["<!DOCTYPE rss>", '<!DOCTYPE foo [<!ENTITY x "y">]>', '<!ENTITY a "b">'])
 def test_parse_feed_rejects_doctype_and_entity(decl):
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     with pytest.raises(ValueError):
         parse_feed(decl + "<rss><channel></channel></rss>", "A")
 
 
 def _items():
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     return parse_feed(RSS, "Báo A")
 
 
 def test_select_items_none_pattern_keeps_clean_only():
-    from luckyvision.news.rss import select_items
+    from xs247.news.rss import select_items
     titles = [i["title"] for i in select_items(_items(), None)]
     assert "Dự báo xổ số ngày mai" not in titles
     assert "Kết quả xổ số miền Bắc hôm nay" in titles and "Tin xổ số điện toán" in titles
 
 
 def test_select_items_include_pattern_case_insensitive_on_title_or_summary():
-    from luckyvision.news.rss import select_items
+    from xs247.news.rss import select_items
     titles = [i["title"] for i in select_items(_items(), "VIETLOTT|miền bắc")]
     assert sorted(titles) == ["Kết quả xổ số miền Bắc hôm nay", "Tin xổ số điện toán"]
 
@@ -281,7 +281,7 @@ FEED = {"code": "a", "name": "Báo A", "url": "https://a.vn/rss", "include_patte
 
 
 async def test_fetch_feed_returns_selected_items():
-    from luckyvision.news.rss import fetch_feed
+    from xs247.news.rss import fetch_feed
     http = _Http(_Resp(RSS))
     items = await fetch_feed(http, FEED)
     assert http.urls == ["https://a.vn/rss"]
@@ -301,27 +301,27 @@ class _Denied:
 
 
 async def test_fetch_feed_robots_denied_returns_empty_without_fetching():
-    from luckyvision.news.rss import fetch_feed
+    from xs247.news.rss import fetch_feed
     http = _Http(_Resp(RSS))
     assert await fetch_feed(http, FEED, robots_allowed=lambda url, *a: _Denied()) == []
     assert http.urls == []
 
 
 async def test_fetch_feed_non_200_raises_runtime_error():
-    from luckyvision.news.rss import fetch_feed
+    from xs247.news.rss import fetch_feed
     with pytest.raises(RuntimeError):
         await fetch_feed(_Http(_Resp("", 503)), FEED)
 
 
 async def test_fetch_feed_oversize_body_raises_value_error():
-    from luckyvision.news.rss import fetch_feed
+    from xs247.news.rss import fetch_feed
     with pytest.raises(ValueError):
         await fetch_feed(_Http(_Resp("x" * 2_000_001)), FEED)
 
 
 # ============================ migration ============================
 def test_migration_018_defines_news_tables():
-    p = BACKEND / "luckyvision" / "migrations" / "018_news.sql"
+    p = BACKEND / "xs247" / "migrations" / "018_news.sql"
     assert p.exists()
     sql = p.read_text(encoding="utf-8").lower()
     for name in ("news_feeds", "news_articles", "include_pattern", "respect_robots", "min_interval_s", "last_fetched_at",
@@ -412,23 +412,23 @@ def _keys(conn):
 
 
 async def test_region_day_complete_true_when_all_have_version():
-    from luckyvision.news.service import region_day_complete
+    from xs247.news.service import region_day_complete
     assert await region_day_complete(FakeConn(total=3, published=3), "mn", date(2026, 11, 10)) is True
 
 
 async def test_region_day_complete_false_when_some_unpublished():
-    from luckyvision.news.service import region_day_complete
+    from xs247.news.service import region_day_complete
     assert await region_day_complete(FakeConn(total=3, published=2), "mn", date(2026, 11, 10)) is False
 
 
 async def test_region_day_complete_false_when_no_draws():
-    from luckyvision.news.service import region_day_complete
+    from xs247.news.service import region_day_complete
     assert await region_day_complete(FakeConn(total=0, published=0), "mn", date(2026, 11, 10)) is False
 
 
 async def test_upsert_article_auto_uses_do_update():
-    from luckyvision.news.articles import region_day_article
-    from luckyvision.news.service import upsert_article
+    from xs247.news.articles import region_day_article
+    from xs247.news.service import upsert_article
     art = region_day_article("mb", date(2026, 11, 10), [_mb_draw()])
     conn = FakeConn()
     await upsert_article(conn, art)
@@ -438,7 +438,7 @@ async def test_upsert_article_auto_uses_do_update():
 
 
 async def test_upsert_article_external_does_nothing_on_conflict():
-    from luckyvision.news.service import upsert_article
+    from xs247.news.service import upsert_article
     art = {"kind": "external", "topic": "external", "dedupe_key": "ext:a:https://a.vn/1", "slug": None, "title": "T",
            "summary": "S", "body": None, "region_code": None, "draw_ids": None, "ref_date": None, "source_name": "Báo A",
            "source_url": "https://a.vn/1", "feed_code": "a", "published_at": datetime(2026, 11, 10, 8, 0, tzinfo=VN_TZ)}
@@ -464,7 +464,7 @@ def _event(typ, region, draw_id="mb-mb-2026-11-10", province="mb", version=1):
 
 @pytest.mark.parametrize("typ", ["draw.published", "draw.corrected"])
 async def test_on_events_writes_region_roundup_when_complete(typ):
-    from luckyvision.news.service import on_events
+    from xs247.news.service import on_events
     conn = _mb_conn()
     await on_events(FakePool(conn), [_event(typ, "mb")])
     assert "region_day:mb:2026-11-10" in _keys(conn)
@@ -472,14 +472,14 @@ async def test_on_events_writes_region_roundup_when_complete(typ):
 
 
 async def test_on_events_skips_region_roundup_when_day_incomplete():
-    from luckyvision.news.service import on_events
+    from xs247.news.service import on_events
     conn = _mb_conn(total=2, published=1)
     await on_events(FakePool(conn), [_event("draw.published", "mb")])
     assert conn.inserts == []
 
 
 async def test_on_events_ignores_other_event_types():
-    from luckyvision.news.service import on_events
+    from xs247.news.service import on_events
     conn = _mb_conn()
     await on_events(FakePool(conn), [_event("draw.needs_review", "mb"), _event("collector.failed", "mb")])
     assert conn.inserts == []
@@ -487,7 +487,7 @@ async def test_on_events_ignores_other_event_types():
 
 @pytest.mark.parametrize("region", ["keno", "bingo", "lotto", "max3d"])
 async def test_on_events_ignores_non_roundup_regions(region):
-    from luckyvision.news.service import on_events
+    from xs247.news.service import on_events
     conn = _mb_conn()
     await on_events(FakePool(conn), [_event("draw.published", region, f"{region}-x-2026-11-10", region)])
     assert conn.inserts == []
@@ -495,7 +495,7 @@ async def test_on_events_ignores_non_roundup_regions(region):
 
 @pytest.mark.parametrize("region,game", [("vl", "power655"), ("mega", "mega645")])
 async def test_on_events_writes_vietlott_article(region, game):
-    from luckyvision.news.service import on_events
+    from xs247.news.service import on_events
     did = f"vl-{game}-2026-11-10-01422"
     rows = [{"id": did, "region_code": region, "province_code": game, "draw_date": date(2026, 11, 10), "draw_seq": 1422,
              "current_version": 1, "pname": game, "game": game}]
@@ -507,7 +507,7 @@ async def test_on_events_writes_vietlott_article(region, game):
 
 
 async def test_on_events_needs_no_telegram_settings():
-    from luckyvision.news.service import on_events
+    from xs247.news.service import on_events
     assert list(inspect.signature(on_events).parameters) == ["pool", "rows"]
 
 
@@ -604,7 +604,7 @@ async def test_news_list_page_two_is_noindex():
 
 
 async def test_news_detail_renders_title_and_newsarticle_jsonld():
-    from luckyvision.news.articles import region_day_article
+    from xs247.news.articles import region_day_article
     a = region_day_article("mb", date(2026, 11, 10), [_mb_draw()])
     row = _art(5, slug=a["slug"], title=a["title"], summary=a["summary"], body=a["body"], dedupe_key=a["dedupe_key"])
     r = await _get(_site_app([row]), "/tin-tuc/" + a["slug"])
@@ -773,7 +773,7 @@ async def test_admin_enable_feed_after_approval_is_200(monkeypatch):
 
 
 def test_migration_018_has_legal_approved_default_false():
-    sql = (BACKEND / "luckyvision" / "migrations" / "018_news.sql").read_text(encoding="utf-8").lower()
+    sql = (BACKEND / "xs247" / "migrations" / "018_news.sql").read_text(encoding="utf-8").lower()
     assert re.search(r"legal_approved\s+bool\w*\s+(not null\s+)?default\s+false", sql)
 
 
@@ -791,19 +791,19 @@ def _one(pub=None, desc="x"):
     ("11/23/2026 8:51:00 PM", datetime(2026, 11, 23, 20, 51, 0, tzinfo=VN_TZ)),
 ])
 def test_parse_feed_pubdate_formats(pub, expected):
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     got = parse_feed(_one(pub), "A")[0]["published_at"]
     assert got is not None and got.tzinfo is not None and got == expected
 
 
 def test_parse_feed_unparseable_pubdate_keeps_item_with_none():
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     items = parse_feed(_one("không phải ngày"), "A")
     assert len(items) == 1 and items[0]["published_at"] is None
 
 
 def test_parse_feed_strips_img_tags():
-    from luckyvision.news.rss import parse_feed
+    from xs247.news.rss import parse_feed
     s = parse_feed(_one(None, '<a href="x"><img src="y"></a>Nội dung'), "A")[0]["summary"]
     assert s == "Nội dung"
 
@@ -817,7 +817,7 @@ async def test_news_list_external_item_shows_theo_source_name():
 
 # ============================ worker ============================
 def test_worker_run_registers_news_jobs_and_events_hook():
-    from luckyvision.worker import Worker
+    from xs247.worker import Worker
     src = inspect.getsource(Worker.run)
     for job in ("news-sweep", "news-weekly", "news-feeds"):
         assert job in src, job

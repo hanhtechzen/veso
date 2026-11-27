@@ -1,4 +1,4 @@
-/* LuckyVision: bảng màu rực rỡ dùng chung cho trang Trực tiếp, Thống kê phân tích và AI, Quản trị */
+/* XS247: bảng màu rực rỡ dùng chung cho trang Trực tiếp, Thống kê phân tích và AI, Quản trị */
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
 body{--acc:#FF6B00;--acc2:#FF2D87;--gold:#FFC233;--night:#1A1446;--red:var(--acc)}
 body[data-region="mb"]{--acc:#D7263D;--acc2:#FF9F1C}

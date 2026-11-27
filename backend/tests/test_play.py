@@ -17,7 +17,7 @@ Phần API dùng FakeDB dispatch theo từ khóa SQL (không Postgres thật). G
                                current_version, status}; fetchall cũng trả [hàng đó].
   * "FROM provinces" -> {code, name, region_code, game, active}.
 Số kỳ xs: id 'mb-mb-2026-11-12' (quay 18:15 VN, đóng 18:00). Power 6/55: 'vl-power655-2026-11-12' (18:00, đóng 17:30).
-Đồng hồ: monkeypatch `luckyvision.api.play.now()` (aware datetime).
+Đồng hồ: monkeypatch `xs247.api.play.now()` (aware datetime).
 """
 from __future__ import annotations
 
@@ -28,9 +28,9 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-from luckyvision.api.errors import install
-from luckyvision.auth import token_hash
-from luckyvision.config import VN_TZ
+from xs247.api.errors import install
+from xs247.auth import token_hash
+from xs247.config import VN_TZ
 
 CSRF = {"X-LV-CSRF": "1"}
 MEMBER = {"Cookie": "lv_user=member", **CSRF}
@@ -44,72 +44,72 @@ MN = {"db": ["123456"], "g1": ["78901"], "g2": ["23456"], "g3": ["11111", "22222
 
 
 def test_check_trad_mb_special_and_last2():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert set(check_trad("mb", "12345", MB)) == {"db", "g7"}
 
 
 def test_check_trad_mb_special_needs_all_five_digits():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert check_trad("mb", "02345", MB) == ["g7", "kk"]   # trùng 2 số cuối "45": Giải Bảy + Khuyến khích (2 số cuối ĐB)
     assert "db" not in check_trad("mb", "12346", MB)
 
 
 def test_check_trad_mb_g1_and_none():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert check_trad("mb", "67890", MB) == ["g1"]
     assert check_trad("mb", "00000", MB) == []
 
 
 def test_check_trad_mb_keeps_leading_zeros():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert check_trad("mb", "00005", MB) == ["g7"]
 
 
 def test_check_trad_mb_last4_prize():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert set(check_trad("mb", "91234", MB)) == {"g4"}
 
 
 def test_check_trad_mn_db_and_g2_not_phu_db_or_kk():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     got = check_trad("mn", "123456", MN)
     assert set(got) == {"db", "g2"}
 
 
 def test_check_trad_mn_multiple_numbers_same_prize():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert check_trad("mt", "922222", MN) == ["g3"]
     assert check_trad("mt", "911111", MN) == ["g3"]
 
 
 def test_check_trad_mn_g6_last4_and_g8_last2():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert set(check_trad("mn", "906666", MN)) == {"g6"}
     assert set(check_trad("mn", "900012", MN)) == {"g8"}
     assert set(check_trad("mn", "900888", MN)) == {"g7"}
 
 
 def test_check_trad_mn_phu_db():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert set(check_trad("mn", "023456", MN)) == {"g2", "phu_db"}
     assert set(check_trad("mn", "923456", MN)) == {"g2", "phu_db"}
 
 
 def test_check_trad_mn_khuyen_khich():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert check_trad("mn", "123450", MN) == ["kk"]      # đúng chữ số đầu, sai đúng 1 trong 5 số còn lại
     assert check_trad("mn", "153456", MN) == ["kk"]
 
 
 def test_check_trad_mn_kk_not_when_two_digits_differ_or_first_differs():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert check_trad("mn", "123400", MN) == []
     assert check_trad("mn", "190456", MN) == []
     assert "kk" not in check_trad("mn", "223450", MN)
 
 
 def test_check_trad_mn_no_prize():
-    from luckyvision.domain.play import check_trad
+    from xs247.domain.play import check_trad
     assert check_trad("mn", "000000", MN) == []
 
 
@@ -119,7 +119,7 @@ M645 = {"main": [3, 9, 14, 27, 40, 45]}
 
 
 def test_check_pick_power655_levels():
-    from luckyvision.domain.play import check_pick
+    from xs247.domain.play import check_pick
     assert check_pick("power655", [3, 9, 14, 27, 40, 55], P655) == "jackpot1"
     assert check_pick("power655", [3, 9, 14, 27, 40, 7], P655) == "jackpot2"
     assert check_pick("power655", [3, 9, 14, 27, 40, 8], P655) == "g1"
@@ -129,19 +129,19 @@ def test_check_pick_power655_levels():
 
 
 def test_check_pick_power655_special_alone_does_not_count():
-    from luckyvision.domain.play import check_pick
+    from xs247.domain.play import check_pick
     assert check_pick("power655", [3, 9, 7, 2, 1, 8], P655) is None   # 2 trùng + số đặc biệt
     assert check_pick("power655", [3, 9, 14, 7, 1, 8], P655) == "g3"  # 3 trùng chính; số ĐB không nâng hạng
 
 
 def test_check_pick_accepts_string_prizes():
-    from luckyvision.domain.play import check_pick
+    from xs247.domain.play import check_pick
     assert check_pick("power655", [3, 9, 14, 27, 40, 7], P655_STR) == "jackpot2"
     assert check_pick("power655", [3, 9, 14, 27, 40, 55], P655_STR) == "jackpot1"
 
 
 def test_check_pick_mega645_levels():
-    from luckyvision.domain.play import check_pick
+    from xs247.domain.play import check_pick
     assert check_pick("mega645", [3, 9, 14, 27, 40, 45], M645) == "jackpot"
     assert check_pick("mega645", [3, 9, 14, 27, 40, 1], M645) == "g1"
     assert check_pick("mega645", [3, 9, 14, 27, 2, 1], M645) == "g2"
@@ -151,7 +151,7 @@ def test_check_pick_mega645_levels():
 
 
 def test_prize_names_cover_codes():
-    from luckyvision.domain.play import PRIZE_NAMES
+    from xs247.domain.play import PRIZE_NAMES
     for code in ("db", "g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "phu_db", "kk", "jackpot", "jackpot1", "jackpot2"):
         assert isinstance(PRIZE_NAMES.get(code), str) and PRIZE_NAMES[code], code
 
@@ -162,7 +162,7 @@ def test_prize_names_cover_codes():
     ("mt", ["000000"], ["000000"]),
 ])
 def test_validate_ticket_xs_ok(region, nums, expected):
-    from luckyvision.domain.play import validate_ticket
+    from xs247.domain.play import validate_ticket
     assert validate_ticket("xs", region, nums) == expected
 
 
@@ -171,13 +171,13 @@ def test_validate_ticket_xs_ok(region, nums, expected):
     ("mb", ["12a45"]), ("mb", []), ("mb", ["12345", "67890"]), ("mn", [""]), ("mb", [12345]),
 ])
 def test_validate_ticket_xs_bad(region, nums):
-    from luckyvision.domain.play import validate_ticket
+    from xs247.domain.play import validate_ticket
     with pytest.raises(ValueError):
         validate_ticket("xs", region, nums)
 
 
 def test_validate_ticket_vietlott_sorted_padded():
-    from luckyvision.domain.play import validate_ticket
+    from xs247.domain.play import validate_ticket
     assert validate_ticket("power655", "", [55, 1, 3, 20, 9, 14]) == ["01", "03", "09", "14", "20", "55"]
     assert validate_ticket("mega645", "", [45, 1, 2, 3, 4, 5]) == ["01", "02", "03", "04", "05", "45"]
 
@@ -188,13 +188,13 @@ def test_validate_ticket_vietlott_sorted_padded():
     ("mega645", [1, 2, 3, 4, 5, 46]), ("mega645", [1, 2, 3, 4, 5, 5]), ("mega645", [-1, 2, 3, 4, 5, 6]),
 ])
 def test_validate_ticket_vietlott_bad(game, nums):
-    from luckyvision.domain.play import validate_ticket
+    from xs247.domain.play import validate_ticket
     with pytest.raises(ValueError):
         validate_ticket(game, "", nums)
 
 
 def test_closes_at_xs_15_minutes_vietlott_30():
-    from luckyvision.domain.play import closes_at
+    from xs247.domain.play import closes_at
     d = datetime(2026, 11, 12, 18, 15, tzinfo=VN_TZ)
     assert closes_at(d, "xs") == datetime(2026, 11, 12, 18, 0, tzinfo=VN_TZ)
     d2 = datetime(2026, 11, 12, 18, 0, tzinfo=VN_TZ)
@@ -343,7 +343,7 @@ class FakePool:
 
 
 def make_app(monkeypatch, db, clock):
-    from luckyvision.api import play as play_api
+    from xs247.api import play as play_api
     monkeypatch.setattr(play_api, "now", lambda: clock)
     a = FastAPI()
     install(a)
@@ -362,7 +362,7 @@ BODY_MB = {"game": "xs", "province": "mb", "draw_date": "2026-11-12", "numbers":
 
 
 async def test_play_endpoints_require_login():
-    from luckyvision.api import play as play_api  # noqa: F401
+    from xs247.api import play as play_api  # noqa: F401
     app = FastAPI()
     install(app)
     app.include_router(play_api.router)
@@ -493,7 +493,7 @@ async def test_daily_limit_resets_at_vietnam_midnight(monkeypatch):
 
 
 async def test_list_tickets_checks_lazily_and_stores(monkeypatch):
-    from luckyvision.domain.play import PRIZE_NAMES
+    from xs247.domain.play import PRIZE_NAMES
     tk = [ticket(101, numbers=["12345"])]
     db = FakeDB(draw=xs_draw(version=1), tickets=tk, results={1: [("db", "12345"), ("g1", "67890"), ("g7", "45")]})
     app = make_app(monkeypatch, db, datetime(2026, 11, 12, 13, 0, tzinfo=UTC))

@@ -3,7 +3,7 @@
 Quy định: không dự đoán. AI chỉ nhận xét THÓI QUEN chơi; không gợi ý số, không hứa tăng cơ hội trúng.
 
 Giả định cho coder:
-  * api/play.py import `complete`, `AiError` từ ..ai (test monkeypatch `luckyvision.api.play.complete`, chữ ký như
+  * api/play.py import `complete`, `AiError` từ ..ai (test monkeypatch `xs247.api.play.complete`, chữ ký như
     api/ai.py: complete(settings, http, system, user, max_tokens=...)); prompt do ai_prompt(stats) tạo phải là MỘT
     trong các đối số của complete (vị trí hoặc từ khóa).
   * Cài đặt lấy từ request.app.state.settings (settings.ai_enabled), như api/ai.py.
@@ -21,9 +21,9 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-from luckyvision.api.errors import install
-from luckyvision.auth import token_hash
-from luckyvision.config import Settings
+from xs247.api.errors import install
+from xs247.auth import token_hash
+from xs247.config import Settings
 
 UTC = timezone.utc
 CSRF = {"X-LV-CSRF": "1"}
@@ -50,60 +50,60 @@ FIX = [
 
 # ------------------------------------------------------------------ domain thuần
 def test_summarize_counts_exclude_cancelled():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     s = summarize(FIX)
     assert (s["total"], s["checked"], s["won"], s["pending"]) == (6, 3, 2, 3)
     assert s["by_game"] == {"xs": 4, "power655": 1, "mega645": 1}
 
 
 def test_summarize_top_tail2_desc_count_then_asc_number():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     # đuôi: 45, 27, 27, 45 (vé hủy "27272" -> "72" không tính)
     assert summarize(FIX)["top_tail2"] == [{"number": "27", "count": 2}, {"number": "45", "count": 2}]
 
 
 def test_summarize_top_tail2_max_five():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     t = [tk("xs", [f"1234{i}"], date(2026, 11, 10), "mb") for i in range(7)]
     got = summarize(t)["top_tail2"]
     assert [x["number"] for x in got] == ["40", "41", "42", "43", "44"]
 
 
 def test_summarize_top_pick_counts_each_number_max_five():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     assert summarize(FIX)["top_pick"] == [{"number": "40", "count": 2}, {"number": "01", "count": 1},
                                           {"number": "02", "count": 1}, {"number": "03", "count": 1},
                                           {"number": "04", "count": 1}]
 
 
 def test_summarize_repeat_rate_and_birthday_share():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     s = summarize(FIX)
     assert s["repeat_rate"] == 0.17            # 1/6
     assert s["birthday_share"] == 0.58         # 7 trên 12 số vietlott <= 31
 
 
 def test_summarize_repeat_rate_three_identical():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     t = [tk("xs", ["12345"], date(2026, 11, 10 + i), "mb") for i in range(3)]
     assert summarize(t)["repeat_rate"] == 0.67
 
 
 def test_summarize_repeat_rate_ignores_cancelled_original():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     t = [tk("xs", ["12345"], date(2026, 11, 9), "mb", cancelled=True), tk("xs", ["12345"], date(2026, 11, 10), "mb")]
     assert summarize(t)["repeat_rate"] == 0
 
 
 def test_summarize_vietlott_same_set_is_repeat_regardless_of_order():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     a = tk("mega645", ["01", "02", "03", "04", "05", "06"], date(2026, 11, 10))
     b = tk("mega645", ["06", "05", "04", "03", "02", "01"], date(2026, 11, 11))
     assert summarize([a, b])["repeat_rate"] == 0.5
 
 
 def test_summarize_prizes_and_expected_wins():
-    from luckyvision.domain.play_stats import WIN_PROBABILITY, summarize
+    from xs247.domain.play_stats import WIN_PROBABILITY, summarize
     assert {"xs_mb", "xs_mn", "xs_mt", "power655", "mega645", "lotto535", "max3d", "max3dpro"} == set(WIN_PROBABILITY)
     assert all(0 < v < 1 for v in WIN_PROBABILITY.values())
     s = summarize(FIX)
@@ -113,12 +113,12 @@ def test_summarize_prizes_and_expected_wins():
 
 
 def test_summarize_expected_wins_ignores_pending():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     assert summarize([tk("xs", ["12345"], date(2026, 11, 12), "mb")])["expected_wins"] == 0
 
 
 def test_summarize_empty():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     s = summarize([])
     assert (s["total"], s["checked"], s["won"], s["pending"]) == (0, 0, 0, 0)
     assert s["by_game"] == {} and s["top_tail2"] == [] and s["top_pick"] == [] and s["prizes"] == {}
@@ -126,20 +126,20 @@ def test_summarize_empty():
 
 
 def test_summarize_birthday_none_without_vietlott_and_all_cancelled():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     assert summarize([tk("xs", ["12345"], date(2026, 11, 10), "mb")])["birthday_share"] is None
     s = summarize([tk("power655", ["01", "02", "03", "04", "05", "06"], date(2026, 11, 10), cancelled=True)])
     assert s["total"] == 0 and s["birthday_share"] is None
 
 
 def test_summarize_birthday_boundary_31_32():
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     s = summarize([tk("mega645", ["01", "30", "31", "32", "33", "34"], date(2026, 11, 10))])
     assert s["birthday_share"] == 0.5
 
 
 def test_ai_prompt_contains_numbers_and_legal_instructions():
-    from luckyvision.domain.play_stats import ai_prompt, summarize
+    from xs247.domain.play_stats import ai_prompt, summarize
     p = ai_prompt(summarize(FIX))
     assert isinstance(p, str)
     assert "Không gợi ý số cụ thể" in p
@@ -155,7 +155,7 @@ def test_ai_prompt_contains_numbers_and_legal_instructions():
     ("Bạn đã thử 123456 lần nữa. Chúc vui vẻ.", ["123456"], ["Chúc vui vẻ."]),
 ])
 def test_sanitize_comment_removes_suggestion_sentences(text, gone, kept):
-    from luckyvision.domain.play_stats import sanitize_comment
+    from xs247.domain.play_stats import sanitize_comment
     out = sanitize_comment(text)
     assert isinstance(out, str)
     for g in gone:
@@ -165,7 +165,7 @@ def test_sanitize_comment_removes_suggestion_sentences(text, gone, kept):
 
 
 def test_sanitize_comment_keeps_harmless_text():
-    from luckyvision.domain.play_stats import sanitize_comment
+    from xs247.domain.play_stats import sanitize_comment
     t = "Bạn hay thử vận may mỗi tuần. Bạn thích chọn miền Bắc."
     assert sanitize_comment(t) == t
 
@@ -239,7 +239,7 @@ def calls():
 
 
 def make_app(monkeypatch, calls, tickets=None, clock=None, key="k", reply="Bạn hay chơi đều đặn."):
-    from luckyvision.api import play as play_api
+    from xs247.api import play as play_api
     clock = clock or datetime(2026, 11, 20, 5, 0, tzinfo=UTC)
     monkeypatch.setattr(play_api, "now", lambda: clock)
 
@@ -264,7 +264,7 @@ def cl(app, headers=None):
 
 
 def set_clock(monkeypatch, clock):
-    from luckyvision.api import play as play_api
+    from xs247.api import play as play_api
     monkeypatch.setattr(play_api, "now", lambda: clock)
 
 
@@ -277,7 +277,7 @@ async def test_stats_requires_login(monkeypatch, calls):
 
 
 async def test_stats_only_own_tickets_and_private_no_store(monkeypatch, calls):
-    from luckyvision.domain.play_stats import summarize
+    from xs247.domain.play_stats import summarize
     app = make_app(monkeypatch, calls)
     async with cl(app, MEMBER) as c:
         r = await c.get("/v1/play/stats")
@@ -302,7 +302,7 @@ async def test_stats_ai_requires_csrf(monkeypatch, calls):
 
 
 async def test_stats_ai_ok_uses_prompt_and_disclaimer(monkeypatch, calls):
-    from luckyvision.domain.play_stats import ai_prompt, summarize
+    from xs247.domain.play_stats import ai_prompt, summarize
     app = make_app(monkeypatch, calls, clock=datetime(2026, 11, 21, 5, 0, tzinfo=UTC))
     async with cl(app, MEMBER) as c:
         r = await c.post("/v1/play/stats/ai")

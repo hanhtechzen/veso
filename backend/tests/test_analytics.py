@@ -1,4 +1,4 @@
-from luckyvision.analytics import device_of, is_bot, normalize_path, page_group, source_of, visitor_id
+from xs247.analytics import device_of, is_bot, normalize_path, page_group, source_of, visitor_id
 
 
 def test_normalize_path():
@@ -20,10 +20,10 @@ def test_groups():
 
 
 def test_sources_devices_bots():
-    assert source_of("", "luckyvision.vn") == "(Vào trực tiếp)"
-    assert source_of("https://www.google.com.vn/search?q=xsmn", "luckyvision.vn") == "Google"
-    assert source_of("https://luckyvision.vn/xsmb", "luckyvision.vn") is None
-    assert source_of("https://m.facebook.com/", "luckyvision.vn") == "Facebook"
+    assert source_of("", "xs247.mobi") == "(Vào trực tiếp)"
+    assert source_of("https://www.google.com.vn/search?q=xsmn", "xs247.mobi") == "Google"
+    assert source_of("https://xs247.mobi/xsmb", "xs247.mobi") is None
+    assert source_of("https://m.facebook.com/", "xs247.mobi") == "Facebook"
     assert device_of("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)") == "Điện thoại" and device_of("Mozilla/5.0 (Windows NT 10.0)") == "Máy tính"
     assert is_bot("Googlebot/2.1") and is_bot("") and not is_bot("Mozilla/5.0 (Windows NT 10.0) Chrome/124")
 

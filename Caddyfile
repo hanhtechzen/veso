@@ -1,6 +1,6 @@
 # Docker Desktop: SITE_ADDRESS=:80 (mặc định) -> http://localhost
 # Sau Cloudflare Tunnel: giữ :80, Cloudflare lo HTTPS phía ngoài.
-# Mở cổng trực tiếp (không dùng tunnel): SITE_ADDRESS=luckyvision.vn để Caddy tự cấp HTTPS.
+# Mở cổng trực tiếp (không dùng tunnel): SITE_ADDRESS=xs247.mobi để Caddy tự cấp HTTPS.
 {$SITE_ADDRESS::80} {
 	encode zstd gzip
 
@@ -15,7 +15,7 @@
 	redir /du-doan.html /thong-ke-phan-tich.html 301
 
 	# Tệp tĩnh: công cụ tương tác, trang trực tiếp, thống kê phân tích, quản trị, ứng dụng cài đặt (PWA)
-	@static path /assets/* /icons/* /cong-cu /cong-cu/* /live.html /thong-ke-phan-tich.html /choi-thu.html /do-ve-anh.html /admin.html /sw.js /manifest.webmanifest /offline.html
+	@static path /assets/* /icons/* /cong-cu /cong-cu/* /live.html /thong-ke-phan-tich.html /choi-thu.html /do-ve-anh.html /admin.html /sw.js /manifest.webmanifest /offline.html /favicon.svg /favicon.ico
 	handle @static {
 		root * /srv/web
 		@sw path /sw.js

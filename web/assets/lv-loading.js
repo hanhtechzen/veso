@@ -1,4 +1,4 @@
-/* LuckyVision: loading dùng chung cho mọi trang.
+/* XS247: loading dùng chung cho mọi trang.
    1) Thanh tiến trình mảnh trên đầu trang: chạy khi trang đang tải, khi bấm sang trang khác trong site
       và khi trang đang gọi API (fetch).
    2) Khung chờ (skeleton): mọi phần tử chỉ chứa chữ "Đang tải…" được thay bằng các vạch mờ chuyển động,

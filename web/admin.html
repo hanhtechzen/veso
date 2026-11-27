@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>LuckyVision: Quản trị</title>
+<title>XS247: Quản trị</title>
+<meta property="og:site_name" content="XS247">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/be-vietnam-pro-vietnamese-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/fonts.css">
 <script src="/assets/lv-loading.js"></script>
@@ -98,7 +102,7 @@ svg.an rect.bar:hover{opacity:.8}
 <!-- Đăng nhập -->
 <div class="center" id="vLogin" hidden>
   <form class="login" id="loginForm" autocomplete="on">
-    <div class="brand"><span class="ball">LV</span>LuckyVision</div>
+    <div class="brand"><span class="ball">S</span>XS247</div>
     <p class="lead" style="margin:0 0 6px">Đăng nhập quản trị</p>
     <label for="lUser">Tên đăng nhập</label><input type="text" id="lUser" autocomplete="username" required>
     <label for="lPass">Mật khẩu</label><input type="password" id="lPass" autocomplete="current-password" required>
@@ -111,7 +115,7 @@ svg.an rect.bar:hover{opacity:.8}
 <!-- Bắt buộc đổi mật khẩu -->
 <div class="center" id="vForce" hidden>
   <form class="login" id="forceForm">
-    <div class="brand"><span class="ball">LV</span>Đổi mật khẩu</div>
+    <div class="brand"><span class="ball">S</span>Đổi mật khẩu</div>
     <p class="lead" style="margin:0">Bạn đang dùng mật khẩu tạm. Hãy đặt mật khẩu mới (ít nhất 10 ký tự, có chữ hoa, chữ thường và chữ số).</p>
     <label for="fCur">Mật khẩu tạm</label><input type="password" id="fCur" autocomplete="current-password" required>
     <label for="fNew">Mật khẩu mới</label><input type="password" id="fNew" autocomplete="new-password" required>
@@ -124,7 +128,7 @@ svg.an rect.bar:hover{opacity:.8}
 <!-- Ứng dụng -->
 <div class="app" id="vApp" hidden>
   <aside class="side">
-    <div class="brand"><span class="ball">LV</span>Quản trị</div>
+    <div class="brand"><span class="ball">S</span>Quản trị</div>
     <nav id="nav">
       <a href="#queue">Hàng chờ</a>
       <a href="#stats">Truy cập</a>
@@ -724,7 +728,7 @@ async function loadContacts() {
     ctBadge(d.counts);
     box.innerHTML = d.items.length ? d.items.map(c => {
       const [st, cls] = CT_STATUS[c.status];
-      const subject = encodeURIComponent('LuckyVision: ' + CT_TOPIC[c.topic]);
+      const subject = encodeURIComponent('XS247: ' + CT_TOPIC[c.topic]);
       return `<div class="ct" data-id="${c.id}"><div class="ct-h"><div><b>${esc(c.name)}</b> · <a href="mailto:${esc(c.email)}?subject=${subject}">${esc(c.email)}</a>${c.phone ? ' · ' + esc(c.phone) : ''}${c.user_id ? ' · <span class="pill">Có tài khoản</span>' : ''}</div>
         <div><span class="pill">${CT_TOPIC[c.topic]}</span> <span class="pill ${cls}">${st}</span> <span class="lead" style="font-size:.8rem">#${c.id}, ${fmtTime(c.created_at)}</span></div></div>
         <div class="ct-msg">${esc(c.message)}</div>${c.page ? `<p class="lead" style="font-size:.82rem;margin:0 0 8px">Gửi từ trang: <span class="mono">${esc(c.page)}</span></p>` : ''}

@@ -1,6 +1,6 @@
 """Chơi thử mở rộng: Lotto 5/35 (2 kỳ/ngày, có "slot"), Max 3D, Max 3D Pro.
 
-Domain thuần (luckyvision.domain.play), helper luckyvision.play_service.resolve_lotto_draw và API /v1/play/*.
+Domain thuần (xs247.domain.play), helper xs247.play_service.resolve_lotto_draw và API /v1/play/*.
 Dùng lại FakeDB/make_app của test_play.py; MoreDB bên dưới bổ sung: lịch quay (draw_schedules), kỳ quay theo id,
 các kỳ Lotto đã công bố trong ngày (câu SELECT lottery_draws có "draw_seq"), kết quả theo kỳ (lottery_results).
 
@@ -17,7 +17,7 @@ from datetime import date, datetime, time, timedelta, timezone
 
 import pytest
 
-from luckyvision.config import VN_TZ
+from xs247.config import VN_TZ
 from test_play import (BODY_MB, CSRF, MEMBER, NOW_OPEN, Cur, FakeDB, cl, make_app, ticket)  # noqa: F401
 
 UTC = timezone.utc
@@ -32,7 +32,7 @@ UTC = timezone.utc
     ([3, 9, 12, 14, 27, 12], ["03", "09", "12", "14", "27", "12"]),      # số ĐB được trùng một số chính (lồng cầu riêng)
 ])
 def test_validate_ticket_lotto535_ok(nums, expected):
-    from luckyvision.domain.play import validate_ticket
+    from xs247.domain.play import validate_ticket
     assert validate_ticket("lotto535", "lotto", nums) == expected
 
 
@@ -44,14 +44,14 @@ def test_validate_ticket_lotto535_ok(nums, expected):
     [-1, 2, 3, 4, 5, 8],
 ])
 def test_validate_ticket_lotto535_bad(nums):
-    from luckyvision.domain.play import validate_ticket
+    from xs247.domain.play import validate_ticket
     with pytest.raises(ValueError):
         validate_ticket("lotto535", "lotto", nums)
 
 
 @pytest.mark.parametrize("nums", [["000"], ["007"], ["123"], ["999"]])
 def test_validate_ticket_max3d_ok_keeps_leading_zeros(nums):
-    from luckyvision.domain.play import validate_ticket
+    from xs247.domain.play import validate_ticket
     assert validate_ticket("max3d", "max3d", nums) == nums
 
 
@@ -59,14 +59,14 @@ def test_validate_ticket_max3d_ok_keeps_leading_zeros(nums):
     [], ["12"], ["1234"], [123], ["12a"], ["-12"], [""], ["123", "456"], [" 12"],
 ])
 def test_validate_ticket_max3d_bad(nums):
-    from luckyvision.domain.play import validate_ticket
+    from xs247.domain.play import validate_ticket
     with pytest.raises(ValueError):
         validate_ticket("max3d", "max3d", nums)
 
 
 @pytest.mark.parametrize("nums", [["123", "456"], ["456", "123"], ["123", "123"], ["000", "999"]])
 def test_validate_ticket_max3dpro_ok_keeps_order_and_equal(nums):
-    from luckyvision.domain.play import validate_ticket
+    from xs247.domain.play import validate_ticket
     assert validate_ticket("max3dpro", "max3dpro", nums) == nums      # thứ tự có nghĩa: không sắp xếp
 
 
@@ -74,7 +74,7 @@ def test_validate_ticket_max3dpro_ok_keeps_order_and_equal(nums):
     [], ["123"], ["123", "45"], ["123", "456", "789"], [123, 456], ["12a", "456"], ["123", ""],
 ])
 def test_validate_ticket_max3dpro_bad(nums):
-    from luckyvision.domain.play import validate_ticket
+    from xs247.domain.play import validate_ticket
     with pytest.raises(ValueError):
         validate_ticket("max3dpro", "max3dpro", nums)
 
@@ -96,7 +96,7 @@ L535 = {"main": ["03", "09", "14", "27", "35"], "special": ["08"]}
     (["01", "02", "04", "20", "30", "07"], None),
 ])
 def test_check_ticket_lotto535_levels(nums, code):
-    from luckyvision.domain.play import PRIZE_NAMES, check_ticket
+    from xs247.domain.play import PRIZE_NAMES, check_ticket
     got = check_ticket("lotto535", "lotto", nums, L535)
     if code is None:
         assert got == []
@@ -105,7 +105,7 @@ def test_check_ticket_lotto535_levels(nums, code):
 
 
 def test_check_ticket_lotto535_special_number_is_not_matched_against_main():
-    from luckyvision.domain.play import check_ticket
+    from xs247.domain.play import check_ticket
     # số ĐB của vé (35) trùng một số chính của kỳ nhưng ĐB của kỳ là 08: không được tính là trúng ĐB / số chính
     got = check_ticket("lotto535", "lotto", ["01", "02", "04", "20", "30", "12"], {"main": ["03", "09", "14", "27", "12"], "special": ["08"]})
     assert got == []
@@ -122,21 +122,21 @@ M3D = {"db": ["123", "456"], "g1": ["111", "222", "333", "444"], "g2": ["100", "
     ("010", {"g3"}), ("080", {"g3"}), ("999", set()), ("000", set()),
 ])
 def test_check_ticket_max3d_groups(num, codes):
-    from luckyvision.domain.play import PRIZE_NAMES, check_ticket
+    from xs247.domain.play import PRIZE_NAMES, check_ticket
     got = check_ticket("max3d", "max3d", [num], M3D)
     assert {x["code"] for x in got} == codes and len(got) == len(codes)
     assert all(x["name"] == PRIZE_NAMES[x["code"]] for x in got)
 
 
 def test_check_ticket_max3d_number_wins_every_group_containing_it():
-    from luckyvision.domain.play import check_ticket
+    from xs247.domain.play import check_ticket
     pr = {"db": ["123", "456"], "g1": ["123", "222", "333", "444"], "g2": ["100", "200", "123", "400", "500", "600"],
           "g3": ["010", "020", "030", "040", "050", "060", "070", "123"]}
     assert {x["code"] for x in check_ticket("max3d", "max3d", ["123"], pr)} == {"db", "g1", "g2", "g3"}
 
 
 def test_check_ticket_max3d_does_not_match_by_suffix():
-    from luckyvision.domain.play import check_ticket
+    from xs247.domain.play import check_ticket
     assert check_ticket("max3d", "max3d", ["010"], {"db": ["10"], "g1": ["110"], "g2": [], "g3": []}) == []
 
 
@@ -161,34 +161,34 @@ P3 = {"db": ["123", "456"], "g1": ["111", "222", "333", "444"], "g2": ["100", "2
     (("123", "123"), {"g4", "g5"}),                  # trùng một số ĐB nhưng không đúng cặp ĐB1/ĐB2
 ])
 def test_check_ticket_max3dpro_levels(pair, codes):
-    from luckyvision.domain.play import PRIZE_NAMES, check_ticket
+    from xs247.domain.play import PRIZE_NAMES, check_ticket
     got = check_ticket("max3dpro", "max3dpro", list(pair), P3)
     assert {x["code"] for x in got} == codes and len(got) == len(codes)
     assert all(x["name"] == PRIZE_NAMES[x["code"]] for x in got)
 
 
 def test_check_ticket_max3dpro_equal_special_numbers_is_db_not_pdb():
-    from luckyvision.domain.play import check_ticket
+    from xs247.domain.play import check_ticket
     pr = {**P3, "db": ["777", "777"]}
     got = {x["code"] for x in check_ticket("max3dpro", "max3dpro", ["777", "777"], pr)}
     assert "db" in got and "pdb" not in got
 
 
 def test_check_ticket_max3dpro_pdb_needs_swapped_order_only_when_db_differ():
-    from luckyvision.domain.play import check_ticket
+    from xs247.domain.play import check_ticket
     pr = {**P3, "db": ["777", "777"]}
     assert "pdb" not in {x["code"] for x in check_ticket("max3dpro", "max3dpro", ["777", "999"], pr)}
 
 
 def test_check_ticket_max3dpro_g1_needs_both_numbers_in_g1():
-    from luckyvision.domain.play import check_ticket
+    from xs247.domain.play import check_ticket
     got = {x["code"] for x in check_ticket("max3dpro", "max3dpro", ["333", "123"], P3)}
     assert "g1" not in got and {"g4", "g5", "g6"} <= got
 
 
 # ------------------------------------------------------------------ PRIZE_NAMES, closes_at
 def test_prize_names_cover_new_codes():
-    from luckyvision.domain.play import PRIZE_NAMES
+    from xs247.domain.play import PRIZE_NAMES
     for code in ("dd", "g1", "g2", "g3", "g4", "g5", "g6", "pdb", "kk", "db"):
         assert isinstance(PRIZE_NAMES.get(code), str) and PRIZE_NAMES[code].strip(), code
     assert PRIZE_NAMES["dd"] == "Độc đắc"
@@ -199,7 +199,7 @@ def test_prize_names_cover_new_codes():
 
 @pytest.mark.parametrize("game", ["lotto535", "max3d", "max3dpro"])
 def test_closes_at_new_games_30_minutes_before(game):
-    from luckyvision.domain.play import closes_at
+    from xs247.domain.play import closes_at
     assert closes_at(datetime(2026, 11, 12, 21, 0, tzinfo=VN_TZ), game) == datetime(2026, 11, 12, 20, 30, tzinfo=VN_TZ)
     assert closes_at(datetime(2026, 11, 12, 13, 0, tzinfo=VN_TZ), game) == datetime(2026, 11, 12, 12, 30, tzinfo=VN_TZ)
 
@@ -210,34 +210,34 @@ def _row(id_, seq):
 
 
 def test_resolve_lotto_draw_first_is_1300_second_is_2100():
-    from luckyvision.play_service import resolve_lotto_draw
+    from xs247.play_service import resolve_lotto_draw
     a, b = _row("lotto-lotto535-2026-11-12-00101", 101), _row("lotto-lotto535-2026-11-12-00102", 102)
     assert resolve_lotto_draw([a, b], "13:00")["id"] == a["id"]
     assert resolve_lotto_draw([a, b], "21:00")["id"] == b["id"]
 
 
 def test_resolve_lotto_draw_orders_by_draw_seq_not_by_input_order():
-    from luckyvision.play_service import resolve_lotto_draw
+    from xs247.play_service import resolve_lotto_draw
     a, b = _row("A", 101), _row("B", 102)
     assert resolve_lotto_draw([b, a], "13:00")["id"] == "A"
     assert resolve_lotto_draw([b, a], "21:00")["id"] == "B"
 
 
 def test_resolve_lotto_draw_only_first_published_yet():
-    from luckyvision.play_service import resolve_lotto_draw
+    from xs247.play_service import resolve_lotto_draw
     a = _row("A", 101)
     assert resolve_lotto_draw([a], "13:00")["id"] == "A"
     assert resolve_lotto_draw([a], "21:00") is None
 
 
 def test_resolve_lotto_draw_nothing_published():
-    from luckyvision.play_service import resolve_lotto_draw
+    from xs247.play_service import resolve_lotto_draw
     assert resolve_lotto_draw([], "13:00") is None
     assert resolve_lotto_draw([], "21:00") is None
 
 
 def test_resolve_lotto_draw_does_not_mutate_input():
-    from luckyvision.play_service import resolve_lotto_draw
+    from xs247.play_service import resolve_lotto_draw
     rows = [_row("B", 102), _row("A", 101)]
     resolve_lotto_draw(rows, "13:00")
     assert [r["id"] for r in rows] == ["B", "A"]
@@ -512,7 +512,7 @@ async def test_list_tickets_lazily_checks_lotto_ticket_resolved_by_slot(monkeypa
         r = await c.get("/v1/play/tickets")
     assert r.status_code == 200, r.text
     items = {x["id"]: x for x in r.json()["tickets"]}
-    from luckyvision.domain.play import PRIZE_NAMES
+    from xs247.domain.play import PRIZE_NAMES
     # 13:00 -> kỳ 101: 03 09 14 27 trùng (4 chính), ĐB 01 != 08 -> g3
     assert items[101]["result"] == [{"code": "g3", "name": PRIZE_NAMES["g3"]}]
     # 21:00 -> kỳ 102: 5 chính + ĐB -> Độc đắc
@@ -535,7 +535,7 @@ async def test_list_tickets_lotto_slot_not_yet_published_stays_pending(monkeypat
 
 
 async def test_list_tickets_lazily_checks_max3d_ticket(monkeypatch):
-    from luckyvision.domain.play import PRIZE_NAMES
+    from xs247.domain.play import PRIZE_NAMES
     did = "max3d-max3d-2026-11-13"
     draw = {"id": did, "game": "max3d", "region_code": "max3d", "province_code": "max3d", "draw_date": date(2026, 11, 13),
             "scheduled_at": _vn(2026, 11, 13, 18), "current_version": 1, "status": "published"}

@@ -28,6 +28,6 @@ $COMPOSE exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --cl
 echo "4/4 Khởi động lại và tự kiểm tra..."
 $COMPOSE up -d
 for i in $(seq 1 60); do $COMPOSE exec -T api python -c "import urllib.request;urllib.request.urlopen('http://localhost:8000/healthz')" >/dev/null 2>&1 && break; sleep 2; done
-$COMPOSE exec -T api python -m luckyvision.cli migrate
+$COMPOSE exec -T api python -m xs247.cli migrate
 N=$($COMPOSE exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc "SELECT count(*) FROM lottery_draws WHERE current_version IS NOT NULL"' | tr -d '[:space:]')
 echo "Xong: $N kỳ quay đã có kết quả. Nếu có lỗi, nạp lại bản cũ: bash deploy/import-data.sh $BAK"

@@ -3,9 +3,9 @@ import re
 from datetime import date
 from pathlib import Path
 
-from luckyvision.notify import format_message
-from luckyvision.site.data import gan_stats, parse_slug_date, slug_date
-from luckyvision.site.routes import _jsonld, _summary
+from xs247.notify import format_message
+from xs247.site.data import gan_stats, parse_slug_date, slug_date
+from xs247.site.routes import _jsonld, _summary
 
 
 def test_slug_dates():
@@ -30,12 +30,12 @@ def test_jsonld_escapes_script_end():
 
 
 # ---- Quy định: không công khai "dự báo/dự đoán" ----
-SITE = Path(__file__).resolve().parents[1] / "luckyvision" / "site"
+SITE = Path(__file__).resolve().parents[1] / "xs247" / "site"
 FORBIDDEN = re.compile(r"dự\s*báo|dự\s*đoán|du-doan", re.IGNORECASE)
 
 
 def test_nav_has_no_prediction_link_or_label_and_has_statistics_analysis():
-    from luckyvision.site.routes import NAV
+    from xs247.site.routes import NAV
     for href, label, _ in NAV:
         assert "du-doan" not in href and not FORBIDDEN.search(label), (href, label)
     pairs = [(h, l) for h, l, _ in NAV]
@@ -46,7 +46,7 @@ def test_nav_has_no_prediction_link_or_label_and_has_statistics_analysis():
 
 
 def test_head_tail_counts_first_and_last_digit():
-    from luckyvision.site.data import head_tail
+    from xs247.site.data import head_tail
     ht = head_tail(["05", "15", "99", "00"])
     assert ht["dau"] == {0: 2, 1: 1, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 1}
     assert ht["duoi"] == {0: 1, 1: 0, 2: 0, 3: 0, 4: 0, 5: 2, 6: 0, 7: 0, 8: 0, 9: 1}
@@ -55,7 +55,7 @@ def test_head_tail_counts_first_and_last_digit():
 
 
 def test_number_stats_gan_and_counts():
-    from luckyvision.site.personal import number_stats
+    from xs247.site.personal import number_stats
     today = date(2026, 11, 5)
     draws = [(date(2026, 7, 1), ["05", "77"]),
              (date(2026, 11, 4), ["05", "05", "10"]),   # 05 xuất hiện 2 lần trong một kỳ
@@ -71,7 +71,7 @@ def test_number_stats_gan_and_counts():
 
 
 def test_subnav_has_no_prediction_links_or_admin_only_tools():
-    from luckyvision.site.routes import SUBNAV
+    from xs247.site.routes import SUBNAV
     for items in SUBNAV.values():
         for href, label, _ in items:
             assert "du-doan" not in href and not FORBIDDEN.search(label), (href, label)
@@ -105,15 +105,15 @@ def test_site_routes_strings_have_no_prediction_wording():
 
 def test_telegram_message():
     d = {"game": "xs", "pname": "TP. Hồ Chí Minh", "draw_date": date(2026, 10, 26), "draw_seq": None}
-    m = format_message("https://luckyvision.vn", "mn", d, {"db": ["472899"], "g1": ["78600"], "g8": ["74"]})
-    assert "Đặc biệt: 472899" in m and "https://luckyvision.vn/xsmn-26-10-2026" in m
+    m = format_message("https://xs247.mobi", "mn", d, {"db": ["472899"], "g1": ["78600"], "g8": ["74"]})
+    assert "Đặc biệt: 472899" in m and "https://xs247.mobi/xsmn-26-10-2026" in m
     g = {"game": "mega645", "pname": "Mega", "draw_date": date(2026, 11, 1), "draw_seq": 1583}
-    m2 = format_message("https://luckyvision.vn/", "mega", g, {"main": ["05", "09", "17", "18", "34", "36"]})
+    m2 = format_message("https://xs247.mobi/", "mega", g, {"main": ["05", "09", "17", "18", "34", "36"]})
     assert "kỳ 01583" in m2 and m2.endswith("/vietlott-mega-645-01-11-2026")
 
 
 def _env():
-    from luckyvision.site.routes import templates
+    from xs247.site.routes import templates
     return templates.env
 
 
@@ -152,7 +152,7 @@ def test_home_quick_stats_use_chips():
 
 
 def test_game_result_uses_shared_chips():
-    from luckyvision.domain.games import GAMES
+    from xs247.domain.games import GAMES
     env = _env()
     t = env.from_string('{% from "macros_game.html" import game_result %}{{ game_result(g, d) }}')
     keno = t.render(g=GAMES["keno"], d={"prizes": {"main": ["05", "61"]}})
@@ -165,7 +165,7 @@ def test_game_result_uses_shared_chips():
 
 def test_stats_scope_template_renders_options():
     """Thanh "Phạm vi thống kê" phải hiện đủ lựa chọn (khóa 'options', không trùng dict.items)."""
-    from luckyvision.site.routes import templates
+    from xs247.site.routes import templates
     t = templates.env.get_template("_stats_scope.html")
     html = t.render(scope={"kinds": [("/thong-ke-xsmn", "Miền Nam", True)], "label": "Đài",
                            "options": [("/thong-ke-xsmn", "Tất cả đài miền Nam", True), ("/thong-ke-xs-tp-hcm", "TP. Hồ Chí Minh", False)]})
@@ -177,8 +177,8 @@ def test_unknown_page_returns_html_not_found():
     import asyncio
     from fastapi import FastAPI
     from httpx import ASGITransport, AsyncClient
-    from luckyvision.api import errors
-    from luckyvision.config import Settings
+    from xs247.api import errors
+    from xs247.config import Settings
     app = FastAPI(); errors.install(app); app.state.settings = Settings()
 
     async def go():

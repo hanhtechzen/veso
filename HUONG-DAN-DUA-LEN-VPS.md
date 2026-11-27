@@ -1,4 +1,4 @@
-# Đưa LuckyVision lên VPS (chạy 24/7, có tên miền và HTTPS)
+# Đưa XS247 lên VPS (chạy 24/7, có tên miền và HTTPS)
 
 Mô hình: **VPS Ubuntu** chạy toàn bộ hệ thống bằng Docker. **Cloudflare Tunnel** đưa tên miền vào máy chủ:
 không mở cổng web nào ra Internet, HTTPS miễn phí, chống tấn công từ chối dịch vụ cơ bản.
@@ -83,10 +83,10 @@ cd /opt/luckey
 1. Đăng ký tài khoản Cloudflare, **Add a domain**, chọn gói **Free**.
 2. Ở nơi mua tên miền, đổi **nameserver** sang hai địa chỉ Cloudflare đưa ra. Chờ Cloudflare báo "Active"
    (vài phút đến vài giờ).
-3. Cloudflare, **Zero Trust, Networks, Tunnels, Create a tunnel**, chọn **Cloudflared**, đặt tên `luckyvision`.
+3. Cloudflare, **Zero Trust, Networks, Tunnels, Create a tunnel**, chọn **Cloudflared**, đặt tên `xs247`.
    Ở bước cài đặt, chép **token** (chuỗi dài sau `--token`). Không cần chạy lệnh cài trên trang đó.
 4. Tab **Public Hostname**, thêm:
-   - Hostname: `ten-mien.vn` (để trống Subdomain), Service: **HTTP**, URL: `caddy:80`
+   - Hostname: `xs247.mobi` (để trống Subdomain), Service: **HTTP**, URL: `caddy:80`
    - Thêm một dòng nữa cho `www` trỏ cùng `caddy:80`.
 5. Cloudflare, tên miền, **SSL/TLS, Edge Certificates**: bật **Always Use HTTPS**.
 
@@ -104,7 +104,7 @@ Các dòng phải sửa:
 | Biến | Giá trị |
 |---|---|
 | `APP_ENV` | `prod` |
-| `SITE_URL` | `https://ten-mien.vn` |
+| `SITE_URL` | `https://xs247.mobi` |
 | `POSTGRES_PASSWORD` | chuỗi vừa tạo bằng `openssl` |
 | `CLOUDFLARE_TUNNEL_TOKEN` | token ở Bước 5 |
 | `MIN_SOURCES_BY_REGION` | giống máy đang chạy, ví dụ `vl:1,mega:1,mb:1,mt:1` (thêm `mn:1` hoặc `mn:2` tùy số nguồn đã bật) |
@@ -132,7 +132,7 @@ cd /opt/luckey
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
-Lần dựng đầu mất vài phút. Mở `https://ten-mien.vn`: thấy trang chủ (chưa có dữ liệu) là đường hầm đã thông.
+Lần dựng đầu mất vài phút. Mở `https://xs247.mobi`: thấy trang chủ (chưa có dữ liệu) là đường hầm đã thông.
 
 **Chuyển dữ liệu từ máy đang chạy** (kết quả, lịch sử, nguồn đã bật, tài khoản quản trị và thành viên, vé thử).
 Trên máy cũ (WSL):
@@ -148,16 +148,16 @@ Trên VPS:
 ```bash
 cd /opt/luckey
 bash deploy/import-data.sh backups/chuyen-du-lieu-NGAY-GIO.dump    # gõ: dong y
-docker compose exec api python -m luckyvision.cli doctor
+docker compose exec api python -m xs247.cli doctor
 ```
 
 Không chuyển dữ liệu mà muốn bắt đầu từ đầu: tạo tài khoản quản trị bằng
-`docker compose exec api python -m luckyvision.cli create-admin --username admin --name "Quản trị"`,
+`docker compose exec api python -m xs247.cli create-admin --username admin --name "Quản trị"`,
 rồi bật nguồn theo mục 6 của `HUONG-DAN-CHAY.md`.
 
 ## Bước 8. Bảo mật và tắt bản cũ
 
-1. Vào `https://ten-mien.vn/admin.html`, đăng nhập, **bật xác thực hai lớp** (mục 7 của `HUONG-DAN-CHAY.md`).
+1. Vào `https://xs247.mobi/admin.html`, đăng nhập, **bật xác thực hai lớp** (mục 7 của `HUONG-DAN-CHAY.md`).
 2. **Tắt bản đang chạy trên máy nhà**, để không còn hai nơi cùng thu thập và người dùng không vào nhầm:
    ```bash
    cd ~/veso && docker compose stop
@@ -186,9 +186,9 @@ Sửa `.env` xong thì chạy lại: `docker compose -f docker-compose.yml -f do
 
 ## Bước 10. Google Search Console
 
-1. Vào search.google.com/search-console, **Add property**, chọn **Domain**, nhập `ten-mien.vn`.
+1. Vào search.google.com/search-console, **Add property**, chọn **Domain**, nhập `xs247.mobi`.
 2. Google đưa một bản ghi TXT: thêm vào Cloudflare (**DNS, Records, Add record**, loại TXT, tên `@`).
-3. Sau khi xác minh: mục **Sitemaps**, gửi `https://ten-mien.vn/sitemap.xml`.
+3. Sau khi xác minh: mục **Sitemaps**, gửi `https://xs247.mobi/sitemap.xml`.
 
 Google cần vài ngày đến vài tuần để đưa trang lên kết quả tìm kiếm.
 
@@ -219,7 +219,7 @@ Test không qua thì GitHub không cập nhật VPS.
 |---|---|
 | Trang báo lỗi 1033 / không vào được | Đường hầm: `docker compose -f docker-compose.yml -f docker-compose.prod.yml logs --tail 50 cloudflared` (sai token, hoặc Public Hostname chưa trỏ `caddy:80`) |
 | Lỗi 502 | API chưa chạy xong hoặc lỗi: `docker compose logs --tail 100 api` |
-| Không có kết quả mới | `docker compose logs --tail 100 worker`, rồi `docker compose exec api python -m luckyvision.cli doctor` |
+| Không có kết quả mới | `docker compose logs --tail 100 worker`, rồi `docker compose exec api python -m xs247.cli doctor` |
 | Trang vẫn hiện bản cũ sau cập nhật | Cloudflare, **Caching, Configuration, Purge Everything** |
 | Đầy ổ đĩa | `df -h`, `docker system df`; dọn ảnh cũ: `docker image prune -f` |
 | Cần quay về dữ liệu trước khi cập nhật | `bash deploy/import-data.sh backups/truoc-cap-nhat-NGAY-GIO.dump` |

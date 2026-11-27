@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dựng VPS Ubuntu 24.04 cho LuckyVision. Chạy MỘT LẦN với quyền root:
+# Dựng VPS Ubuntu 24.04 cho XS247. Chạy MỘT LẦN với quyền root:
 #   sudo bash deploy/setup-vps.sh
 # Làm: cập nhật hệ thống, Docker, người dùng 'deploy', SSH chỉ bằng khóa, tường lửa chỉ mở SSH, fail2ban,
 # tự cập nhật bản vá, múi giờ Việt Nam, swap (máy ít RAM), giới hạn log Docker, lịch sao lưu hằng đêm.

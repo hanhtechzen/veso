@@ -1,4 +1,4 @@
-// LuckyVision: tài khoản người dùng, tỉnh và bộ số yêu thích (dùng chung cho các trang công khai).
+// XS247: tài khoản người dùng, tỉnh và bộ số yêu thích (dùng chung cho các trang công khai).
 (function () {
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); };

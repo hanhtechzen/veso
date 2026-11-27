@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="authbox card wide">
+  <h1>Liên hệ</h1>
+  <p class="contact-direct"><b>Điện thoại/Zalo:</b> <a href="tel:{{ contact_tel }}">{{ contact_phone }}</a><br><b>Email:</b> <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+  <p class="hint">Quên mật khẩu, thấy kết quả sai, có góp ý hay muốn hợp tác: gửi tin cho quản trị theo mẫu dưới đây. Chúng tôi trả lời qua email hoặc số điện thoại bạn để lại.{% if support_contact %} Cần gấp: {{ support_contact }}.{% endif %}</p>
+  <form id="contactForm" novalidate>
+    <label>Chủ đề<select name="topic" required>
+      <option value="">Chọn chủ đề</option>
+      {% for k, v in topics.items() %}<option value="{{ k }}"{% if k == topic %} selected{% endif %}>{{ v }}</option>{% endfor %}
+    </select></label>
+    <div class="row3">
+      <label>Họ tên<input name="name" required maxlength="80" autocomplete="name"></label>
+      <label>Email<input name="email" type="email" required maxlength="254" autocomplete="email" value="{{ email }}"></label>
+      <label>Điện thoại hoặc Zalo (không bắt buộc)<input name="phone" maxlength="30" autocomplete="tel" inputmode="tel"></label>
+    </div>
+    <p class="hint topic-hint" data-for="quen-mat-khau" hidden>Hãy dùng đúng email đã đăng ký. Quản trị sẽ xác minh rồi gửi mật khẩu tạm cho bạn; đăng nhập xong hãy đặt mật khẩu mới.</p>
+    <p class="hint topic-hint" data-for="sai-ket-qua" hidden>Ghi rõ đài, ngày quay, giải nào sai và số đúng theo vé hoặc công ty xổ số. Cảm ơn bạn!</p>
+    <label>Nội dung<textarea name="message" required minlength="5" maxlength="3000" rows="6"></textarea></label>
+    <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+    <button class="btn" type="submit">Gửi</button>
+    <p class="msg" role="alert"></p>
+  </form>
+  <div id="contactDone" hidden><h2>Đã nhận tin của bạn</h2><p>Cảm ơn bạn. Quản trị sẽ phản hồi qua email hoặc điện thoại bạn để lại.</p><p><a class="btn ghost" href="/">Về trang chủ</a></p></div>
+  <noscript><p class="hint">Trình duyệt đang tắt JavaScript nên chưa gửi được form.{% if support_contact %} Hãy liên hệ: {{ support_contact }}.{% endif %}</p></noscript>
+</div>
+<script>
+(function () {
+  var f = document.getElementById('contactForm'), opened = Date.now();
+  var ref = document.referrer && document.referrer.indexOf(location.origin) === 0 ? document.referrer.slice(location.origin.length) : '';
+  function hints() { document.querySelectorAll('.topic-hint').forEach(function (h) { h.hidden = h.dataset.for !== f.topic.value; }); }
+  f.topic.addEventListener('change', hints); hints();
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var m = f.querySelector('.msg'), data = {};
+    new FormData(f).forEach(function (v, k) { data[k] = v; });
+    if (!data.topic) { m.textContent = 'Hãy chọn chủ đề.'; m.className = 'msg bad'; return; }
+    if (!data.name || !data.email || (data.message || '').trim().length < 5) { m.textContent = 'Hãy điền họ tên, email và nội dung.'; m.className = 'msg bad'; return; }
+    data.t = opened; data.page = ref;
+    var btn = f.querySelector('button[type=submit]');
+    var restore = window.lvBusy ? window.lvBusy(btn, 'Đang gửi…') : null;
+    if (window.lvBusy && !restore) return;
+    if (!restore) btn.disabled = true;
+    m.textContent = 'Đang gửi…'; m.className = 'msg';
+    function done() { if (restore) restore(); else btn.disabled = false; }
+    fetch('/v1/contact', {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'X-LV-CSRF': '1'}, body: JSON.stringify(data)})
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) { var e = new Error((d.error && d.error.message) || 'Chưa gửi được, hãy thử lại sau ít phút.'); e.status = r.status; e.body = d; throw e; } }); })
+      .then(function () { f.hidden = true; document.getElementById('contactDone').hidden = false; if (window.lvToast) window.lvToast('Đã gửi tin cho quản trị', 'ok'); })
+      .catch(function (er) { done(); m.textContent = window.lvErr ? window.lvErr(er, er.status, er.body) : (er.status ? er.message : 'Không kết nối được máy chủ, hãy thử lại.'); m.className = 'msg bad'; });
+  });
+})();
+</script>
+{% endblock %}

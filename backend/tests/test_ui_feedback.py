@@ -9,7 +9,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / "web"
-TPL = ROOT / "backend" / "luckyvision" / "site" / "templates"
+TPL = ROOT / "backend" / "xs247" / "site" / "templates"
 
 
 def read(p: Path) -> str:

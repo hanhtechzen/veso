@@ -1,14 +1,14 @@
 """Kiểm thử bộ đọc của các bộ cào với HTML mẫu mô phỏng cấu trúc trang thật."""
 from datetime import date
 
-from luckyvision.config import Settings
-from luckyvision.domain.prizes import DEFAULT_STRUCTURES, validate
-from luckyvision.domain.reconcile import Candidate, reconcile
-from luckyvision.sources.base import DrawRef, FetchResult
-from luckyvision.sources.html_util import by_class, strip_tags
-from luckyvision.sources.minhngoc import MinhNgocAdapter, parse_text
-from luckyvision.sources.vietlott import VietlottPower655Adapter, parse_rows
-from luckyvision.sources.xosocomvn import XosoComVnAdapter, parse_html, parse_multi, province_code
+from xs247.config import Settings
+from xs247.domain.prizes import DEFAULT_STRUCTURES, validate
+from xs247.domain.reconcile import Candidate, reconcile
+from xs247.sources.base import DrawRef, FetchResult
+from xs247.sources.html_util import by_class, strip_tags
+from xs247.sources.minhngoc import MinhNgocAdapter, parse_text
+from xs247.sources.vietlott import VietlottPower655Adapter, parse_rows
+from xs247.sources.xosocomvn import XosoComVnAdapter, parse_html, parse_multi, province_code
 
 MINHNGOC = """<html><body><div class="box_kqxs">
 <a href="/ket-qua-xo-so/mien-nam/tp-hcm/19-10-2026.html">Xem kỳ trước 19/10/2026</a>
@@ -130,7 +130,7 @@ MEGA = """<table><tbody><tr><td>01/11/2026</td><td>01583</td><td><span>5</span><
 
 
 def test_vietlott_mega645_parse():
-    from luckyvision.sources.vietlott import VietlottMega645Adapter
+    from xs247.sources.vietlott import VietlottMega645Adapter
     ad = VietlottMega645Adapter("v", {}, Settings())
     ref = DrawRef("mega-mega645-2026-11-01", "mega645", "mega", "mega645", date(2026, 11, 1))
     p = ad.parse(FetchResult("u", 200, MEGA.encode()), ref)

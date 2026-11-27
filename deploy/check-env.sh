@@ -23,7 +23,7 @@ SU=$(val SITE_URL)
 case "$SU" in
   https://localhost*|http://*) bad "SITE_URL phải là https://tên-miền-thật (đang là '$SU'): Google và nút chia sẻ dùng địa chỉ này" ;;
   https://*) ok "SITE_URL=$SU" ;;
-  *) bad "SITE_URL chưa đặt hoặc sai dạng (ví dụ https://luckyvision.vn)" ;;
+  *) bad "SITE_URL chưa đặt hoặc sai dạng (ví dụ https://xs247.mobi)" ;;
 esac
 
 PW=$(val POSTGRES_PASSWORD)

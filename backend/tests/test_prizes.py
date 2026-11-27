@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from luckyvision.domain.prizes import (DEFAULT_STRUCTURES, checksum, is_complete, loto, new_numbers, normalize,
+from xs247.domain.prizes import (DEFAULT_STRUCTURES, checksum, is_complete, loto, new_numbers, normalize,
                                        ordered, validate)
 
 FX = Path(__file__).resolve().parents[1] / "fixtures"
@@ -73,7 +73,7 @@ def test_new_numbers():
 
 
 def test_mega645_rules():
-    from luckyvision.domain.games import GAMES
+    from xs247.domain.games import GAMES
     s = DEFAULT_STRUCTURES["mega"]
     assert s.game == "mega645" and GAMES["mega645"].jackpot_odds == 8145060
     assert validate(s, {"main": ["05", "09", "17", "18", "34", "36"]}) == []

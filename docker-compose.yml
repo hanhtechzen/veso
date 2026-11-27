@@ -1,4 +1,4 @@
-# LuckyVision: chạy toàn bộ hệ thống trên một máy (VPS hoặc Docker Desktop trên Windows).
+# XS247: chạy toàn bộ hệ thống trên một máy (VPS hoặc Docker Desktop trên Windows).
 #   docker compose up -d --build
 name: luckey
 
@@ -38,8 +38,8 @@ services:
       RAW_DIR: /data/raw
       FIXTURE_DIR: /app/fixtures
     command: >
-      sh -c "python -m luckyvision.cli migrate &&
-             uvicorn luckyvision.api.main:app --host 0.0.0.0 --port 8000 --workers $${API_WORKERS:-2} --proxy-headers --forwarded-allow-ips='*'"
+      sh -c "python -m xs247.cli migrate &&
+             uvicorn xs247.api.main:app --host 0.0.0.0 --port 8000 --workers $${API_WORKERS:-2} --proxy-headers --forwarded-allow-ips='*'"
     depends_on:
       db: {condition: service_healthy}
       redis: {condition: service_healthy}
@@ -53,7 +53,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment: *app_env
-    command: ["python", "-m", "luckyvision.worker"]
+    command: ["python", "-m", "xs247.worker"]
     volumes:
       - rawdata:/data/raw
     depends_on:
