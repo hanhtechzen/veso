@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+{% set wdn = ['', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ nhật'] %}
+<h1>Luật chơi xổ số</h1>
+<p class="lead">Cách chơi, giờ quay, điều kiện trúng và giá trị giải của xổ số ba miền và các trò chơi Vietlott, gom về một trang.</p>
+<nav class="chips" aria-label="Chọn loại vé">
+  {% for g in games %}<a href="#{{ g.anchor }}">{{ R.CHIP_LABELS[g.anchor] }}</a>{% endfor %}
+  <a href="#linh-thuong">Lĩnh thưởng &amp; thuế</a>
+</nav>
+
+<section class="card"><h2>Tóm tắt</h2>
+  <p class="hint">Tất cả các loại vé đều giá 10.000đ. Bấm tên vé để xem chi tiết.</p>
+  <table class="list rules-sum">
+    <thead><tr><th>Loại vé</th><th>Ngày quay</th><th>Giờ quay</th><th>Giải cao nhất</th></tr></thead>
+    <tbody>
+    {% for g in games %}<tr><td data-l="Loại vé"><a href="#{{ g.anchor }}">{{ g.name }}</a>{% if g.price != '10.000đ' %} <small>({{ g.price }})</small>{% endif %}</td><td data-l="Ngày quay">{{ g.days }}</td><td data-l="Giờ quay">{{ g.time }}</td><td data-l="Giải cao nhất">{{ g.top }}</td></tr>{% endfor %}
+    </tbody></table></section>
+
+{% for g in games %}
+{% if g.anchor == 'power655' %}<span id="vietlott"></span>{% endif %}
+<section class="card" id="{{ g.anchor }}"{% if g.region %} data-region="{{ g.region }}"{% endif %}>
+  <h2>{{ g.name }}</h2>
+  <p><b>Cách chơi.</b> {{ g.how }}</p>
+  <h3>Lịch quay</h3>
+  {% if g.region == 'mb' %}
+    <p>Hằng ngày lúc {{ g.time }}, tại <a href="/xsmb">Hà Nội</a>.</p>
+  {% elif g.region %}
+    <div class="tablewrap"><table class="list sched"><tbody>
+    {% for wd in range(1, 8) %}<tr{% if wd == today %} class="today"{% endif %}>
+      <th scope="row">{{ wdn[wd] }}{% if wd == today %} <span class="pill-today">Hôm nay</span>{% endif %}</th>
+      <td>{% for p in week[wd][g.region] %}<a href="/xs-{{ p.code }}">{{ p.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</td></tr>{% endfor %}
+    </tbody></table></div>
+    <p class="hint">Quay lúc {{ g.time }} hằng ngày.</p>
+  {% else %}
+    <p>{{ g.days }}, {{ g.time }}.</p>
+  {% endif %}
+  <h3>Khi nào trúng</h3>
+  <div class="tablewrap"><table class="list">
+    <thead><tr><th>Giải</th><th>Điều kiện trúng</th><th>Giá trị</th></tr></thead>
+    <tbody>{% for p in g.prizes %}<tr><th scope="row">{{ p.name }}</th><td>{{ p.cond }}</td><td>{{ p.value }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="hint">{{ g.note }}</p>
+  <p class="print-hide"><a class="btn" href="{{ g.results }}">Xem kết quả</a> <a class="btn ghost" href="/do-ve-anh.html">Dò vé</a>{% if g.play %} <a class="btn ghost" href="/choi-thu.html">Chơi thử</a>{% endif %}</p>
+</section>
+{% endfor %}
+
+<section class="card" id="linh-thuong"><h2>Lĩnh thưởng &amp; thuế</h2>
+  <h3>Vietlott</h3>
+  <ul>{% for t in R.CLAIM.vietlott %}<li>{{ t }}</li>{% endfor %}</ul>
+  <h3>Xổ số kiến thiết</h3>
+  <p>{{ R.CLAIM.kien_thiet }}</p>
+  <h3>Thuế thu nhập cá nhân</h3>
+  <p>{{ R.CLAIM.tax }}</p>
+  <p class="hint">{{ R.CLAIM.tax_example }}</p>
+</section>
+
+<section class="card prose"><h2>Câu hỏi thường gặp</h2>
+  {% for q, a in faq %}<h3>{{ q }}</h3><p>{{ a }}</p>{% endfor %}
+</section>
+
+<p class="hint">{{ R.FOOTER }}</p>
+<p class="hint">Nguồn: {% for label, url in R.SOURCES %}<a href="{{ url }}" target="_blank" rel="nofollow noopener">{{ label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+<p><a href="/lich-quay-xo-so">Xem lịch quay đầy đủ trong tuần</a></p>
+{% endblock %}

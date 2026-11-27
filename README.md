@@ -1,12 +1,12 @@
-# LuckyVision (Luckey)
+# XS247 (https://xs247.mobi)
 
-Hệ thống thu thập kết quả xổ số tự động, API và luồng realtime cho LuckyVision, chạy trên **một VPS** bằng Docker Compose.
+Hệ thống thu thập kết quả xổ số tự động, API và luồng realtime cho XS247, chạy trên **một VPS** bằng Docker Compose.
 Hướng dẫn chạy từng bước: `HUONG-DAN-CHAY.md`. Thiết kế chi tiết: `docs/README.md`.
 
 ```
 Luckey/
 ├─ backend/                 Python 3.12: worker thu thập + API FastAPI
-│  ├─ luckyvision/
+│  ├─ xs247/
 │  │  ├─ domain/            Cơ cấu giải, kiểm tra, đối chiếu nguồn (không phụ thuộc DB)
 │  │  ├─ sources/           Bộ chuyển đổi nguồn: fixture (tệp mẫu), http_json (nhà cung cấp)
 │  │  ├─ collector/         Tải, lưu bản gốc, xử lý, lập lịch kỳ quay, theo dõi trực tiếp
@@ -50,7 +50,7 @@ Luckey/
    - Tài liệu API tương tác: http://localhost/v1/docs
    - Kết quả mới nhất miền Bắc: http://localhost/v1/draws/latest?region=mb
 
-Chạy tay thay cho script: `copy .env.example .env`, sửa `POSTGRES_PASSWORD`, chạy `docker compose up -d --build`, rồi tạo tài khoản bằng `docker compose exec api python -m luckyvision.cli create-admin --username admin --name "Quản trị"`.
+Chạy tay thay cho script: `copy .env.example .env`, sửa `POSTGRES_PASSWORD`, chạy `docker compose up -d --build`, rồi tạo tài khoản bằng `docker compose exec api python -m xs247.cli create-admin --username admin --name "Quản trị"`.
 
 Dừng: `docker compose down` (giữ dữ liệu) hoặc `docker compose down -v` (xóa sạch dữ liệu).
 
@@ -65,8 +65,8 @@ curl.exe -N "http://localhost/v1/live/stream?region=mn"
 Ở cửa sổ khác, giả lập buổi quay miền Nam từ tệp mẫu (mỗi số cách nhau 1,5 giây):
 
 ```powershell
-docker compose exec api python -m luckyvision.cli plan --date 2026-10-26
-docker compose exec api python -m luckyvision.cli simulate-live --draw mn-tp-hcm-2026-10-26
+docker compose exec api python -m xs247.cli plan --date 2026-10-26
+docker compose exec api python -m xs247.cli simulate-live --draw mn-tp-hcm-2026-10-26
 ```
 
 Cửa sổ thứ nhất sẽ nhận lần lượt `draw.started`, 18 sự kiện `prize.updated`, `draw.completed` và `draw.published`
@@ -75,10 +75,10 @@ Cửa sổ thứ nhất sẽ nhận lần lượt `draw.started`, 18 sự kiện
 ## 3. Lệnh quản trị
 
 ```
-docker compose exec api python -m luckyvision.cli migrate
-docker compose exec api python -m luckyvision.cli plan --date 2026-11-02
-docker compose exec api python -m luckyvision.cli collect --date 2026-11-02
-docker compose exec api python -m luckyvision.cli collect --draw mb-mb-2026-11-02
+docker compose exec api python -m xs247.cli migrate
+docker compose exec api python -m xs247.cli plan --date 2026-11-02
+docker compose exec api python -m xs247.cli collect --date 2026-11-02
+docker compose exec api python -m xs247.cli collect --draw mb-mb-2026-11-02
 docker compose logs -f worker
 ```
 
@@ -123,9 +123,9 @@ Bộ cào tôn trọng robots.txt, tải chậm (5–10 giây một lần mỗi 
 **Bước 1: chạy thử trên máy bạn** (không lưu gì, chỉ in ra kết quả đọc được):
 
 ```powershell
-docker compose exec api python -m luckyvision.cli probe-source vietlott-web --draw vl-power655-2026-10-29
-docker compose exec api python -m luckyvision.cli probe-source minhngoc-web --draw mn-tp-hcm-2026-10-26
-docker compose exec api python -m luckyvision.cli probe-source xoso-com-vn  --draw mb-mb-2026-10-29
+docker compose exec api python -m xs247.cli probe-source vietlott-web --draw vl-power655-2026-10-29
+docker compose exec api python -m xs247.cli probe-source minhngoc-web --draw mn-tp-hcm-2026-10-26
+docker compose exec api python -m xs247.cli probe-source xoso-com-vn  --draw mb-mb-2026-10-29
 ```
 
 Kết quả đúng sẽ in đủ các giải và dòng `Kiểm tra: hợp lệ`. Nếu báo bị chặn hoặc không tìm thấy kết quả, trang đã đổi cấu trúc
@@ -134,10 +134,10 @@ hoặc không cho truy cập tự động: đừng bật nguồn đó.
 **Bước 2: bật nguồn và cấu hình tự công bố**
 
 ```powershell
-docker compose exec api python -m luckyvision.cli source-enable vietlott-web
-docker compose exec api python -m luckyvision.cli source-enable minhngoc-web
-docker compose exec api python -m luckyvision.cli source-enable xoso-com-vn
-docker compose exec api python -m luckyvision.cli sources
+docker compose exec api python -m xs247.cli source-enable vietlott-web
+docker compose exec api python -m xs247.cli source-enable minhngoc-web
+docker compose exec api python -m xs247.cli source-enable xoso-com-vn
+docker compose exec api python -m xs247.cli sources
 ```
 
 Trong `.env`, đặt `APP_ENV=prod` (tắt nguồn tệp mẫu) và chọn mức tin cậy:

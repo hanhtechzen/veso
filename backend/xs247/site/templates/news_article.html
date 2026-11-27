@@ -1,0 +1,54 @@
+{% extends "base.html" %}{% from "macros.html" import num_chips %}
+{% block content %}
+{% set b = body or {} %}
+<article class="news-article">
+  <div class="news-meta"><span class="news-pill t-{{ a.topic }}">{{ news_topic_label.get(a.topic, 'Tin') }}</span> <time datetime="{{ a.published_at.isoformat() if a.published_at else '' }}">{{ news_time(a.published_at) }}</time></div>
+  <h1>{{ a.title }}</h1>
+  {% if a.summary %}<p class="lead">{{ a.summary }}</p>{% endif %}
+
+  {% if a.topic == 'region_day' %}
+    {% set stations = b.get('stations') or [] %}
+    {% if stations %}
+    <div class="tablewrap"><table class="kq news-tbl">
+      <caption class="sr">Giải đặc biệt và giải nhất từng đài</caption>
+      <thead><tr><th scope="col">Đài</th><th scope="col">ĐB</th><th scope="col">Nhất</th></tr></thead>
+      <tbody>{% for s in stations %}<tr>
+        <th scope="row">{% if s.get('link') and s.link.startswith('/') %}<a href="{{ s.link }}">{{ s.get('name') or s.get('code') or '' }}</a>{% else %}{{ s.get('name') or s.get('code') or '' }}{% endif %}</th>
+        <td><b>{{ s.get('db') or '–' }}</b></td><td>{{ s.get('g1') or '–' }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+    <p class="news-actions">
+      {% if b.get('link') and b.link.startswith('/') %}<a class="btn" href="{{ b.link }}">Xem đầy đủ kết quả</a>{% endif %}
+      {% if b.get('stats_link') and b.stats_link.startswith('/') %}<a class="btn ghost" href="{{ b.stats_link }}">Xem thống kê</a>{% endif %}
+    </p>
+
+  {% elif a.topic == 'vietlott_draw' %}
+    {% set main = b.get('numbers') or b.get('main') or [] %}{% set sp = b.get('special') %}{% set special = (sp if sp is iterable and sp is not string else [sp]) if sp else [] %}
+    {% if main or special %}
+    <div class="rk-nums">{% for n in main %}<span class="rk-n">{{ n }}</span>{% endfor %}{% for n in special %}<span class="rk-n sp" title="Số đặc biệt">{{ n }}</span>{% endfor %}</div>
+    {% endif %}
+    <p class="news-actions">{% if b.get('link') and b.link.startswith('/') %}<a class="btn" href="{{ b.link }}">Xem đầy đủ kết quả{% if b.get('game_name') or b.get('name') %} {{ (b.get('game_name') or b.get('name')).replace('Vietlott ', '') }}{% endif %}</a>{% endif %}</p>
+
+  {% elif a.topic == 'weekly_stats' %}
+    {% set wf = b.get('from') or b.get('week_start') %}{% set wt = b.get('to') or b.get('week_end') %}{% if wf and wt %}<p class="hint">Tuần từ {{ wf[8:10] }}/{{ wf[5:7] }} đến {{ wt[8:10] }}/{{ wt[5:7] }}/{{ wt[0:4] }}{% if b.get('draws') %}, {{ b.draws }} kỳ quay{% endif %}.</p>{% endif %}
+    {% set hot = b.get('hot') or [] %}{% set gan = b.get('gan') or [] %}
+    {% if hot %}<h2>Về nhiều trong tuần</h2>
+      {% set hp = [] %}{% for h in hot %}{% set _ = hp.append((h.get('number', ''), h.get('count', 0))) %}{% endfor %}{{ num_chips(hp, 'lần', 'hi') }}{% endif %}
+    {% if gan %}<h2>Lâu chưa về</h2>
+      {% set gp = [] %}{% for g in gan %}{% set _ = gp.append((g.get('number', ''), g.get('days', 0))) %}{% endfor %}{{ num_chips(gp, 'ngày') }}{% endif %}
+    <p class="news-actions">{% set sl = b.get('stats_link') or b.get('link') %}{% if sl and sl.startswith('/') %}<a class="btn" href="{{ sl }}">Thống kê chi tiết</a>{% endif %}</p>
+  {% endif %}
+
+  <p class="hint">Số liệu từ kết quả đã công bố; mỗi kỳ quay độc lập.</p>
+</article>
+
+{% if related %}
+<section class="card">
+  <h2>Tin khác</h2>
+  <ul class="links">
+    {% for r in related %}<li>{% if r.kind == 'external' and r.source_url %}<a href="{{ r.source_url }}" target="_blank" rel="nofollow noopener noreferrer">{{ r.title }}</a>{% elif r.slug %}<a href="/tin-tuc/{{ r.slug }}">{{ r.title }}</a>{% else %}{{ r.title }}{% endif %} <span class="hint">{{ news_time(r.published_at) }}</span></li>{% endfor %}
+  </ul>
+  <p class="more"><a href="/tin-tuc">Xem tất cả tin tức →</a></p>
+</section>
+{% endif %}
+{% endblock %}

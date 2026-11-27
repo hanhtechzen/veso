@@ -2,9 +2,9 @@ from datetime import datetime
 
 import pytest
 
-from luckyvision.api.errors import ApiError
-from luckyvision.api.tools import encode, validate_doc
-from luckyvision.config import VN_TZ
+from xs247.api.errors import ApiError
+from xs247.api.tools import encode, validate_doc
+from xs247.config import VN_TZ
 
 NOW = datetime(2026, 11, 3, 10, 0, tzinfo=VN_TZ)
 

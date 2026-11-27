@@ -1,4 +1,4 @@
-# Hướng dẫn chạy LuckyVision
+# Hướng dẫn chạy XS247
 
 Tài liệu này hướng dẫn từng bước: chạy thử trên máy Windows, bật tự động lấy kết quả, xử lý lỗi thường gặp và đưa lên VPS.
 
@@ -8,13 +8,14 @@ Tài liệu này hướng dẫn từng bước: chạy thử trên máy Windows,
 
 | Bước | Làm gì | Mục |
 | --- | --- | --- |
-| 1 | Cài Docker Desktop, giải nén `Luckey.zip` vào `C:\Luckey`, chạy `.\start.ps1` | 1–3 |
+| 1 | Cài Docker Desktop, giải nén `Luckey.zip` vào `C:\Luckey`, chạy `.\start.ps1` (dùng WSL thì chạy `bash start.sh`) | 1–3, 3b |
 | 2 | Mở http://localhost/admin.html, đăng nhập `admin` bằng mật khẩu tạm, đổi mật khẩu, bật xác thực hai lớp | 7 |
 | 3 | Chạy thử và bật nguồn dữ liệu, sửa `.env` (`APP_ENV=prod`...), **tải bù lịch sử** bằng `backfill` và `feed` | 6, 7b |
 | 4 | Tùy chọn: AI (`AI_API_KEY`), Telegram, `SUPPORT_CONTACT` cho người quên mật khẩu | 7b, 7c, 8 |
 | 5 | Thuê VPS, đưa lên chạy 24/7, gắn tên miền, khai báo Google Search Console | 10, 7c |
+| Sau này | Nhận bản mới: giải nén đè rồi chạy `.\update.ps1` (Windows) hoặc `bash deploy/update.sh` (VPS) | 10b |
 
-Sau mỗi bước, chạy `docker compose exec api python -m luckyvision.cli doctor` để tự kiểm tra.
+Sau mỗi bước, chạy `docker compose exec api python -m xs247.cli doctor` để tự kiểm tra.
 
 **Sau bước 1, trang mới có dữ liệu mẫu 2 ngày** (1 kỳ Power 6/55, miền Bắc 29/10, TP. Hồ Chí Minh 26/10). Nhiều trang sẽ hiện
 "Chưa có kết quả" hoặc "Chưa đủ dữ liệu" (ví dụ Đấu trường cần ít nhất 110 kỳ Power). Đó là bình thường;
@@ -119,6 +120,38 @@ Cả 5 dịch vụ phải ở trạng thái `running` (riêng `api` có thêm `h
 
 ---
 
+## 3b. Chạy bằng WSL (Ubuntu trong Windows), không cần Docker Desktop
+
+Dùng cách này nếu bạn đã cài Docker ngay trong WSL (ví dụ bằng `curl -fsSL https://get.docker.com | sudo sh`).
+
+1. Ổ C của Windows nằm ở `/mnt/c` trong WSL. Chép dự án vào thư mục nhà của WSL (chạy nhanh hơn, tránh lỗi quyền):
+   ```bash
+   sudo apt update && sudo apt install -y unzip
+   unzip /mnt/c/Users/TEN-BAN/Downloads/Luckey.zip -d ~      # hoặc: cp -r /mnt/c/Luckey ~/Luckey
+   cd ~/Luckey
+   ```
+2. Bật Docker và cấp quyền (chỉ làm một lần; xong thì đóng, mở lại cửa sổ WSL):
+   ```bash
+   sudo service docker start
+   sudo usermod -aG docker $USER
+   ```
+3. Chạy:
+   ```bash
+   bash start.sh
+   ```
+4. Mở trình duyệt **trên Windows**: http://localhost (WSL tự chuyển tiếp cổng).
+
+Ghi chú:
+- Mỗi lần khởi động lại máy, Docker trong WSL có thể tắt: chạy lại `sudo service docker start`. Muốn tự bật, thêm vào `/etc/wsl.conf`:
+  ```
+  [boot]
+  systemd=true
+  ```
+  rồi chạy `wsl --shutdown` trong PowerShell và mở lại WSL.
+- Nếu báo cổng 80 đang bận: tắt IIS, Skype hoặc chương trình khác đang dùng cổng 80 trên Windows.
+- Cập nhật bản mới: giải nén đè lên `~/Luckey` (giữ `.env`) rồi chạy `bash update.sh`.
+- Các lệnh trong hướng dẫn viết cho PowerShell (`docker compose exec ...`) dùng y nguyên trong WSL.
+
 ## 4. Chạy thủ công (nếu không dùng start.ps1)
 
 ```powershell
@@ -131,8 +164,8 @@ Trong `.env`, sửa ít nhất dòng `POSTGRES_PASSWORD=...`. Sau đó:
 
 ```powershell
 docker compose up -d --build
-docker compose exec api python -m luckyvision.cli collect --date 2026-10-29
-docker compose exec api python -m luckyvision.cli create-admin --username admin --name "Quản trị"
+docker compose exec api python -m xs247.cli collect --date 2026-10-29
+docker compose exec api python -m xs247.cli create-admin --username admin --name "Quản trị"
 ```
 
 Lệnh cuối in ra mật khẩu tạm của tài khoản `admin`.
@@ -145,8 +178,8 @@ Lệnh cuối in ra mật khẩu tạm của tài khoản `admin`.
 2. Trong PowerShell, giả lập một buổi quay từ dữ liệu mẫu:
 
 ```powershell
-docker compose exec api python -m luckyvision.cli plan --date 2026-10-26
-docker compose exec api python -m luckyvision.cli simulate-live --draw mn-tp-hcm-2026-10-26
+docker compose exec api python -m xs247.cli plan --date 2026-10-26
+docker compose exec api python -m xs247.cli simulate-live --draw mn-tp-hcm-2026-10-26
 ```
 
 Trên trình duyệt, từng số sẽ hiện ra lần lượt, kèm nhãn "Đang quay, chưa xác minh". Khi đủ giải và hai nguồn khớp nhau, trang chuyển sang "Đã xác minh và công bố".
@@ -162,7 +195,7 @@ Mặc định hệ thống chỉ đọc **dữ liệu mẫu**. Để lấy kết
 ### Bước 6.1: Xem danh sách nguồn
 
 ```powershell
-docker compose exec api python -m luckyvision.cli sources
+docker compose exec api python -m xs247.cli sources
 ```
 
 | Mã nguồn | Trang | Lấy gì |
@@ -180,10 +213,10 @@ Cả ba mặc định **tắt**. Trước khi bật, hãy đọc điều khoản
 Lệnh này chỉ tải và in ra kết quả đọc được, **không lưu gì**:
 
 ```powershell
-docker compose exec api python -m luckyvision.cli probe-source vietlott-web --draw vl-power655-2026-10-29
-docker compose exec api python -m luckyvision.cli probe-source minhngoc-web --draw mn-tp-hcm-2026-10-26
-docker compose exec api python -m luckyvision.cli probe-source xoso-com-vn  --draw mb-mb-2026-10-29
-docker compose exec api python -m luckyvision.cli probe-source xoso-com-vn  --draw mt-da-nang-2026-10-28
+docker compose exec api python -m xs247.cli probe-source vietlott-web --draw vl-power655-2026-10-29
+docker compose exec api python -m xs247.cli probe-source minhngoc-web --draw mn-tp-hcm-2026-10-26
+docker compose exec api python -m xs247.cli probe-source xoso-com-vn  --draw mb-mb-2026-10-29
+docker compose exec api python -m xs247.cli probe-source xoso-com-vn  --draw mt-da-nang-2026-10-28
 ```
 
 Thay ngày trong mã kỳ bằng một ngày gần đây có quay thưởng. Mã kỳ có dạng `<miền>-<đài>-<YYYY-MM-DD>`.
@@ -206,10 +239,10 @@ Nếu thấy `robots.txt ... không cho phép`, `Trang chặn truy cập tự đ
 ### Bước 6.3: Bật nguồn đã chạy thử ổn
 
 ```powershell
-docker compose exec api python -m luckyvision.cli source-enable vietlott-web
-docker compose exec api python -m luckyvision.cli source-enable vietlott-mega
-docker compose exec api python -m luckyvision.cli source-enable minhngoc-web
-docker compose exec api python -m luckyvision.cli source-enable xoso-com-vn
+docker compose exec api python -m xs247.cli source-enable vietlott-web
+docker compose exec api python -m xs247.cli source-enable vietlott-mega
+docker compose exec api python -m xs247.cli source-enable minhngoc-web
+docker compose exec api python -m xs247.cli source-enable xoso-com-vn
 ```
 
 Tắt lại khi cần: `source-disable <mã nguồn>`.
@@ -242,24 +275,24 @@ Worker tự đọc lại trang kết quả: Keno và Bingo18 mỗi 5 phút, Lott
 Chạy thử trước khi bật (chỉ đọc, không lưu):
 
 ```powershell
-docker compose exec api python -m luckyvision.cli probe-feed lotto535
-docker compose exec api python -m luckyvision.cli probe-feed keno
-docker compose exec api python -m luckyvision.cli probe-feed max3d
-docker compose exec api python -m luckyvision.cli probe-feed max3dpro
-docker compose exec api python -m luckyvision.cli probe-feed bingo18
+docker compose exec api python -m xs247.cli probe-feed lotto535
+docker compose exec api python -m xs247.cli probe-feed keno
+docker compose exec api python -m xs247.cli probe-feed max3d
+docker compose exec api python -m xs247.cli probe-feed max3dpro
+docker compose exec api python -m xs247.cli probe-feed bingo18
 ```
 
 Kết quả đúng in ra vài kỳ gần nhất. Bật nguồn nào chạy ổn:
 
 ```powershell
-docker compose exec api python -m luckyvision.cli source-enable vietlott-keno
+docker compose exec api python -m xs247.cli source-enable vietlott-keno
 ```
 
 Tải bù lịch sử (mỗi trang khoảng 5–10 kỳ; Keno có hàng trăm kỳ mỗi ngày nên tải bù chậm):
 
 ```powershell
-docker compose exec api python -m luckyvision.cli feed --game lotto535 --pages 100
-docker compose exec api python -m luckyvision.cli feed --game max3d --pages 200
+docker compose exec api python -m xs247.cli feed --game lotto535 --pages 100
+docker compose exec api python -m xs247.cli feed --game max3d --pages 200
 ```
 
 Lưu ý: yêu cầu gửi tới Vietlott dùng một "khóa" lấy từ dự án mã nguồn mở; nếu `probe-feed` báo lỗi hoặc đọc được 0 kỳ,
@@ -327,7 +360,7 @@ Tạo thêm người dùng: vào **Tài khoản**, nhập tên đăng nhập, t�
 **Quên mật khẩu hoặc mất điện thoại có ứng dụng xác thực?** Chạy lệnh sau trên máy chủ: lệnh tạo mật khẩu tạm mới và tắt xác thực hai lớp của tài khoản đó.
 
 ```powershell
-docker compose exec api python -m luckyvision.cli create-admin --username admin --name "Quản trị"
+docker compose exec api python -m xs247.cli create-admin --username admin --name "Quản trị"
 ```
 
 > `ADMIN_TOKENS` trong `.env` chỉ dành cho script tự động gọi API; người dùng nên đăng nhập bằng tài khoản.
@@ -351,16 +384,16 @@ Worker tự tạo dự báo cho các kỳ quay hôm nay và ngày mai (mỗi 30 
 Xem tại http://localhost/du-doan.html. Mô hình cần đủ lịch sử của đài (học máy cần khoảng 40 kỳ). Để có lịch sử, tải bù kết quả các ngày đã qua từ các nguồn đang bật:
 
 ```powershell
-docker compose exec api python -m luckyvision.cli backfill --region mb --days 120
-docker compose exec api python -m luckyvision.cli backfill --region vl --days 365
-docker compose exec api python -m luckyvision.cli backfill --region mn --days 365
+docker compose exec api python -m xs247.cli backfill --region mb --days 120
+docker compose exec api python -m xs247.cli backfill --region vl --days 365
+docker compose exec api python -m xs247.cli backfill --region mn --days 365
 ```
 
 Kiểm thử lùi các mô hình trên dữ liệu đã có:
 
 ```powershell
-docker compose exec api python -m luckyvision.cli backtest --region mb --last 365
-docker compose exec api python -m luckyvision.cli backtest --region mn --province tp-hcm --last 60 --k 5
+docker compose exec api python -m xs247.cli backtest --region mb --last 365
+docker compose exec api python -m xs247.cli backtest --region mn --province tp-hcm --last 60 --k 5
 ```
 
 > Nói thật: trên dữ liệu thật, không mô hình nào (kể cả học máy) đoán tốt hơn chọn ngẫu nhiên một cách có ý nghĩa thống kê. Trang dự báo và lệnh `backtest` luôn hiện rõ điều này.
@@ -423,6 +456,32 @@ Mỗi địa chỉ IP chỉ gọi được `AI_REQUESTS_PER_MINUTE` lần mỗi 
   - Tin "Quên mật khẩu" có nút **Mở Thành viên** để cấp mật khẩu tạm ngay.
   - Chống thư rác: ô bẫy ẩn, phải mở form ít nhất 3 giây mới gửi được, mỗi địa chỉ tối đa 5 tin mỗi giờ, giới hạn số đường dẫn trong tin.
 
+### Dò vé và máy thời gian cho Mega 6/45, Lotto 5/35, Max 3D, Max 3D Pro
+
+Trong trang Công cụ, mục **Dò vé** và **Máy thời gian** có thêm 4 loại ở ô "Loại xổ số". Giá trị giải theo thể lệ của Vietlott
+cho vé 10.000đ:
+
+| Trò chơi | Cách nhập vé | Giải |
+| --- | --- | --- |
+| Mega 6/45 | `05 12 23 34 40 45` | 6 số: Jackpot (theo kỳ); 5 số 10 triệu; 4 số 300.000đ; 3 số 30.000đ |
+| Lotto 5/35 | `05 12 23 30 35 + 08` (số sau dấu + là số đặc biệt) | 5 số + ĐB: Độc đắc; 5 số 10 triệu; 4 + ĐB 5 triệu; 4 số 500.000đ; 3 + ĐB 100.000đ; 3 số 30.000đ; chỉ trùng ĐB 10.000đ |
+| Max 3D | `123` | Trùng 1 trong 2 số nhóm đầu 1 triệu; nhóm 4 số 350.000đ; nhóm 6 số 210.000đ; nhóm 8 số 100.000đ (cộng dồn) |
+| Max 3D Pro | `123 456` | Đúng thứ tự 2 số ĐB 2 tỷ; ngược thứ tự 400 triệu; 2 trong 4 số giải Nhất 30 triệu; Nhì 10 triệu; Ba 4 triệu; 2 trong 20 số 1 triệu; 1 số trùng ĐB 100.000đ; 1 số trùng Nhất/Nhì/Ba 40.000đ (cộng dồn) |
+
+Jackpot và Độc đắc thay đổi theo kỳ nên Máy thời gian chỉ đếm số lần trúng, không cộng vào lãi lỗ.
+Nếu Vietlott đổi thể lệ, sửa bảng `VL_GAMES` trong mã nguồn trang Công cụ.
+
+### Xem quay trực tiếp có hiệu ứng (`/live.html`)
+
+- Mỗi số mới về: các chữ số chạy ngẫu nhiên rồi dừng lần lượt từ trái sang phải; hàng giải đang quay được tô sáng.
+- Kỳ Vietlott vừa công bố: bóng rơi xuống lần lượt từng quả.
+- Trước giờ quay: đồng hồ đếm ngược lớn.
+- Nút **🔈 Âm thanh**: tiếng chuông nhỏ mỗi khi có số mới (mặc định tắt).
+- Nút **🔔 Nhắc tôi trước giờ quay**: chọn miền Nam, Trung, Bắc, Power, Mega và số phút nhắc trước (5–30).
+  - **Bật nhắc trên trình duyệt:** báo bằng thông báo, chuông và tiêu đề trang nhấp nháy, khi trang đang mở.
+  - **Thêm vào lịch điện thoại:** tải tệp lịch (.ics) có lặp lại mỗi ngày hoặc theo thứ, điện thoại tự nhắc kể cả khi tắt trang.
+- Xem thử hiệu ứng không cần kết quả thật: http://localhost/live.html?demo=1
+
 ### Trang Công cụ dùng dữ liệu thật
 
 Trang `/cong-cu/` không còn nhúng dữ liệu cũ: khi mở, trang tải toàn bộ kết quả Power 6/55 và 3 năm gần nhất của ba miền
@@ -469,9 +528,9 @@ Trang chủ và các trang kết quả do máy chủ tạo sẵn HTML (không c�
 
 Khi đưa lên tên miền thật:
 
-1. Trong `.env`, đặt `SITE_URL=https://ten-mien-cua-ban.vn` (không có dấu `/` cuối), rồi `docker compose up -d`.
+1. Trong `.env`, đặt `SITE_URL=https://xs247.mobi` (không có dấu `/` cuối), rồi `docker compose up -d`.
 2. Vào **Google Search Console**, thêm tên miền, xác minh bằng bản ghi DNS (làm trên Cloudflare).
-3. Trong Search Console, mục **Sitemaps**, gửi `https://ten-mien-cua-ban.vn/sitemap.xml`.
+3. Trong Search Console, mục **Sitemaps**, gửi `https://xs247.mobi/sitemap.xml`.
 4. Bật Cloudflare **Cache Everything** cho các trang ngày cũ nếu muốn nhanh hơn (trang đã gửi sẵn `Cache-Control`).
 
 ### Cài như ứng dụng trên điện thoại
@@ -484,8 +543,8 @@ Khi mất mạng, các trang đã xem vẫn mở được.
 
 ### Kênh Telegram nhận kết quả
 
-1. Tạo kênh Telegram công khai (ví dụ `@luckyvision_kq`), thêm bot (mục 8) làm quản trị kênh.
-2. Trong `.env`: `TELEGRAM_RESULTS_CHAT_ID=@luckyvision_kq`, rồi `docker compose up -d`.
+1. Tạo kênh Telegram công khai (ví dụ `@xs247_kq`), thêm bot (mục 8) làm quản trị kênh.
+2. Trong `.env`: `TELEGRAM_RESULTS_CHAT_ID=@xs247_kq`, rồi `docker compose up -d`.
 
 Mỗi khi một kỳ được công bố lần đầu, kênh nhận tin gồm giải đặc biệt, giải nhất, lô tô và đường dẫn tới trang kết quả.
 
@@ -512,45 +571,71 @@ Bạn sẽ nhận cảnh báo khi kỳ quay quá giờ, nguồn lỗi liên tụ
 
 | Việc | Lệnh |
 | --- | --- |
-| **Tự kiểm tra cấu hình, dữ liệu, bảo mật** | `docker compose exec api python -m luckyvision.cli doctor` |
+| **Tự kiểm tra cấu hình, dữ liệu, bảo mật** | `docker compose exec api python -m xs247.cli doctor` |
 | Xem trạng thái | `docker compose ps` |
 | Xem nhật ký | `docker compose logs -f worker` hoặc `docker compose logs -f api` |
 | Khởi động lại | `docker compose restart` |
 | Dừng (giữ dữ liệu) | `docker compose down` |
 | Dừng và **xóa sạch dữ liệu** | `docker compose down -v` |
 | Cập nhật sau khi sửa mã | `docker compose up -d --build` |
-| Lập kỳ quay cho một ngày | `docker compose exec api python -m luckyvision.cli plan --date 2026-11-02` |
-| Tải lại một ngày | `docker compose exec api python -m luckyvision.cli collect --date 2026-11-02` |
-| Tải lại một kỳ | `docker compose exec api python -m luckyvision.cli collect --draw mb-mb-2026-11-02` |
-| Tạo dự báo và chấm điểm ngay | `docker compose exec api python -m luckyvision.cli forecast` |
-| Tạo hoặc đặt lại tài khoản | `docker compose exec api python -m luckyvision.cli create-admin --username ten --name "Tên" --role editor` |
+| Lập kỳ quay cho một ngày | `docker compose exec api python -m xs247.cli plan --date 2026-11-02` |
+| Tải lại một ngày | `docker compose exec api python -m xs247.cli collect --date 2026-11-02` |
+| Tải lại một kỳ | `docker compose exec api python -m xs247.cli collect --draw mb-mb-2026-11-02` |
+| Tạo dự báo và chấm điểm ngay | `docker compose exec api python -m xs247.cli forecast` |
+| Tạo hoặc đặt lại tài khoản | `docker compose exec api python -m xs247.cli create-admin --username ten --name "Tên" --role editor` |
 | Vào cơ sở dữ liệu | `docker compose exec db psql -U luckey -d luckey` |
 
 ---
 
 ## 10. Đưa lên VPS (chạy 24/7)
 
-Tóm tắt; chi tiết ở `README.md`, mục 6.
+Làm theo **`HUONG-DAN-DUA-LEN-VPS.md`**: từng bước từ thuê VPS, tên miền, Cloudflare Tunnel, chuyển dữ liệu
+từ máy đang chạy sang, đến sao lưu, cảnh báo, Google Search Console và tự động cập nhật.
 
-1. Thuê VPS Ubuntu 24.04, cấu hình 4 vCPU, 8 GB RAM.
-2. Chép thư mục dự án lên VPS, rồi chạy với quyền root:
+Các script dùng trong đó (thư mục `deploy/`):
+
+| Script | Chạy ở đâu | Việc |
+|---|---|---|
+| `setup-vps.sh` | VPS, quyền root, một lần | Docker, tường lửa, SSH bằng khóa, swap, giới hạn log, lịch sao lưu |
+| `check-env.sh` | VPS | Kiểm tra `.env` trước khi chạy thật |
+| `export-data.sh` | Máy đang có dữ liệu | Xuất toàn bộ dữ liệu ra một tệp |
+| `import-data.sh` | VPS | Nạp tệp dữ liệu (tự sao lưu dữ liệu cũ trước) |
+| `update.sh` | VPS | Cập nhật bản mới: kiểm tra, sao lưu, dựng lại, tự kiểm tra |
+| `backup.sh` | VPS (cron 02:15) | Sao lưu hằng đêm, chép ra ngoài nếu đã khai báo rclone |
+| `restore-test.sh` | VPS | Thử khôi phục bản sao lưu mới nhất |
+
+---
+
+## 10b. Cập nhật lên bản mới
+
+Mỗi khi nhận `Luckey.zip` mới (có tính năng hoặc bản sửa lỗi):
+
+**Trên máy Windows**
+1. Giải nén `Luckey.zip` mới **đè lên** thư mục `C:\Luckey` hiện tại. Tệp `.env` và dữ liệu (nằm trong Docker) được giữ nguyên.
+2. Mở PowerShell trong `C:\Luckey`, chạy:
+   ```powershell
+   .\update.ps1
+   ```
+   Script tự sao lưu cơ sở dữ liệu vào `backups\`, dựng lại, áp dụng thay đổi cơ sở dữ liệu và chạy `doctor`.
+3. Mở trang, nhấn **Ctrl+F5** để trình duyệt tải bản mới.
+
+**Trên WSL hoặc Linux:** giải nén đè lên thư mục dự án (giữ `.env`) rồi chạy `bash update.sh`.
+
+**Trên VPS**
+1. Chép thư mục mới lên VPS đè lên `/opt/luckey`, giữ nguyên `.env`. Ví dụ từ máy Windows:
+   ```powershell
+   scp -r C:\Luckey\* root@IP-VPS:/opt/luckey/
+   ```
+2. Trên VPS:
    ```bash
-   sudo bash deploy/setup-vps.sh
+   cd /opt/luckey && bash deploy/update.sh
    ```
-   Script cài Docker, bật tường lửa (chỉ mở SSH), fail2ban và tự cập nhật bản vá.
-3. Trên Cloudflare, tạo **Tunnel** trỏ tên miền tới `http://caddy:80`, lấy token.
-4. Trên VPS:
-   ```bash
-   cd /opt/luckey
-   cp .env.example .env && nano .env    # APP_ENV=prod, POSTGRES_PASSWORD, CLOUDFLARE_TUNNEL_TOKEN
-   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-   docker compose exec api python -m luckyvision.cli create-admin --username admin --name "Quản trị"
-   ```
-5. Làm lại mục 6.2 đến 6.4 trên VPS để bật các nguồn dữ liệu, rồi chạy `doctor` (mục 9) để tự kiểm tra.
-6. Cài sao lưu hằng đêm: `rclone config` rồi thêm vào `crontab -e`:
-   ```
-   15 2 * * * /opt/luckey/deploy/backup.sh >> /opt/luckey/backups/backup.log 2>&1
-   ```
+3. Nếu trang vẫn hiện bản cũ: vào Cloudflare, mục **Caching**, bấm **Purge Everything**.
+
+Nếu bản mới có lỗi, khôi phục bản sao lưu vừa tạo:
+```bash
+docker compose exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' < backups/truoc-cap-nhat-NGAY-GIO.dump
+```
 
 ---
 

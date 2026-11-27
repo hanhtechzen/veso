@@ -1,5 +1,5 @@
-// LuckyVision service worker: dùng được khi mạng chập chờn, mở lại trang đã xem khi mất mạng.
-const VERSION = 'lv-1';
+// XS247 service worker: dùng được khi mạng chập chờn, mở lại trang đã xem khi mất mạng.
+const VERSION = 'lv-9';
 const CORE = ['/offline.html', '/assets/site.css', '/assets/lv-date.css', '/assets/lv-date.js', '/icons/icon-192.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
@@ -15,10 +15,19 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(req).then(r => r || caches.match('/offline.html'))));
     return;
   }
-  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/icons/')) {
+  if (url.pathname.startsWith('/assets/ocr/')) return;  // thư viện đọc chữ (~11 MB): để trình duyệt/Caddy cache, không lưu vào SW
+  if (url.pathname.startsWith('/assets/fonts/') || url.pathname.startsWith('/icons/')) {
+    // Font, icon gần như không đổi: dùng bản đã lưu cho nhanh, đồng thời tải bản mới ở nền
     e.respondWith(caches.match(req).then(hit => {
       const net = fetch(req).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); return res; });
       return hit || net;
     }));
+    return;
+  }
+  if (url.pathname.startsWith('/assets/') || url.pathname === '/nav.js') {
+    // CSS/JS đổi theo mỗi lần cập nhật: luôn lấy mới từ máy chủ, chỉ dùng bản đã lưu khi mất mạng.
+    // (Trước đây lấy bản đã lưu trước nên người dùng thấy HTML mới nhưng CSS cũ.)
+    e.respondWith(fetch(req).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); return res; })
+      .catch(() => caches.match(req)));
   }
 });

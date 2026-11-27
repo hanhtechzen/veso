@@ -1,4 +1,4 @@
-/* LuckyVision: trang công khai do máy chủ tạo (nhẹ, không cần JavaScript để đọc kết quả) */
+/* XS247: trang công khai do máy chủ tạo (nhẹ, không cần JavaScript để đọc kết quả) */
 :root{--bg:#F5F4FB;--surface:#fff;--surface-2:#F1F0F8;--ink:#141B2D;--muted:#5B6578;--line:#E3E1EE;--gold:#FFC233;--night:#1A1446;--bad:#A3322A;--good:#1F7A4C;--focus:#2356C9;
   --acc:#FF6B00;--acc2:#FF2D87;color-scheme:light}
 body[data-region="mb"]{--acc:#D7263D;--acc2:#FF9F1C}
@@ -8,16 +8,23 @@ body[data-region="mega645"]{--acc:#C2185B;--acc2:#F06292}
 @media (prefers-color-scheme:dark){:root{--bg:#0E0B24;--surface:#17123A;--surface-2:#211A4D;--ink:#E8ECF4;--muted:#A3ABC2;--line:#2E2766;--good:#5CC48D;--focus:#7FA6FF;color-scheme:dark}}
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;padding-bottom:env(safe-area-inset-bottom,0px)}
 a{color:inherit}
 .wrap{max-width:1140px;margin:0 auto;padding:0 16px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .skip{position:absolute;left:-999px;top:0}.skip:focus{left:8px;top:8px;background:#fff;color:#000;padding:8px 12px;z-index:10;border-radius:8px}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-.top{background:linear-gradient(115deg,var(--acc),color-mix(in srgb,var(--acc) 55%,var(--night)) 55%,var(--acc2) 115%);color:#fff;padding-top:env(safe-area-inset-top,0px)}
+/* Thanh đầu trang: một màu thương hiệu cố định ở mọi trang (không đổi theo miền) */
+.top{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.12'%3E%3Cpath d='M0 20 Q15 0 30 20 T60 20 T90 20 T120 20'/%3E%3Cpath d='M0 20 Q15 40 30 20 T60 20 T90 20 T120 20'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(115deg,#D7263D 0%,color-mix(in srgb,#D7263D 55%,#1A1446) 55%,#FF9F1C 115%)!important;box-shadow:0 10px 30px -16px color-mix(in srgb,#D7263D 80%,#000);color:#fff;padding-top:env(safe-area-inset-top,0px)}
 .top .in{max-width:1140px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
 .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.2rem;text-decoration:none;color:#fff}
-.brand-ball{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 .62rem "IBM Plex Mono",monospace;color:#141B2D;background:radial-gradient(circle at 50% 52%,#fff 0 44%,transparent 45%),radial-gradient(circle at 32% 24%,#FFE08A,#F2B01E 45%,#93650A)}
+.brand-ball{position:relative;flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:800 .8rem "Be Vietnam Pro",system-ui,sans-serif;color:#1A1446;background:radial-gradient(circle at 50% 52%,#fff 0 44%,transparent 45%),radial-gradient(circle at 32% 24%,#FFE08A,#F2B01E 45%,#93650A)}
+.brand-name{white-space:nowrap}
+.brand-dot{position:absolute;top:-2px;right:-3px;width:10px;height:10px;border-radius:50%;background:#FF2D55;border:2px solid #fff;box-shadow:0 0 0 0 rgba(255,45,85,.6);animation:lvLive 1.8s infinite}
+@keyframes lvLive{70%{box-shadow:0 0 0 7px rgba(255,45,85,0)}100%{box-shadow:0 0 0 0 rgba(255,45,85,0)}}
+.brand-live{display:inline-block;margin-left:4px;padding:1px 8px 2px;border-radius:999px;background:#FF2D55;color:#fff;font-weight:800;font-size:.85em;line-height:1.3}
+@media (max-width:380px){.brand{font-size:1.05rem;gap:6px}.brand-live{padding:1px 6px 2px;margin-left:3px}}
+@media (prefers-reduced-motion:reduce){.brand-dot{animation:none}}
 nav.main{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;max-width:100%}
 nav.main a{flex:none;color:rgba(255,255,255,.82);text-decoration:none;font-weight:700;padding:8px 10px;border-radius:10px;font-size:.95rem}
 nav.main a:hover,nav.main a[aria-current]{color:#fff;background:rgba(0,0,0,.18)}
@@ -46,16 +53,19 @@ table.kq th,table.kq td{border-bottom:1px solid var(--line);text-align:center;pa
 table.kq thead th{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-weight:700}
 table.kq thead th a{color:#fff;text-decoration:none}
 table.kq tbody th{width:56px;color:var(--muted);font-size:.82rem;background:var(--surface-2)}
-.n{display:block;font:600 1.12rem/1.5 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.04em}
-.n .pre{color:var(--muted);font-weight:500}
-tr.g-db .n,tr.g-db .n b{font-size:1.4rem;color:var(--acc)}
+.n{display:block;font:500 1.15rem/1.75 "Be Vietnam Pro",system-ui,sans-serif;letter-spacing:.03em;font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum" 1,"lnum" 1;color:var(--ink)}
+.n .pre{color:inherit;font-weight:inherit}
+.n b{font-weight:800;color:inherit}
+tr.g-db .n{font-size:1.65rem;font-weight:800;color:#D7263D;letter-spacing:.1em}
+tr.g-db .n b{color:inherit}
+@media (prefers-color-scheme:dark){tr.g-db .n{color:#FF6B6B}}
 table.lt,table.list{font-size:.92rem}
 table.lt caption{text-align:left;font-weight:700;margin-bottom:6px}
 table.lt th,table.lt td,table.list th,table.list td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
 table.lt tbody th{color:var(--acc);text-align:center;width:48px}
-table.lt td{font-family:"IBM Plex Mono",monospace}
+table.lt td{font-family:"Be Vietnam Pro",system-ui,sans-serif}
 table.list thead th{color:var(--muted);font-size:.8rem}
-.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.mono{font-family:"Be Vietnam Pro",system-ui,sans-serif}
 .small{font-size:.82rem}
 td.db{color:var(--acc);font-weight:700}
 .balls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0}
@@ -100,7 +110,7 @@ body[data-region="dt123"],body[data-region="tt4"],body[data-region="dt6x36"]{--a
 .die{width:2.6em;height:2.6em;border-radius:12px;display:grid;place-items:center;font:800 1.5rem "Be Vietnam Pro",sans-serif;color:#fff;
   background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:inset -3px -4px 0 rgba(0,0,0,.18),0 6px 14px -8px rgba(0,0,0,.5)}
 .dice-sum{font-weight:700;color:var(--muted)}
-.bignum{font:800 clamp(2.4rem,9vw,3.6rem) "IBM Plex Mono",monospace;letter-spacing:.12em;color:var(--acc);text-align:center;margin:8px 0}
+.bignum{font:800 clamp(2.4rem,9vw,3.6rem) "Be Vietnam Pro",system-ui,sans-serif;letter-spacing:.12em;color:var(--acc);text-align:center;margin:8px 0}
 table.kq.mini th{width:auto;white-space:nowrap;font-size:.86rem}
 .n.inl{display:inline-block;margin:2px 8px;font-size:1.15rem}
 /* Menu: hàng chính trên nền màu (vạch vàng dưới mục đang xem), hàng phụ là dải trắng riêng */
@@ -119,7 +129,7 @@ nav.sub a[aria-current]{color:var(--acc);border-bottom-color:var(--acc)}
 .fc{display:flex;flex-direction:column;align-items:center;font-size:.72rem}
 .fc .track{height:90px;width:70%;display:flex;align-items:flex-end}
 .fc .bar{width:100%;background:linear-gradient(180deg,var(--acc2),var(--acc));border-radius:4px 4px 0 0;min-height:2px}
-.fc b{font-family:"IBM Plex Mono",monospace;font-size:.78rem;margin-top:3px}.fc small{color:var(--muted)}
+.fc b{font-family:"Be Vietnam Pro",system-ui,sans-serif;font-size:.78rem;margin-top:3px}.fc small{color:var(--muted)}
 @media (max-width:600px){nav.main a{padding:11px 6px 13px;font-size:.85rem}.top .in{gap:4px 10px}}
 /* Tìm kiếm trong thanh đầu trang, tài khoản */
 .top .in{flex-wrap:wrap}
@@ -127,8 +137,9 @@ form.search{order:2;flex:1;min-width:200px;max-width:340px;margin-left:auto}
 form.search input{width:100%;padding:8px 12px;border-radius:999px;border:none;background:rgba(255,255,255,.18);color:#fff;font:inherit;font-size:.9rem}
 form.search input::placeholder{color:rgba(255,255,255,.75)}
 form.search input:focus{outline:none;background:#fff;color:#141B2D}
-.acct{order:3;color:#fff;font-weight:700;font-size:.9rem;text-decoration:none;padding:7px 12px;border-radius:999px;border:1.5px solid rgba(255,255,255,.4);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
-.acct.in{background:rgba(255,255,255,.18)}
+form.search input:focus::placeholder{color:#8A93A6}
+.acct{order:3;display:inline-flex;align-items:center;line-height:1.2;color:#fff;font-weight:700;font-size:.9rem;text-decoration:none;padding:7px 12px;border-radius:999px;border:1.5px solid rgba(255,255,255,.4);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.acct.signed-in{background:rgba(255,255,255,.18)}
 nav.main{order:4;flex-basis:100%}
 @media (max-width:600px){form.search{order:4;max-width:none;flex-basis:100%}nav.main{order:5}.acct{order:2;margin-left:auto}}
 .row3{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
@@ -147,11 +158,11 @@ ul.results{list-style:none;margin:0;padding:0}ul.results li{padding:10px 0;borde
 .hitnum{background:var(--gold);color:#141B2D;border-radius:4px;padding:0 3px}
 .addrow{margin-top:12px}
 table.cmp th[scope=row]{color:var(--muted);font-weight:600;white-space:nowrap}
-table.cmp td{font-family:"IBM Plex Mono",monospace}
+table.cmp td{font-family:"Be Vietnam Pro",system-ui,sans-serif}
 .ball.sm{width:2.4em;height:2.4em;font-size:.95rem}
 .num-h{text-align:left}
 .tl-row{display:flex;align-items:center;gap:10px;margin:6px 0}
-.tl-n{font:700 1rem "IBM Plex Mono",monospace;width:2.2em}
+.tl-n{font:700 1rem "Be Vietnam Pro",system-ui,sans-serif;width:2.2em}
 .tl-cells{display:flex;flex-wrap:wrap;gap:3px}
 .tl-cells i{width:12px;height:18px;border-radius:3px;background:var(--surface-2);border:1px solid var(--line)}
 .tl-cells i.on{background:linear-gradient(180deg,var(--acc2),var(--acc));border-color:transparent}
@@ -161,3 +172,244 @@ table.sched tr.today{background:color-mix(in srgb,var(--acc) 10%,transparent)}
 .authbox.wide{max-width:720px}
 .authbox textarea,.authbox select{padding:9px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit}
 .hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
+
+/* Chữ số đều nhau trong bảng, tiêu đề đậm gọn */
+table,.mono,.ball,.bignum{font-variant-numeric:tabular-nums}
+h1{font-weight:800}h2{font-weight:700}
+table.kq tbody th{font-weight:700;letter-spacing:.02em}
+/* Dò vé nhanh trên trang chủ */
+.dv-hero{margin:14px 0 22px;padding:16px 18px;border-radius:18px;background:var(--surface);border:2px solid color-mix(in srgb,var(--acc) 45%,var(--line));box-shadow:0 8px 24px rgba(20,27,45,.08)}
+.dv-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.dv-head h2{margin:0;font-size:1.35rem}
+.dv-cam{font-size:1rem;padding:11px 18px}
+.dv-form{display:grid;grid-template-columns:1.2fr 1.4fr 1fr auto;gap:10px;align-items:end}
+.dv-form label{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:.85rem;color:var(--muted);font-weight:600}
+.dv-form input,.dv-form select{width:100%;min-width:0;box-sizing:border-box;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:1rem}
+#dvNum{font-size:1.25rem;font-weight:800;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.dv-form .btn{padding:11px 22px;font-size:1rem}
+.dv-out p{margin:10px 0 0;font-size:1.05rem}
+.dv-win{color:var(--good);font-weight:700}.dv-bad{color:var(--bad)}
+@media (max-width:700px){.dv-form{grid-template-columns:1fr 1fr}.dv-form label:first-child{grid-column:1/-1}.dv-form .btn{grid-column:1/-1}.dv-cam{width:100%;text-align:center}}
+/* Nút Dò vé nổi trên điện thoại */
+.fab-dv{display:none}
+@media (max-width:700px){.fab-dv{display:flex;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;align-items:center;gap:6px;padding:12px 18px;border-radius:999px;color:#fff;font-weight:800;text-decoration:none;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 8px 20px rgba(0,0,0,.25)}}
+@media print{.fab-dv,.dv-hero{display:none}}
+/* Dò vé nhanh: các ô cùng chiều cao, chữ gợi ý cùng kiểu với phần còn lại */
+.dv-form{align-items:start}
+.dv-form input,.dv-form select,.dv-form .lvd-btn,.dv-form .btn{height:48px;box-sizing:border-box}
+.dv-form .lvd{display:block;width:100%}
+.dv-form .lvd-btn{min-width:0;padding-top:4px;padding-bottom:4px}
+.dv-form .btn{margin-top:auto;align-self:end}
+#dvNum::placeholder{font-size:1rem;font-weight:500;letter-spacing:normal;color:var(--muted)}
+.dv-form select{font-weight:600}
+/* Thông báo kết quả dò vé */
+.dv-msg{font-weight:400;display:flex;gap:12px;align-items:flex-start;margin:12px 0 4px;padding:14px 16px;border-radius:14px;border:1.5px solid;font-size:1.05rem;animation:dvIn .25s ease-out}
+.dv-msg b{display:block;font-size:1.12rem}
+.dv-msg p{margin:2px 0 0;font-size:.98rem}
+.dv-ico{font-size:1.7rem;line-height:1}
+.dv-win{background:#E9F8EF;border-color:#1F7A4C;color:#145234}
+.dv-win p b{display:inline;font-size:1.05rem}
+.dv-lose{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
+.dv-wait{background:#FFF6E0;border-color:#E0A100;color:#6B4A00}
+.dv-bad{background:#FDECEA;border-color:#C0392B;color:#7D1F16}
+@media (prefers-color-scheme:dark){.dv-win{background:#123524;color:#BFF0D3}.dv-wait{background:#3A2C08;color:#FFE3A3}.dv-bad{background:#3B1512;color:#FFC9C2}}
+@keyframes dvIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.dv-msg{animation:none}}
+
+/* Khối đầu trang Vietlott: đồng hồ đếm ngược, bóng kết quả, liên kết nhanh (.vl-*) */
+.vl-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;margin:14px 0 12px;align-items:stretch}
+@media (max-width:760px){.vl-hero{grid-template-columns:minmax(0,1fr)}}
+.vl-clock-card{position:relative;overflow:hidden;border-radius:20px;padding:20px;color:#fff;background:radial-gradient(120% 90% at 0% 0%,#2A2170 0%,#1A1446 60%);border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 40px -26px rgba(10,15,30,.9)}
+.vl-title{font-weight:800;font-size:1.05rem;color:#fff}
+.vl-clock{margin:10px 0 4px}
+.vl-clock-label{font-weight:600;color:#C4CBE0}.vl-clock-label b{color:#fff}
+.vl-digits{display:flex;align-items:center;gap:6px;margin:10px 0 8px;font:700 clamp(2rem,9vw,3.4rem)/1 "IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.vl-digits[hidden],.vl-clock-live[hidden],.vl-clock-when[hidden],.vl-clock-label[hidden]{display:none}
+.vl-d{display:inline-grid;place-items:center;min-width:1.25em;padding:.12em .1em;border-radius:12px;color:var(--gold);background:linear-gradient(180deg,#2E2470 0 49.5%,#241C5C 50.5% 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 6px 12px -6px rgba(0,0,0,.8)}
+.vl-digits i{font-style:normal;color:#8C97C8}
+.vl-clock-when,.vl-sched{color:#C4CBE0;font-size:.92rem}
+.vl-sched{margin-top:6px;font-size:.84rem;opacity:.85}
+.vl-clock-live{display:inline-block;margin:10px 0 6px;padding:8px 14px;border-radius:999px;background:var(--gold);color:#141B2D;font-weight:800}
+.vl-latest{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.vl-latest-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;margin-bottom:6px}
+.vl-latest-head span{color:var(--muted);font-size:.9rem}
+.vl-balls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin:10px 0}
+.vl-balls.many{gap:5px}
+.vl-ball{width:2.9em;height:2.9em;border-radius:50%;display:inline-grid;place-items:center;flex:none;font:800 1.1rem "Be Vietnam Pro",system-ui,sans-serif;font-variant-numeric:tabular-nums;color:#141B2D;
+  background:radial-gradient(circle at 50% 52%,#fff 0 46%,transparent 47%),radial-gradient(circle at 32% 24%,#FF8A80,#E53935 45%,#8E1414);box-shadow:inset -2px -3px 5px rgba(0,0,0,.3)}
+.vl-ball.sp{background:radial-gradient(circle at 50% 52%,#fff 0 46%,transparent 47%),radial-gradient(circle at 32% 24%,#FFF0A8,#FFC233 45%,#A06A00)}
+.vl-balls.many .vl-ball{width:2.2em;height:2.2em;font-size:.9rem}
+.vl-balls.sm .vl-ball{width:2.3em;height:2.3em;font-size:.9rem}
+.vl-ball.xs{width:1em;height:1em;font-size:1rem;vertical-align:-2px;margin-right:4px;display:inline-block}
+.vl-plus{font-weight:800;color:var(--muted)}
+.vl-note{color:var(--muted);font-size:.85rem;margin:6px 0 0;text-align:center}
+.vl-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;margin:0 0 18px}
+.vl-links a{display:block;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.vl-links a:hover{border-color:var(--gold);background:var(--surface-2)}
+.vl-links b{display:block}.vl-links span{display:block;color:var(--muted);font-size:.84rem;margin-top:2px}
+/* thẻ gọn ở trang tổng quan Vietlott */
+.vl-mini-body .vl-clock{margin:8px 0 6px;padding:8px 12px;border-radius:12px;color:#fff;background:linear-gradient(135deg,#2A2170,#1A1446)}
+.vl-clock.sm .vl-digits{font-size:1.4rem;margin:4px 0;gap:4px}
+.vl-clock.sm .vl-d{border-radius:8px}
+.vl-clock.sm .vl-clock-label,.vl-clock.sm .vl-clock-when{font-size:.8rem}
+.vl-clock.sm .vl-clock-live{margin:4px 0;padding:4px 10px;font-size:.85rem}
+@media (max-width:420px){.vl-ball{font-size:.95rem}.vl-balls{gap:5px}}
+
+/* Ô chọn trò trên trang thống kê Vietlott */
+.vl-pick{display:flex;align-items:center;gap:10px;margin:4px 0 14px}
+.vl-pick label{font-weight:700;color:var(--muted)}
+.vl-pick select{font:inherit;font-weight:800;font-size:1rem;color:#fff;border:0;border-radius:999px;padding:9px 34px 9px 16px;cursor:pointer;appearance:none;-webkit-appearance:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23fff' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 13px center,linear-gradient(135deg,var(--acc),var(--acc2))}
+.vl-pick select option{color:#141B2D;background:#fff}
+
+/* Phạm vi thống kê: cùng một thanh chọn ở mọi trang thống kê */
+.scope{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end;margin:6px 0 16px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.scope label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;font-weight:700;color:var(--muted)}
+.scope select{font:inherit;font-size:1rem;font-weight:700;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;min-width:200px}
+.scope select:focus{outline:none;border-color:var(--acc)}
+@media (max-width:600px){.scope label{flex:1 1 100%}.scope select{min-width:0;width:100%}}
+/* Bảng "Các kỳ gần đây" của Vietlott: mỗi số một ô tròn nhỏ, chia đều, dễ dò */
+.rk-nums{display:flex;flex-wrap:wrap;gap:4px;max-width:560px}
+.rk-nums.many{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));max-width:420px}
+.rk-n{display:inline-grid;place-items:center;min-width:30px;height:30px;border-radius:50%;font:700 .88rem/1 "Be Vietnam Pro",system-ui,sans-serif;font-variant-numeric:tabular-nums;background:var(--surface-2);color:var(--ink);border:1px solid var(--line)}
+.rk-n.hi{background:color-mix(in srgb,var(--acc) 12%,var(--surface));border-color:color-mix(in srgb,var(--acc) 35%,var(--line))}
+.rk-n.sp{background:#FFC233;border-color:#E0A100;color:#3A2A00}
+.rk-date a{color:var(--muted);text-decoration:none;white-space:nowrap}.rk-date a:hover{text-decoration:underline}
+@media (max-width:600px){.rk-n{min-width:26px;height:26px;font-size:.8rem}.rk-nums.many{max-width:none}}
+
+/* Nhãn HOT trên menu chính (Dò vé, Chơi thử, Thống kê) */
+nav.main a{position:relative}
+nav.main .hot{display:inline-block;vertical-align:top;margin:-6px 0 0 3px;padding:1px 5px;border-radius:999px;font:800 .58rem/1.3 "Be Vietnam Pro",system-ui,sans-serif;letter-spacing:.04em;
+  color:#fff;background:linear-gradient(135deg,#FF2D55,#FF7A00);box-shadow:0 2px 6px rgba(255,45,85,.45);animation:lvHot 1.6s ease-in-out infinite;pointer-events:none}
+@keyframes lvHot{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@media (prefers-reduced-motion:reduce){nav.main .hot{animation:none}}
+@media (max-width:600px){nav.main .hot{margin:-4px 0 0 2px;font-size:.5rem;padding:0 4px}}
+/* Sổ kết quả: lô tô thành ô nhỏ, số về nhiều lần ghi ×2, cột ngày gọn */
+table.so td{vertical-align:middle}
+.so-day a{display:flex;flex-direction:column;text-decoration:none;color:var(--ink);white-space:nowrap}
+.so-day b{font-size:1rem}.so-day small{color:var(--muted);font-size:.75rem}
+div.lt{display:flex;flex-wrap:wrap;gap:3px;max-width:520px}
+.lt-n{position:relative;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-width:28px;height:24px;padding:0 5px;border-radius:7px;font:600 .82rem/1 "Be Vietnam Pro",system-ui,sans-serif;font-variant-numeric:tabular-nums;background:var(--surface-2);color:var(--ink)}
+.lt-n.dup{background:color-mix(in srgb,var(--acc) 14%,var(--surface));color:var(--acc);font-weight:800}
+.lt-n sup{font-size:.62rem;margin-left:2px;line-height:1;vertical-align:baseline;position:relative;top:-3px}
+.bar{flex-wrap:wrap}
+@media print{.lt-n{background:none;border:1px solid #ccc}}
+/* Max 3D / Max 3D Pro: mỗi giải một nhóm có nhãn; Bingo18: 3 viên xúc xắc và tổng */
+.rk-groups{display:flex;flex-wrap:wrap;gap:6px 14px}
+.rk-grp{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+.rk-lab{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;margin-right:2px;min-width:30px}
+.rk-n.w3{min-width:40px;border-radius:8px}
+.rk-n.die{border-radius:8px;background:#fff;border:1.5px solid var(--ink);color:var(--ink)}
+.rk-sum{align-self:center;font-weight:800;margin-left:6px}
+/* Chip có nhãn đếm nhỏ bên dưới (lô gan, về nhiều...) */
+.rk-n.w3{padding:0 6px}
+.rk-n.has-cnt{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:auto;min-width:40px;padding:4px 6px 3px;border-radius:10px}
+.rk-cnt{font:600 .66rem/1 "Be Vietnam Pro",system-ui,sans-serif;color:var(--muted);white-space:nowrap}
+.rk-n.hi .rk-cnt{color:var(--acc)}
+.rk-nums .rk-sum{margin-left:2px}
+td .rk-nums,td .lt{max-width:none}
+/* Đầu/đuôi: 2 hàng x 10 cột */
+.ht-grid{display:grid;gap:3px;margin-top:4px}
+.ht-row{display:grid;grid-template-columns:34px repeat(10,minmax(0,1fr));gap:2px;align-items:stretch}
+.ht-lab{font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;align-self:center}
+.ht-c{display:flex;flex-direction:column;align-items:center;gap:1px;padding:2px 0;border-radius:6px;background:var(--surface-2);font-variant-numeric:tabular-nums}
+.ht-c i{font-style:normal;font-size:.62rem;color:var(--muted);line-height:1}
+.ht-c b{font-size:.82rem;line-height:1.1}
+.ht-c.on{background:color-mix(in srgb,var(--acc) 12%,var(--surface))}
+@media (max-width:420px){.ht-row{grid-template-columns:28px repeat(10,minmax(0,1fr))}.ht-c b{font-size:.75rem}}
+/* Trang của tôi */
+.fav .rk-nums{margin:4px 0}
+/* Thống kê nhanh trên trang chủ */
+.qs{margin:14px 0 4px;padding:14px 14px 12px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line)}
+.qs-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
+.qs-head h3{margin:0;font-size:1rem}
+.qs-date{font-size:.75rem;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+.qs-sec{margin:10px 0 0}
+.qs-lab{font-size:.8rem;font-weight:800;margin-bottom:5px}
+.qs-lab span{font-weight:500;color:var(--muted);margin-left:4px}
+.qs .rk-nums{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:none}
+.rk-n.qs-c{min-width:0;width:100%;padding:6px 2px 5px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:1.05rem;font-weight:800}
+.rk-n.qs-c.hi{background:color-mix(in srgb,var(--acc) 10%,var(--surface));border-color:color-mix(in srgb,var(--acc) 30%,var(--line));color:var(--acc)}
+.rk-n.qs-c .rk-cnt{font-size:.68rem;font-weight:600}
+.qs-ht{width:100%;border-collapse:separate;border-spacing:3px;table-layout:fixed;font-variant-numeric:tabular-nums}
+.qs-ht th{font-size:.68rem;font-weight:700;color:var(--muted);padding:0;text-align:center}
+.qs-ht tbody th{text-align:left;width:38px;text-transform:uppercase}
+.qs-ht td{text-align:center;font-weight:700;font-size:.88rem;padding:5px 0;border-radius:7px;background:var(--surface);border:1px solid var(--line)}
+.qs-ht td.mx{background:color-mix(in srgb,var(--acc) 14%,var(--surface));color:var(--acc);border-color:color-mix(in srgb,var(--acc) 30%,var(--line))}
+.qs-note{margin:10px 0 0;font-size:.76rem;color:var(--muted)}
+.qs-links{margin:8px 0 0;font-size:.85rem}.qs-links a{font-weight:700;text-decoration:none;color:var(--acc)}
+@media (max-width:420px){.qs-ht tbody th{width:30px}.qs-ht td{font-size:.8rem}}
+/* Ô lô tô dùng chung (Sổ kết quả, trang đài, bảng lô tô): lưới 10 cột đều, cùng kiểu ô với Thống kê nhanh */
+div.lt{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;max-width:470px!important}
+div.lt .lt-n{width:100%;min-width:0;height:28px;padding:0 2px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:.86rem;font-weight:700}
+div.lt .lt-n.dup{background:color-mix(in srgb,var(--acc) 10%,var(--surface));border-color:color-mix(in srgb,var(--acc) 35%,var(--line));color:var(--acc);font-weight:800}
+div.lt .lt-n sup{top:-4px;font-size:.6rem}
+table.lt td div.lt{grid-template-columns:repeat(5,minmax(0,1fr));max-width:220px!important}
+@media (max-width:600px){div.lt{grid-template-columns:repeat(6,minmax(0,1fr))}div.lt .lt-n{height:26px;font-size:.8rem}}
+/* Ô số có số đếm (thống kê) ở mọi trang: lưới đều 5 cột, cùng kiểu với Thống kê nhanh */
+.rk-nums.cnt-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:420px}
+
+/* ===== Ô số dạng quả bóng (đồng bộ với trang Tiện ích) ===== */
+:root{--ball-ring:var(--acc,#D7263D);--ball-ring2:color-mix(in srgb,var(--acc,#D7263D) 55%,#000)}
+
+.rk-n:not(.w3):not(.die):not(.has-cnt),.lt-n,.bl,.qc .bl{
+  --r1:color-mix(in srgb,var(--acc,#D7263D) 45%,#fff);--r2:var(--acc,#D7263D);--r3:color-mix(in srgb,var(--acc,#D7263D) 55%,#000);
+  width:32px;height:32px;min-width:32px!important;padding:0!important;border-radius:50%!important;border:0!important;
+  display:inline-grid!important;place-items:center;font:800 .82rem/1 "Be Vietnam Pro",system-ui,sans-serif;font-variant-numeric:tabular-nums;color:#141B2D!important;
+  background:radial-gradient(circle at 50% 52%,#fff 0 56%,transparent 57%),radial-gradient(circle at 32% 24%,var(--r1),var(--r2) 45%,var(--r3))!important;
+  box-shadow:inset -2px -3px 5px rgba(0,0,0,.28),0 1px 2px rgba(0,0,0,.12)}
+.rk-n.sp,.lt-n.dup{--r1:#FFF0A8;--r2:#FFC233;--r3:#A06A00}
+.rk-n.hi:not(.has-cnt){--r1:color-mix(in srgb,var(--acc2,#FF9F1C) 45%,#fff);--r2:var(--acc2,#FF9F1C);--r3:color-mix(in srgb,var(--acc2,#FF9F1C) 55%,#000)}
+.lt-n{position:relative}
+.lt-n sup{position:absolute!important;top:-5px!important;right:-7px;margin:0!important;padding:1px 4px;border-radius:999px;background:var(--acc,#D7263D);color:#fff;font:800 .55rem/1.2 "Be Vietnam Pro",system-ui,sans-serif;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+div.lt{gap:6px 5px!important;justify-items:center}
+div.lt .lt-n{width:32px!important;height:32px!important}
+/* Ô có số đếm: bóng ở trên, số ngày/lần ở dưới */
+.rk-n.has-cnt,.qc{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;display:flex!important;flex-direction:column;align-items:center;gap:3px;width:auto!important;height:auto!important;border-radius:0!important;color:var(--ink)!important}
+.rk-n.has-cnt .bl,.qc .bl{width:38px;height:38px;min-width:38px!important;font-size:.95rem}
+.rk-n.has-cnt.hi .bl,.qc.hi .bl{--r1:#FFF0A8;--r2:#FFC233;--r3:#A06A00}
+.rk-n.has-cnt .rk-cnt,.qc small{font-size:.68rem;font-weight:600;color:var(--muted)!important}
+/* Số 3 chữ số (Max 3D): viên bầu dục cùng chất liệu bóng */
+.rk-n.w3{border-radius:999px!important;border:0!important;min-width:46px;height:30px;padding:0 6px;color:#141B2D;font-weight:800;
+  background:radial-gradient(ellipse at 50% 52%,#fff 0 58%,transparent 60%),radial-gradient(circle at 30% 20%,color-mix(in srgb,var(--acc) 45%,#fff),var(--acc) 50%,color-mix(in srgb,var(--acc) 55%,#000))!important;
+  box-shadow:inset -2px -3px 5px rgba(0,0,0,.25)}
+.rk-n.w3.sp{background:radial-gradient(ellipse at 50% 52%,#fff 0 58%,transparent 60%),radial-gradient(circle at 30% 20%,#FFF0A8,#FFC233 50%,#A06A00)!important}
+@media (max-width:600px){.rk-n:not(.w3):not(.die):not(.has-cnt),.lt-n,.bl{width:28px;height:28px;min-width:28px!important;font-size:.74rem}
+  div.lt .lt-n{width:28px!important;height:28px!important}.rk-n.has-cnt .bl,.qc .bl{width:34px;height:34px;min-width:34px!important;font-size:.85rem}}
+@media print{.rk-n,.lt-n,.bl{box-shadow:none!important;background:none!important;border:1px solid #999!important}}
+/* Điện thoại: đủ 6 mục menu trong một hàng — nhãn HOT thành chấm đỏ nhấp nháy, khoảng cách gọn hơn */
+@media (max-width:600px){
+  header nav.main{gap:0;justify-content:space-between}
+  header nav.main a{padding:11px 4px 13px!important;font-size:.76rem!important;letter-spacing:-.01em;white-space:nowrap;position:relative}
+  nav.main .hot{position:absolute!important;top:7px;right:0;font-size:0!important;width:7px;height:7px;padding:0!important;margin:0!important;border-radius:50%}
+}
+@media (max-width:360px){header nav.main a{font-size:.76rem!important;padding:11px 3px 13px!important}}
+
+/* Bảng kết quả 3 miền: 2 số cuối không còn đậm hơn phần đầu — chữ số đều một kiểu */
+.n b{font-weight:inherit!important}
+
+/* Luật chơi: bảng tóm tắt thành thẻ xếp dọc trên điện thoại */
+@media (max-width:600px){
+  table.rules-sum thead{display:none}
+  table.rules-sum,table.rules-sum tbody,table.rules-sum tr,table.rules-sum td{display:block;width:100%}
+  table.rules-sum tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  table.rules-sum td{border:0!important;padding:2px 0!important;display:flex;gap:8px}
+  table.rules-sum td::before{content:attr(data-l);flex:0 0 96px;color:var(--muted);font-size:.8rem}
+  table.rules-sum td:first-child{font-weight:800;font-size:1rem}
+  table.rules-sum td:first-child::before{display:none}
+}
+
+/* Tin tức */
+.news-list{list-style:none;margin:0;padding:0}
+.news-item{margin:12px 0}
+.news-item h2{font-size:1.05rem;line-height:1.35;margin:6px 0}
+.news-item p{margin:4px 0}
+.news-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.82rem;color:var(--muted)}
+.news-pill{display:inline-block;font-size:.72rem;font-weight:700;padding:1px 9px;border-radius:999px;color:#fff;background:#D7263D}
+.news-pill.t-vietlott_draw{background:#7B3FE4}.news-pill.t-weekly_stats{background:#0FA37F}.news-pill.t-external{background:#5b6472}
+.news-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.news-tbl td,.news-tbl th{overflow-wrap:anywhere}
+.news-mini li{margin:6px 0}
+
+/* Tin tức: tên đài không bẻ dòng */
+.news-tbl td:first-child,.news-tbl th:first-child{white-space:nowrap}

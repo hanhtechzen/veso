@@ -1,4 +1,4 @@
-# Báo cáo kiểm tra LuckyVision
+# Báo cáo kiểm tra XS247
 
 Ngày kiểm tra: 02/11/2026. Phạm vi: toàn bộ mã trong `C:\Luckey` (backend, các trang web, cấu hình triển khai).
 
@@ -101,7 +101,7 @@ Ngày kiểm tra: 02/11/2026. Phạm vi: toàn bộ mã trong `C:\Luckey` (backe
 Sau khi cài trên máy bạn hoặc VPS, chạy lệnh sau để tự kiểm tra cấu hình, dữ liệu và bảo mật:
 
 ```powershell
-docker compose exec api python -m luckyvision.cli doctor
+docker compose exec api python -m xs247.cli doctor
 ```
 
 ## 6. Bổ sung 03/11/2026: thêm trò chơi

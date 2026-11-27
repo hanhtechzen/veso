@@ -1,7 +1,7 @@
 import numpy as np
 
-from luckyvision.forecast.models import MODELS, counts_matrix, label, normalize, rank, run_model
-from luckyvision.forecast.service import backtest, score_forecast, summarize
+from xs247.forecast.models import MODELS, counts_matrix, label, normalize, rank, run_model
+from xs247.forecast.service import backtest, score_forecast, summarize
 
 rng = np.random.default_rng(1)
 XS = [[int(x) for x in rng.integers(0, 100, 27)] for _ in range(200)]

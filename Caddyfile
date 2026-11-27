@@ -1,6 +1,6 @@
 # Docker Desktop: SITE_ADDRESS=:80 (mặc định) -> http://localhost
 # Sau Cloudflare Tunnel: giữ :80, Cloudflare lo HTTPS phía ngoài.
-# Mở cổng trực tiếp (không dùng tunnel): SITE_ADDRESS=luckyvision.vn để Caddy tự cấp HTTPS.
+# Mở cổng trực tiếp (không dùng tunnel): SITE_ADDRESS=xs247.mobi để Caddy tự cấp HTTPS.
 {$SITE_ADDRESS::80} {
 	encode zstd gzip
 
@@ -11,12 +11,32 @@
 		}
 	}
 
-	# Tệp tĩnh: công cụ tương tác, trang trực tiếp, dự báo, quản trị, ứng dụng cài đặt (PWA)
-	@static path /assets/* /icons/* /cong-cu /cong-cu/* /live.html /du-doan.html /admin.html /sw.js /manifest.webmanifest /offline.html
+	# Địa chỉ cũ của trang thống kê phân tích
+	redir /du-doan.html /thong-ke-phan-tich.html 301
+
+	# Tệp tĩnh: công cụ tương tác, trang trực tiếp, thống kê phân tích, quản trị, ứng dụng cài đặt (PWA)
+	@static path /assets/* /icons/* /cong-cu /cong-cu/* /live.html /thong-ke-phan-tich.html /choi-thu.html /do-ve-anh.html /admin.html /sw.js /manifest.webmanifest /offline.html /favicon.svg /favicon.ico
 	handle @static {
 		root * /srv/web
 		@sw path /sw.js
 		header @sw Cache-Control "no-cache"
+		# Trang và CSS/JS không đánh số phiên bản: trình duyệt luôn hỏi lại máy chủ (ETag) để không giữ bản cũ
+		# (trừ thư viện đọc chữ /assets/ocr/*: tệp lớn, ít đổi, cache dài)
+		@fresh {
+			path /cong-cu /cong-cu/ /cong-cu/*.html /live.html /thong-ke-phan-tich.html /choi-thu.html /do-ve-anh.html /offline.html /manifest.webmanifest /assets/*.css /assets/*.js
+			not path /assets/ocr/*
+		}
+		header @fresh Cache-Control "no-cache"
+		# Font và icon gần như không đổi: cho trình duyệt giữ 30 ngày, trang tải nhanh hơn
+		@longcache path /assets/fonts/* /icons/*
+		header @longcache Cache-Control "public, max-age=2592000"
+		@ocr path /assets/ocr/*
+		header @ocr Cache-Control "public, max-age=2592000, immutable"
+		# Worker đọc chữ dùng CSP của chính tệp worker: lõi OCR tự nạp phần WebAssembly nhúng sẵn qua data: URL
+		header @ocr Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' data:"
+		# Dữ liệu ngôn ngữ .gz đã nén sẵn: gửi nguyên trạng, không nén thêm
+		@ocrgz path /assets/ocr/*.gz
+		header @ocrgz Content-Type application/octet-stream
 		file_server
 	}
 
@@ -31,11 +51,12 @@
 		Referrer-Policy strict-origin-when-cross-origin
 		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
 		Strict-Transport-Security "max-age=15552000; includeSubDomains"
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		# Dấu ? : chỉ đặt khi chưa có (thư viện OCR có CSP riêng ở trên)
+		?Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 		-Server
 	}
 
 	# Trang quản trị không được lưu đệm ở trình duyệt hay CDN
-	@admin path /admin.html /v1/admin/* /v1/auth/*
+	@admin path /admin.html /v1/admin/* /v1/auth/* /v1/ai/pick /v1/predictions/* /v1/play/* /v1/user/*
 	header @admin Cache-Control "no-store"
 }

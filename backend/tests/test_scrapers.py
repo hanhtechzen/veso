@@ -1,14 +1,14 @@
 """Kiểm thử bộ đọc của các bộ cào với HTML mẫu mô phỏng cấu trúc trang thật."""
 from datetime import date
 
-from luckyvision.config import Settings
-from luckyvision.domain.prizes import DEFAULT_STRUCTURES, validate
-from luckyvision.domain.reconcile import Candidate, reconcile
-from luckyvision.sources.base import DrawRef, FetchResult
-from luckyvision.sources.html_util import by_class, strip_tags
-from luckyvision.sources.minhngoc import MinhNgocAdapter, parse_text
-from luckyvision.sources.vietlott import VietlottPower655Adapter, parse_rows
-from luckyvision.sources.xosocomvn import XosoComVnAdapter, parse_html, parse_multi, province_code
+from xs247.config import Settings
+from xs247.domain.prizes import DEFAULT_STRUCTURES, validate
+from xs247.domain.reconcile import Candidate, reconcile
+from xs247.sources.base import DrawRef, FetchResult
+from xs247.sources.html_util import by_class, strip_tags
+from xs247.sources.minhngoc import MinhNgocAdapter, parse_text
+from xs247.sources.vietlott import VietlottPower655Adapter, parse_rows
+from xs247.sources.xosocomvn import XosoComVnAdapter, parse_html, parse_multi, province_code
 
 MINHNGOC = """<html><body><div class="box_kqxs">
 <a href="/ket-qua-xo-so/mien-nam/tp-hcm/19-10-2026.html">Xem kỳ trước 19/10/2026</a>
@@ -130,9 +130,33 @@ MEGA = """<table><tbody><tr><td>01/11/2026</td><td>01583</td><td><span>5</span><
 
 
 def test_vietlott_mega645_parse():
-    from luckyvision.sources.vietlott import VietlottMega645Adapter
+    from xs247.sources.vietlott import VietlottMega645Adapter
     ad = VietlottMega645Adapter("v", {}, Settings())
     ref = DrawRef("mega-mega645-2026-11-01", "mega645", "mega", "mega645", date(2026, 11, 1))
     p = ad.parse(FetchResult("u", 200, MEGA.encode()), ref)
     assert p.prizes == {"main": ["05", "09", "17", "18", "34", "36"]} and p.meta == {"draw_seq": 1583}
     assert validate(DEFAULT_STRUCTURES["mega"], p.prizes) == []
+
+
+def _minified_xsmt(cols: dict[str, dict[str, list[str]]]) -> str:
+    """Bảng như trang thật: HTML nén, không có </th>, </td>, </tr>; số nằm trong span data-loto."""
+    names = list(cols)
+    head = '<th class=name-prize>G' + "".join(
+        f'<th class=prize-col3><h3><a title="Xổ số {n}" href=/x>{n}</a></h3>' for n in names)
+    rows = ""
+    for label, prize in [("8", "g8"), ("7", "g7"), ("6", "g6"), ("5", "g5"), ("4", "g4"),
+                         ("3", "g3"), ("2", "g2"), ("1", "g1"), ("ĐB", "db")]:
+        rows += f"<tr><th>{label}" + "".join(
+            "<td>" + " ".join(f"<span class=xs_prize1 data-loto={x}>{x} </span>" for x in cols[n][prize])
+            for n in names)
+    return f'<table class="table-result table-xsmn"><thead><tr>{head}<tbody>{rows}</table><table class=table-loto><tr><td>9</table>'
+
+
+def test_xosocomvn_multi_without_closing_tags():
+    dn = {"g8": ["57"], "g7": ["429"], "g6": ["6883", "9774", "8737"], "g5": ["6931"],
+          "g4": ["26722", "36639", "40294", "81038", "89750", "79884", "75924"],
+          "g3": ["12345", "06240"], "g2": ["54321"], "g1": ["11223"], "db": ["012345"]}
+    qn = {k: [x[::-1] for x in v] for k, v in dn.items()}
+    t = parse_multi(_minified_xsmt({"Đà Nẵng": dn, "Quảng Ngãi": qn}))
+    assert t["danang"] == dn and t["quangngai"] == qn
+    assert validate(DEFAULT_STRUCTURES["mt"], t["danang"]) == []

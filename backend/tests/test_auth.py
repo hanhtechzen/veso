@@ -3,7 +3,7 @@ import hashlib
 import hmac
 import struct
 
-from luckyvision.auth import (hash_password, new_session_token, password_problem, token_hash, totp_code, totp_uri,
+from xs247.auth import (hash_password, new_session_token, password_problem, token_hash, totp_code, totp_uri,
                               verify_password, verify_totp)
 
 
@@ -38,7 +38,7 @@ def test_totp_verify_window():
     assert verify_totp(secret, totp_code(secret))
     assert not verify_totp(secret, "000000") or totp_code(secret) == "000000"
     assert not verify_totp(secret, "12345")
-    assert totp_uri(secret, "an").startswith("otpauth://totp/LuckyVision:an?secret=")
+    assert totp_uri(secret, "an").startswith("otpauth://totp/XS247:an?secret=")
 
 
 def test_session_token_hash():

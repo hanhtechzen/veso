@@ -1,4 +1,4 @@
-// LuckyVision: tô màu bóng số theo hàng chục và đổi tông màu theo miền đang xem.
+// XS247: tô màu bóng số theo hàng chục và đổi tông màu theo miền đang xem.
 (function () {
   function setD(b) {
     if (!b || !b.classList || !b.classList.contains('ball') || b.classList.contains('sp') || b.classList.contains('wait')) return;

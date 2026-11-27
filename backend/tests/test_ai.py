@@ -1,6 +1,6 @@
 import pytest
 
-from luckyvision.ai import AiError, RateLimiter, parse_pick, pick_rule
+from xs247.ai import AiError, RateLimiter, parse_pick, pick_rule
 
 
 def test_parse_pick_power_validates():

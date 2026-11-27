@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% from "macros_game.html" import game_result, vl_mini, vl_clock_script %}
+{% block content %}
+<h1>{{ h1 }}</h1>
+<p class="lead">{{ lead }}</p>
+<div class="grid2">
+{% for it in items %}
+  <section class="card" data-game="{{ it.g.code }}">
+    <h2><a href="/{{ it.g.slug }}">{{ it.g.name }}</a></h2>
+    {% if it.g.family == 'vietlott' %}{{ vl_mini(it.g, it.d, it.next) }}
+    {% elif it.d %}<p class="hint">{% if it.d.draw_seq %}Kỳ {{ '%0*d' % (it.g.seq_width, it.d.draw_seq) }}, {% endif %}{{ weekday(it.d.draw_date) }} {{ it.d.draw_date.strftime('%d/%m/%Y') }}{% if it.g.schedule %} · {{ it.g.schedule }}{% endif %}</p>
+      {{ game_result(it.g, it.d, false) }}
+    {% else %}<p class="hint">Chưa có kết quả{% if it.g.family == 'dientoan' %}; chờ quản trị viên nhập{% endif %}.</p>{% endif %}
+    <p class="more"><a href="/{{ it.g.slug }}">{% if it.g.family == 'vietlott' %}Xem {{ it.g.name.replace('Vietlott ', '') }} và các kỳ trước{% else %}Xem các kỳ trước{% endif %}</a></p>
+  </section>
+{% endfor %}
+</div>
+{% if items and items[0].g.family == 'vietlott' %}{{ vl_clock_script() }}{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% from "macros.html" import num_chips %}
+{% block content %}
+<h1>{{ h1 }}</h1>
+{% include "_stats_scope.html" %}
+{% if not draws %}<section class="card"><h2>Chưa có dữ liệu</h2><p>Máy chủ chưa có kết quả {{ g.name }}. Quản trị cần bật nguồn và tải bù lịch sử (mục 6 trong hướng dẫn chạy).</p></section>
+{% else %}
+<p class="lead">Phân tích {{ draws }} kỳ gần nhất. Mỗi số có {{ ('%.1f' % (theory * 100)).replace('.', ',') }}% khả năng nằm trong bộ số trúng của một kỳ, như nhau cho mọi số; trong {{ recent }} kỳ, mỗi số kỳ vọng về khoảng {{ (expected|string).replace('.', ',') }} lần.</p>
+<section class="card"><h2>Tần suất từng số trong {{ recent }} kỳ gần nhất</h2>
+  <div class="freq">{% for k, c in rf.items() %}<div class="fc" title="Số {{ '%02d' % k }}: {{ c }} lần"><span class="track"><span class="bar" style="height:{{ (c / mx * 100) | round(1) }}%"></span></span><b>{{ '%02d' % k }}</b><small>{{ c }}</small></div>{% endfor %}</div>
+</section>
+<div class="grid2">
+  <section class="card"><h2>Số lâu chưa về</h2><p class="hint">Số kỳ liên tiếp chưa có trong bộ số chính.</p>
+    <div class="tablewrap"><table class="list"><thead><tr><th>Số</th><th>Số kỳ chưa về</th></tr></thead><tbody>{% for n, k in gan %}<tr><td><span class="rk-n">{{ '%02d' % n }}</span></td><td>{{ k }}</td></tr>{% endfor %}</tbody></table></div></section>
+  <section class="card"><h2>Về nhiều và về ít ({{ recent }} kỳ)</h2>
+    <h3>Về nhiều nhất</h3>{{ num_chips(hot, 'lần', 'hi') }}
+    <h3>Về ít nhất</h3>{{ num_chips(cold, 'lần') }}
+    <p class="hint">Số về nhiều hay lâu chưa về chỉ mô tả quá khứ, không làm thay đổi cơ hội ở kỳ tới. Xem thêm <a href="/thong-ke-phan-tich.html">thống kê phân tích</a>.</p></section>
+</div>
+{% endif %}
+{% endblock %}

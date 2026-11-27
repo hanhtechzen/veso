@@ -3,10 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LuckyVision: tra cứu, thống kê và dự báo xổ số minh bạch</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<title>XS247: tra cứu, thống kê và phân tích xổ số minh bạch</title>
+<meta property="og:site_name" content="XS247">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/be-vietnam-pro-vietnamese-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css">
+<script src="/assets/lv-loading.js"></script>
+<link rel="stylesheet" href="/assets/lv-header.css">
 <style>
 :root{
   --bg:#E4E8EE; --surface:#F7F8FA; --surface-2:#EDF0F4; --ink:#1B2230; --muted:#586274; --line:#CBD2DC;
@@ -41,7 +46,7 @@ a{color:inherit}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 button{font-family:inherit}
 /* header */
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--header);color:var(--header-ink)}
+.tool-top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--header);color:var(--header-ink)}
 .top-in{max-width:1180px;margin:0 auto;padding:10px 20px 0;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:900;font-size:1.25rem;letter-spacing:-0.02em}
 .brand-ball{width:30px;height:30px;border-radius:50%;background:var(--gold);color:var(--gold-ink);display:grid;place-items:center;font:700 .8rem "IBM Plex Mono",monospace;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
@@ -74,6 +79,11 @@ h3{font-size:1rem;font-weight:700;margin:0 0 6px}
 .ball.dim{background:var(--surface-2);color:var(--muted);box-shadow:none;border:1px solid var(--line)}
 .ball.hit{outline:3px solid var(--gold);outline-offset:1px}
 .ball.sm{font-size:.82rem}
+.bc{display:inline-flex;flex-direction:column;align-items:center;gap:3px}
+.ball-cnt{font-size:.72rem;line-height:1.1;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.bl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:8px 0}
+.bl-row>.bl-lab{font-weight:600;font-size:.88rem;margin-right:4px;flex:0 0 100%}
+@media (min-width:640px){.bl-row>.bl-lab{flex:none}}
 .ball.xs{font-size:.72rem}
 .plus{color:var(--muted);font-weight:700;margin:0 2px}
 /* buttons */
@@ -229,7 +239,7 @@ ol.rank li{display:grid;grid-template-columns:1.6em auto 1fr 2.2em;gap:8px;align
 .card.empty{max-width:680px}
 .card.empty p{margin:6px 0}
 .heat thead th:first-child,.heat tbody th{width:4.2em;white-space:nowrap}
-@media (max-width:600px){.top{position:relative;top:0}.regions{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;max-width:100%}.regions::-webkit-scrollbar{display:none}.top-next{margin-left:0;font-size:.8rem}}
+@media (max-width:600px){.tool-top{position:relative;top:0}.regions{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;max-width:100%}.regions::-webkit-scrollbar{display:none}.top-next{margin-left:0;font-size:.8rem}}
 
 /* ================= THEME V2 ================= */
 :root{
@@ -259,15 +269,20 @@ h1.page{font-weight:800;letter-spacing:-0.03em;font-size:clamp(1.8rem,3.8vw,2.7r
 h2{font-weight:700;letter-spacing:-0.01em;font-size:1.15rem}
 
 /* header */
-.top{background:
+.tool-top{background:
   radial-gradient(circle at 1px 1px,rgba(255,255,255,.09) 1px,transparent 1.5px) 0 0/18px 18px,
   linear-gradient(120deg,var(--header) 0%,var(--header-2) 100%);
   box-shadow:0 1px 0 rgba(0,0,0,.2),0 10px 30px -18px rgba(80,0,0,.8)}
 .brand{font-weight:800;letter-spacing:-0.03em;font-size:1.35rem}
-.brand-ball{width:32px;height:32px;font-size:.72rem;font-weight:700;color:#141B2D;
+.brand-ball{position:relative;width:32px;height:32px;font:800 .8rem "Be Vietnam Pro",system-ui,sans-serif;color:#1A1446;
   background:radial-gradient(circle at 50% 52%,#fff 0 44%,transparent 45%),radial-gradient(circle at 32% 24%,#FFE08A 0,var(--gold) 45%,#9A6A00 100%);
   box-shadow:inset -2px -3px 5px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.3);transition:transform .5s var(--ease)}
 .brand:hover .brand-ball{transform:rotate(-200deg)}
+.brand-name{white-space:nowrap}
+.brand-dot{position:absolute;top:-2px;right:-3px;width:10px;height:10px;border-radius:50%;background:#FF2D55;border:2px solid #fff;box-shadow:0 0 0 0 rgba(255,45,85,.6);animation:lvLive 1.8s infinite}
+@keyframes lvLive{70%{box-shadow:0 0 0 7px rgba(255,45,85,0)}100%{box-shadow:0 0 0 0 rgba(255,45,85,0)}}
+.brand-live{display:inline-block;margin-left:4px;padding:1px 8px 2px;border-radius:999px;background:#FF2D55;color:#fff;font-weight:800;font-size:.85em;line-height:1.3}
+@media (prefers-reduced-motion:reduce){.brand-dot{animation:none}}
 .regions{background:rgba(0,0,0,.22);box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
 .regions a{transition:background .25s var(--ease),color .25s var(--ease)}
 .regions a[aria-current]{background:#fff;color:var(--header);box-shadow:0 2px 8px -2px rgba(0,0,0,.35)}
@@ -410,7 +425,7 @@ body{--red:var(--acc);--red-dk:color-mix(in srgb,var(--acc) 55%,#000);--red-lt:c
 body::before{background:var(--acc)}
 
 /* đầu trang: dải màu theo miền + vân guilloche */
-.top{background:
+.tool-top{background:
   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.12'%3E%3Cpath d='M0 20 Q15 0 30 20 T60 20 T90 20 T120 20'/%3E%3Cpath d='M0 20 Q15 40 30 20 T60 20 T90 20 T120 20'/%3E%3C/g%3E%3C/svg%3E"),
   linear-gradient(115deg,var(--acc) 0%,color-mix(in srgb,var(--acc) 55%,var(--night)) 55%,var(--acc2) 115%)!important;
   box-shadow:0 10px 30px -16px color-mix(in srgb,var(--acc) 80%,#000)}
@@ -477,6 +492,25 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 .pill.win{background:var(--gold)}
 
 @media (prefers-reduced-motion:reduce){.count-card{animation:none!important}}
+body[data-region="mega645"]{--acc:#C2185B;--acc2:#FF5C8A}
+body[data-region="lotto535"]{--acc:#0277BD;--acc2:#26C6DA}
+body[data-region="max3d"],body[data-region="max3dpro"]{--acc:#6A1B9A;--acc2:#EC407A}
+.vl-pane .ball.hit{box-shadow:0 0 0 3px var(--gold),0 0 18px var(--gold)}
+.vl-pane .plus{align-self:center;font-weight:800;color:var(--muted);margin:0 2px}
+table.m3 th{white-space:nowrap;font-size:.82rem}
+.m3n{display:inline-block;margin:2px 6px;font:700 1.08rem "IBM Plex Mono",monospace;padding:1px 6px;border-radius:6px}
+.m3n.hit{background:var(--gold);color:#141B2D}
+.tm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.tm-stats div{background:var(--surface-2,var(--bg));border-radius:12px;padding:10px 12px}
+.tm-stats span{display:block;font-size:.8rem;color:var(--muted)}.tm-stats b{font-size:1.2rem}
+.tm-stats b.good{color:var(--good)}.tm-stats b.bad{color:var(--red)}
+svg.pl{width:100%;height:auto;display:block;background:var(--surface-2,var(--bg));border-radius:12px}
+ul.wins{list-style:none;padding:0;margin:0}ul.wins li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:.9rem}
+.vl-pane textarea,.vl-pane input,.vl-pane select{width:100%}
+.vl-pane input,.vl-pane textarea,.vl-pane select{padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:1rem}
+.vl-pane input:focus,.vl-pane textarea:focus,.vl-pane select:focus{outline:none;border-color:var(--acc)}
+.vl-pane textarea{font-family:"IBM Plex Mono",monospace}
+.tm-stats b{font-size:1.05rem;word-break:break-word}
 
 /* ================= TRANG KET QUA (KIEU TRANG XO SO QUEN THUOC) ================= */
 .hub-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
@@ -648,21 +682,60 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
 #lvLoading{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:var(--bg)}
 .lvl-box{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:24px}
 .lvl-box .ball{animation:lvspin 1.2s linear infinite}@keyframes lvspin{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.lvl-box .ball{animation:none}}.extlinks{display:flex;gap:4px;flex-wrap:wrap}.extlinks a{color:var(--header-muted);text-decoration:none;font-weight:600;font-size:.84rem;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.25)}.extlinks a:hover{color:#fff;border-color:#fff}@media (max-width:600px){.extlinks{display:none}}</style>
+@media (prefers-reduced-motion:reduce){.lvl-box .ball{animation:none}}.extlinks{display:flex;gap:4px;flex-wrap:wrap}.extlinks a{color:var(--header-muted);text-decoration:none;font-weight:600;font-size:.84rem;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.25)}.extlinks a:hover{color:#fff;border-color:#fff}@media (max-width:600px){.extlinks{display:none}}
+/* ===== Thanh công cụ đồng bộ với menu chung: nền trắng như menu con, cùng bề rộng 1140px ===== */
+.tool-top{background:var(--surface)!important;color:var(--ink)!important;border-bottom:1px solid var(--line);box-shadow:0 6px 18px -12px rgba(26,20,70,.35)}
+.tool-top::before,.tool-top::after{display:none!important}
+.top-in{max-width:1140px;padding:8px 16px 0}
+.top-next{color:var(--muted)!important}.top-next b{color:var(--ink)!important}
+nav.tabs{max-width:1140px;padding:0 16px;background:none}
+nav.tabs a{color:var(--muted)!important;font-size:.98rem;padding:11px 14px 12px}
+nav.tabs a:hover{color:var(--ink)!important}
+nav.tabs a[aria-current="page"]{color:var(--ink)!important}
+nav.tabs .ink{background:linear-gradient(90deg,var(--acc),var(--acc2))!important;box-shadow:none!important}
+.subtabs{background:var(--surface-2,#F1F0F8)!important;border-top:1px solid var(--line)}
+.subtabs>*{}
+nav.subtabs,.subtabs{padding-left:max(12px,calc(50% - 554px))!important;padding-right:max(12px,calc(50% - 554px))!important}
+main{max-width:1140px;padding:24px 16px 56px}
+/* Thống kê: tab nổi bật để dễ nhận ra */
+.subtabs a[href$="thong-ke"]{color:var(--acc)!important;font-weight:800;background:color-mix(in srgb,var(--acc) 10%,transparent)!important;border-radius:999px;margin:5px 4px;padding:5px 12px!important;border-bottom:0!important}
+.subtabs a[href$="thong-ke"]::before{content:"📊 "}
+.subtabs a.tk{color:var(--acc)!important;font-weight:800;background:color-mix(in srgb,var(--acc) 10%,transparent)!important;border-radius:999px;margin:5px 4px;padding:5px 12px!important;border-bottom:0!important}
+.subtabs a.tk::before{content:"📊 "}
+.subtabs .gsel{flex:none;display:flex;align-items:center;margin:5px 6px 5px 0}
+.subtabs .gsel select{font:inherit;font-weight:800;font-size:.9rem;color:#fff;border:0;border-radius:999px;padding:6px 30px 6px 14px;cursor:pointer;appearance:none;-webkit-appearance:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23fff' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 11px center,linear-gradient(135deg,var(--acc),var(--acc2))}
+.subtabs .gsel select option{color:#141B2D;background:#fff}
+.subtabs a.gc{border:1px solid var(--line);border-radius:999px;margin:5px 3px;padding:4px 12px!important;font-size:.86rem;border-bottom:1px solid var(--line)!important;background:#fff}
+.subtabs a.gc[aria-current]{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff!important;border-color:transparent!important}
+.subtabs a[href$="thong-ke"][aria-current]{background:linear-gradient(135deg,var(--acc),var(--acc2))!important;color:#fff!important}
+@media (max-width:600px){.top-in{padding:6px 12px 0}nav.tabs a{padding:10px 9px 11px;font-size:.92rem}}
+
+/* Ô chọn loại xổ số trong Máy thời gian / Dò vé */
+.tool-type-in{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.tool-type-sel,.tool-prov-sel{font:inherit;font-weight:700;font-size:1rem;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;min-width:200px}
+.tool-type-sel:focus,.tool-prov-sel:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 18%,transparent)}
+@media (max-width:600px){.tool-type-sel,.tool-prov-sel{flex:1 1 100%;min-width:0}}
+
+/* Chữ số kết quả: cùng font, cùng độ đậm, chữ số đều nhau (bỏ kiểu đầu nhạt – 2 số cuối đậm, bỏ ĐB hai màu) */
+.prize .pz{font:700 1.08rem/1.5 "Be Vietnam Pro",system-ui,sans-serif!important;font-variant-numeric:tabular-nums;letter-spacing:.04em;color:var(--ink)}
+.prize .pz b{font-weight:inherit!important;color:inherit!important}
+.prize tr.db .pz{font-size:1.5rem!important;font-weight:800!important;color:#D7263D!important;background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;text-shadow:none!important;letter-spacing:.08em}
+</style>
 </head>
 <body>
-<header class="top">
+<header class="top" id="lvHeader" data-section="cc" data-sub=""></header>
+<script src="/nav.js"></script>
+<div class="tool-top">
   <div class="top-in">
-    <a class="brand" href="#kq"><span class="brand-ball" aria-hidden="true">LV</span>LuckyVision</a>
     <nav class="regions" id="regionNav" aria-label="Loại xổ số">
       <a href="#trang-chu" data-r="power">Power 6/55</a><a href="#mb-tong-quan" data-r="mb">Miền Bắc</a><a href="#mn-tong-quan" data-r="mn">Miền Nam</a><a href="#mt-tong-quan" data-r="mt">Miền Trung</a>
     </nav>
-    <nav class="extlinks" aria-label="Trang khác"><a href="/">Trang kết quả</a><a href="/live.html">Trực tiếp</a><a href="/du-doan.html">Dự báo và AI</a><a href="/tai-khoan">Tài khoản</a></nav>
     <div class="top-next" id="topNext"></div>
   </div>
   <nav class="tabs" id="tabs" aria-label="Mục chính"></nav>
   <nav class="subtabs" id="subtabs" aria-label="Mục con"></nav>
-</header>
+</div>
 
 <main>
 <!-- ============ KET QUA HOM NAY (TRANG DAU) ============ -->
@@ -710,8 +783,8 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
       <div class="count-label">Power 6/55, kỳ <b id="hNextId"></b> quay sau</div>
       <div class="count" id="hCount" aria-live="off"></div>
       <div class="count-when" id="hWhen"></div>
-      <div class="tagline">Dự đoán gì cũng được, miễn là chấm điểm công khai.
-        <span>Mọi chiến lược và mọi dự đoán trên LuckyVision đều được chấm bằng kết quả thật, kể cả khi kết quả không đẹp.</span></div>
+      <div class="tagline">Số liệu minh bạch, đối chiếu công khai.
+        <span>Mọi thống kê và phân tích trên XS247 đều dựa trên kết quả thật, kể cả khi kết quả không đẹp.</span></div>
     </div>
     <div class="ticket">
       <div class="t-head"><b id="hLastTitle"></b><span id="hLastDate"></span></div>
@@ -722,14 +795,13 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
   <div id="hStale"></div>
 
   <div class="feat">
-    <a class="feat-main" href="#dau-truong">
-      <h2>Đấu trường dự đoán</h2>
-      <p>Số nóng, số gan, lặp kỳ trước, cầu đặc biệt... Mỗi chiến lược soi cầu phổ biến được cho chơi thật qua hơn 1.300 kỳ và chấm điểm bên cạnh cách chọn ngẫu nhiên.</p>
-      <span class="go">Xem bảng xếp hạng</span>
+    <a class="feat-main" href="#thong-ke">
+      <h2>Thống kê Power 6/55</h2>
+      <p>Số xuất hiện nhiều, số lâu chưa ra, cặp số hay đi cùng nhau... Số liệu mô tả quá khứ, so với mức lý thuyết của kết quả ngẫu nhiên.</p>
+      <span class="go">Xem thống kê</span>
     </a>
     <div class="feat-list">
       <a href="#may-thoi-gian"><b>Máy thời gian</b><span>Nếu chơi một bộ số từ 2017 đến nay, bạn lời hay lỗ?</span></a>
-      <a href="#so-du-doan"><b>Sổ dự đoán</b><span>Khóa dự đoán trước giờ quay, được chấm điểm công khai.</span></a>
       <a href="#do-ve"><b>Dò vé</b><span>Nhập số hoặc chụp ảnh vé để biết trúng gì.</span></a>
       <a href="#tao-so"><b>Tạo bộ số</b><span>Chọn ngẫu nhiên có bộ lọc, kèm chỉ số “đụng hàng”.</span></a>
     </div>
@@ -759,7 +831,7 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
 <!-- ============ THONG KE ============ -->
 <section class="view" data-view="thong-ke" aria-label="Thống kê">
   <h1 class="page">Thống kê</h1>
-  <p class="lead">Những con số dưới đây mô tả quá khứ, không dự báo tương lai. Mỗi kỳ quay độc lập với các kỳ trước.</p>
+  <p class="lead">Những con số dưới đây chỉ mô tả quá khứ. Mỗi kỳ quay độc lập với các kỳ trước.</p>
   <div class="row" style="margin-bottom:18px">
     <span style="font-weight:600">Phạm vi:</span>
     <div class="seg" id="tkWin" role="group" aria-label="Số kỳ thống kê">
@@ -810,7 +882,7 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
 <!-- ============ MAY THOI GIAN ============ -->
 <section class="view" data-view="may-thoi-gian" aria-label="Máy thời gian">
   <h1 class="page">Máy thời gian</h1>
-  <p class="lead">Nhập một bộ 6 số, chẳng hạn ngày sinh hay số may mắn của bạn. LuckyVision sẽ cho bạn biết nếu chơi đúng bộ đó mỗi kỳ trong quá khứ thì kết quả ra sao.</p>
+  <p class="lead">Nhập một bộ 6 số, chẳng hạn ngày sinh hay số may mắn của bạn. XS247 sẽ cho bạn biết nếu chơi đúng bộ đó mỗi kỳ trong quá khứ thì kết quả ra sao.</p>
   <div class="card">
     <div class="cols">
       <div><label class="fld" for="tmNums">Bộ số của bạn</label><input type="text" id="tmNums" class="nums-in" placeholder="Gõ 6 số bất kỳ, vd: 3 15 8 28 19 21" inputmode="numeric" autocomplete="off">
@@ -850,7 +922,7 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
 
 <!-- ============ SO DU DOAN ============ -->
 <section class="view" data-view="so-du-doan" aria-label="Sổ dự đoán">
-  <h1 class="page">Sổ dự đoán</h1>
+  <h1 class="page">Sổ dự đoán (quản trị)</h1>
   <p class="lead">Khóa tối đa 5 bộ số cho mỗi kỳ trước 18:00 ngày quay. Sau khi có kết quả, mọi bộ đều được chấm điểm và tính lời lỗ giả định với giá vé 10.000đ.</p>
   <div id="sdMode"></div>
   <div class="cols">
@@ -876,6 +948,7 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
 <!-- ============ DO VE ============ -->
 <section class="view" data-view="do-ve" aria-label="Dò vé">
   <h1 class="page">Dò vé</h1>
+  <p style="margin:0 0 14px"><a class="btn" href="/do-ve-anh.html">Dò bằng ảnh vé</a> <span style="color:var(--muted,#5B6578);font-size:.9rem">Chụp vé giấy, đọc số ngay trên máy, không gửi ảnh đi đâu.</span></p>
   <p class="lead">Nhập số trên vé, mỗi dòng một bộ. Dòng có 7 số trở lên được hiểu là vé bao và tự tách thành tất cả các bộ 6 số.</p>
   <div class="cols">
     <div class="card">
@@ -944,9 +1017,9 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
 </section>
 
 <!-- ============ VUNG: DU BAO ============ -->
-<section class="view" data-view="rg-du-bao" aria-label="Dự báo khu vực">
+<section class="view" data-view="rg-du-bao" aria-label="Phân tích khu vực">
   <h1 class="page" id="rdTitle"></h1>
-  <p class="lead">Dự báo tham khảo lô tô 00–99 bằng phương pháp thống kê. Điểm xếp hạng không phải xác suất trúng. Không mô hình nào ở đây được chứng minh là tốt hơn chọn ngẫu nhiên; xem mục Đánh giá.</p>
+  <p class="lead">Phân tích mô hình lô tô 00–99 bằng phương pháp thống kê, chỉ để tham khảo, không cho biết trước kết quả. Điểm xếp hạng không phải xác suất trúng. Không mô hình nào ở đây được chứng minh là tốt hơn chọn ngẫu nhiên; xem mục Đánh giá.</p>
   <div class="rg-data">
     <div class="card filters">
       <div class="frow">
@@ -959,19 +1032,19 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
       <div class="ticket"><div class="t-head"><b id="rdTicketTitle">Xếp hạng lô tô</b><span id="rdTicketSub"></span></div><div id="rdRank"></div></div>
     </div>
     <div class="card" style="margin-top:18px" id="rdPubCard">
-      <h2>Lịch sử dự báo đã công bố</h2>
-      <p class="hint">Dự báo được lưu kèm thời điểm tạo, trước giờ quay, và không thể sửa sau khi công bố. Khi có kết quả đã công bố của kỳ mục tiêu, hệ thống tự đối chiếu.</p>
-      <div class="row" id="rdPubAdmin" hidden style="margin-bottom:12px"><button class="btn" type="button" id="rdPublish">Công bố dự báo cho kỳ tới</button><span class="msg" id="rdPubMsg" role="status" style="margin:0"></span></div>
-      <div class="tw"><table><thead><tr><th>Mã dự báo</th><th>Kỳ mục tiêu</th><th>Mô hình</th><th>Tạo lúc</th><th>10 số đầu</th><th>Đối chiếu</th></tr></thead><tbody id="rdPubList"></tbody></table></div>
+      <h2>Lịch sử phân tích đã lưu</h2>
+      <p class="hint">Kết quả phân tích được lưu kèm thời điểm tạo, trước giờ quay, và không thể sửa sau khi lưu. Khi có kết quả đã công bố của kỳ mục tiêu, hệ thống tự đối chiếu.</p>
+      <div class="row" id="rdPubAdmin" hidden style="margin-bottom:12px"><button class="btn" type="button" id="rdPublish">Lưu phân tích cho kỳ quay tiếp theo</button><span class="msg" id="rdPubMsg" role="status" style="margin:0"></span></div>
+      <div class="tw"><table><thead><tr><th>Mã phân tích</th><th>Kỳ mục tiêu</th><th>Mô hình</th><th>Tạo lúc</th><th>10 số đầu</th><th>Đối chiếu</th></tr></thead><tbody id="rdPubList"></tbody></table></div>
     </div>
   </div>
   <div class="rg-nodata"></div>
 </section>
 
 <!-- ============ VUNG: DANH GIA ============ -->
-<section class="view" data-view="rg-danh-gia" aria-label="Đánh giá dự báo">
+<section class="view" data-view="rg-danh-gia" aria-label="Đánh giá mô hình">
   <h1 class="page" id="reTitle"></h1>
-  <p class="lead">Kiểm thử lùi (backtest) không rò rỉ dữ liệu: mỗi kỳ chỉ dùng các kỳ trước đó để dự báo, rồi đối chiếu với kết quả thật. Kết quả được công khai kể cả khi mô hình kém hơn ngẫu nhiên.</p>
+  <p class="lead">Kiểm thử lùi (backtest) không rò rỉ dữ liệu: mỗi kỳ chỉ dùng các kỳ trước đó để phân tích, rồi đối chiếu với kết quả thật. Kết quả được công khai kể cả khi mô hình kém hơn ngẫu nhiên.</p>
   <div class="rg-data">
     <div class="card filters">
       <div class="frow">
@@ -992,7 +1065,7 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
 <!-- ============ QUAN TRI ============ -->
 <section class="view" data-view="quan-tri" aria-label="Quản trị">
   <h1 class="page">Quản trị dữ liệu</h1>
-  <p class="lead">Nhập, xác minh và công bố kết quả. Kết quả mới luôn ở trạng thái chờ xác minh và chỉ được dùng cho thống kê, dự báo sau khi được xác minh và công bố. Mọi thay đổi được ghi vào nhật ký.</p>
+  <p class="lead">Nhập, xác minh và công bố kết quả. Kết quả mới luôn ở trạng thái chờ xác minh và chỉ được dùng cho thống kê, phân tích sau khi được xác minh và công bố. Mọi thay đổi được ghi vào nhật ký.</p>
   <div id="qtDenied" hidden class="notice">Mục này chỉ dành cho chủ trang và biên tập viên.</div>
   <div id="qtBody" class="stack">
     <div class="card"><h2>Tình trạng dữ liệu</h2><p class="hint">Kiểm tra định dạng, trùng lặp và các kỳ quá giờ dự kiến mà chưa có dữ liệu.</p><div class="tw"><table><thead><tr><th>Nguồn</th><th class="num">Số kỳ</th><th>Kỳ mới nhất</th><th>Kiểm tra định dạng</th><th>Kỳ còn thiếu</th></tr></thead><tbody id="qtHealth"></tbody></table></div></div>
@@ -1019,7 +1092,8 @@ nav.tabs .ink{height:4px;border-radius:4px 4px 0 0;background:var(--gold)!import
 </main>
 
 <footer class="foot">
-  <p>LuckyVision là trang tra cứu, thống kê và dự báo tham khảo; không bán vé, không nhận đặt cược. Không có phương pháp nào dự đoán được kết quả xổ số, và mọi dự báo trên trang chỉ để tham khảo. Hãy chơi trong mức chi tiêu bạn đã định trước.</p>
+  <p>Liên hệ: <a href="tel:0865556800">0865 556 800</a> · <a href="mailto:nguyenhanh7654@gmail.com">nguyenhanh7654@gmail.com</a></p>
+  <p>XS247 là trang tra cứu, thống kê và phân tích tham khảo; không bán vé, không nhận đặt cược. Kết quả xổ số là ngẫu nhiên, và mọi số liệu phân tích trên trang chỉ để tham khảo. Hãy chơi trong mức chi tiêu bạn đã định trước.</p>
   <p id="footData"></p>
 </footer>
 <script>
@@ -1056,7 +1130,7 @@ function seededSet(rnd){const p=[];for(let i=1;i<=55;i++)p.push(i);for(let i=0;i
 function parseNums(str){return (String(str).match(/\d+/g)||[]).map(Number);}
 function ballsHTML(nums,opt={}){
   const cls=opt.size?(' '+opt.size):'';
-  let h=nums.map(x=>{let c='ball'+cls;if(opt.hits&&!opt.hits.includes(x))c+=' dim';if(opt.hits&&opt.hits.includes(x))c+='';return '<span class="'+c+'">'+pad(x)+'</span>';}).join('');
+  let h=nums.map(x=>{let c='ball'+cls;if(opt.hits&&!opt.hits.includes(x))c+=' dim';if(opt.hits&&opt.hits.includes(x))c+='';const b='<span class="'+c+'">'+pad(x)+'</span>';return opt.cnt?'<span class="bc">'+b+'<span class="ball-cnt">'+esc(opt.cnt(x))+'</span></span>':b;}).join('');
   if(opt.sp){h+='<span class="plus" aria-hidden="true">+</span><span class="ball sp'+cls+'" title="Số đặc biệt">'+pad(opt.sp)+'</span>';}
   return h;
 }
@@ -1101,18 +1175,34 @@ function mergeResults(){
 }
 
 // ===================== ROUTING =====================
+// Các mục chỉ dành cho quản trị viên (đấu trường, sổ dự đoán): chỉ mở khi /v1/auth/me trả về role === 'admin'.
+const ADMIN_VIEWS=['dau-truong','so-du-doan'];
+let IS_ADMIN=false;
+const adminOnly=a=>IS_ADMIN?a:a.filter(x=>!ADMIN_VIEWS.includes(x[0]));
 const POWER_VIEWS=['trang-chu','ket-qua','thong-ke','dau-truong','may-thoi-gian','tao-so','so-du-doan','do-ve'];
 const POWER_TABS=[['trang-chu','Trang chủ'],['ket-qua','Kết quả'],['thong-ke','Thống kê'],['dau-truong','Đấu trường'],['may-thoi-gian','Máy thời gian'],['tao-so','Tạo bộ số'],['so-du-doan','Sổ dự đoán'],['do-ve','Dò vé']];
-const RG_TABS=[['tong-quan','Tổng quan'],['ket-qua','Kết quả'],['thong-ke','Thống kê'],['du-bao','Dự báo'],['danh-gia','Đánh giá']];
+const RG_TABS=[['tong-quan','Tổng quan'],['ket-qua','Kết quả'],['thong-ke','Thống kê'],['du-bao','Phân tích'],['danh-gia','Đánh giá']];
+// Hash cũ (có chữ "du-bao") được đổi sang hash mới "phan-tich"; view nội bộ vẫn là rg-du-bao.
+const HASH_ALIAS=h=>h.replace(/^(mb|mn|mt)-du-bao$/,'$1-phan-tich');
 const renderers={};
 let current=null,CUR_REGION='power',CUR_VIEW='trang-chu',CAN_EDIT=false;
 function parseHash(){
-  const h=(location.hash||'').replace('#','');
+  const raw=(location.hash||'').replace('#','');
+  const h=HASH_ALIAS(raw);
+  if(h!==raw&&history.replaceState)history.replaceState(null,'','#'+h);
   if(h==='kq'||h==='')return{hash:'kq',region:(typeof HUB!=='undefined'&&HUB.region)||'mb',view:'kq'};
-  const m=h.match(/^(mb|mn|mt)-(tong-quan|ket-qua|thong-ke|du-bao|danh-gia)$/);
-  if(m)return{hash:h,region:m[1],view:'rg-'+m[2]};
+  const m=h.match(/^(mb|mn|mt)-(tong-quan|ket-qua|thong-ke|phan-tich|danh-gia)$/);
+  if(m)return{hash:h,region:m[1],view:'rg-'+(m[2]==='phan-tich'?'du-bao':m[2])};
+  const pm=h.match(/^power655-(may-thoi-gian|do-ve|tao-so)$/);
+  if(pm){if(typeof TOOL!=='undefined')TOOL.type='power';return{hash:h,region:'power',view:pm[1]};}
+  const vm=h.match(/^(mega645|lotto535|max3d|max3dpro)-(may-thoi-gian|do-ve)$/);
+  if(vm){if(typeof TOOL!=='undefined')TOOL.type=vm[1];return{hash:h,region:'power',view:vm[2]};}
   if(h==='quan-tri')return{hash:h,region:CUR_REGION,view:'quan-tri'};
-  if(POWER_VIEWS.includes(h))return{hash:h,region:'power',view:h};
+  if(ADMIN_VIEWS.includes(h)&&!IS_ADMIN)return{hash:'kq',region:'mb',view:'kq'};
+  if(POWER_VIEWS.includes(h)){
+    // Đường dẫn công cụ không kèm tên trò (#do-ve, #may-thoi-gian...) luôn là Power; trò khác có hash riêng (#mega645-do-ve)
+    if(typeof TOOL!=='undefined'&&['tao-so','may-thoi-gian','do-ve'].includes(h)&&(TOOL.type==='power'||['mega645','lotto535','max3d','max3dpro'].includes(TOOL.type)))TOOL.type=(typeof LAST_RG!=='undefined'&&LAST_RG)||'mb';
+    return{hash:h,region:'power',view:h};}
   return{hash:'kq',region:'mb',view:'kq'};
 }
 const POWER_SUB=[['may-thoi-gian','Máy thời gian'],['do-ve','Dò vé'],['tao-so','Tạo bộ số'],['so-du-doan','Sổ dự đoán'],['dau-truong','Đấu trường']];
@@ -1120,25 +1210,51 @@ const RG_NAMES=[['mb','Miền Bắc'],['mn','Miền Nam'],['mt','Miền Trung']]
 // Menu theo bố cục ban đầu: Power 6/55 và từng miền có hàng mục riêng như bản đầu tiên,
 // cộng thêm trang Kết quả hôm nay và mục Công cụ cho mọi loại xổ số.
 const PW_SUB=[['trang-chu','Trang chủ'],['ket-qua','Kết quả'],['thong-ke','Thống kê'],['dau-truong','Đấu trường'],['may-thoi-gian','Máy thời gian'],['tao-so','Tạo bộ số'],['so-du-doan','Sổ dự đoán'],['do-ve','Dò vé']];
-const RG_SUB=[['tong-quan','Tổng quan'],['ket-qua','Kết quả'],['thong-ke','Thống kê'],['du-bao','Dự báo'],['danh-gia','Đánh giá']];
+const RG_SUB=[['tong-quan','Tổng quan'],['ket-qua','Kết quả'],['thong-ke','Thống kê'],['phan-tich','Phân tích'],['danh-gia','Đánh giá']];
 const TOOL_HASHES=['may-thoi-gian','do-ve','tao-so','so-du-doan','dau-truong'];
 function navSection(){
   if(CUR_VIEW==='kq')return 'kq';
   if(CUR_VIEW==='quan-tri')return 'qt';
   if(CUR_VIEW.startsWith('rg-'))return CUR_REGION;
-  if(TOOL_HASHES.includes(CUR_VIEW))return (typeof TOOL==='undefined'||TOOL.type==='power')?'pw':'cc';
+  if(TOOL_HASHES.includes(CUR_VIEW))return (typeof TOOL==='undefined'||TOOL.type==='power'||vlGame()!=='power')?'pw':'cc';
   return 'pw';
 }
+// Vietlott: [khóa, nhãn, href ngoài (nếu không có công cụ trong trang), đường dẫn kết quả, có trang thống kê]
+const VL_NAV=[['power','Power 6/55',null,'vietlott-power-655',1],['mega645','Mega 6/45',null,'vietlott-mega-645',1],['lotto535','Lotto 5/35',null,'vietlott-lotto-535',1],
+  ['keno','Keno','/vietlott-keno','vietlott-keno',1],['max3d','Max 3D',null,'vietlott-max-3d',1],['max3dpro','Max 3D Pro',null,'vietlott-max-3d-pro',1],['bingo18','Bingo18','/vietlott-bingo18','vietlott-bingo18',1]];
+function vlGame(){
+  if(typeof TOOL!=='undefined'&&TOOL_HASHES.includes(CUR_VIEW)&&TOOL.type in VL_GAMES_LIST)return TOOL.type;
+  return 'power';
+}
+document.addEventListener('change',e=>{
+  if(!e.target||e.target.id!=='vlGameSel')return;
+  const k=e.target.value, x=VL_NAV.find(a=>a[0]===k), tool=['may-thoi-gian','do-ve'].includes(CUR_VIEW)?CUR_VIEW:'may-thoi-gian';
+  if(x&&x[2]){location.href=x[2];return;}                      // Keno, Bingo18: mở trang kết quả
+  location.hash=k==='power'?(['may-thoi-gian','do-ve'].includes(CUR_VIEW)?CUR_VIEW:'trang-chu'):k+'-'+tool;   // giữ công cụ đang dùng khi đổi trò
+});
 function renderNav(){
   const sec=navSection();
-  const main=[['kq','#kq','Kết quả<span class="hide-m"> hôm nay</span>'],['pw','#trang-chu','Power<span class="hide-m"> 6/55</span>'],['mb','#mb-tong-quan','Miền Bắc'],['mn','#mn-tong-quan','Miền Nam'],['mt','#mt-tong-quan','Miền Trung'],['cc','#may-thoi-gian','Công cụ']];
+  const main=[['kq','#kq','Kết quả<span class="hide-m"> hôm nay</span>'],['pw','#trang-chu','Vietlott'],['mb','#mb-tong-quan','Miền Bắc'],['mn','#mn-tong-quan','Miền Nam'],['mt','#mt-tong-quan','Miền Trung'],['cc','#may-thoi-gian','Tiện ích']];
   if(CAN_EDIT)main.push(['qt','#quan-tri','Quản trị']);
   $('#tabs').innerHTML=main.map(([k,h,l])=>'<a href="'+h+'"'+(k===sec?' aria-current="page"':'')+'>'+l+'</a>').join('');
   const link=(h,l,on,extra)=>'<a href="#'+h+'"'+(extra||'')+(on?' aria-current="true"':'')+'>'+l+'</a>';
   let sub='';
-  if(sec==='pw')sub=PW_SUB.map(([h,l])=>link(h,l,current===h,' data-pw="1"')).join('');
-  if(sec==='mb'||sec==='mn'||sec==='mt')sub=RG_SUB.map(([v,l])=>link(sec+'-'+v,l,CUR_VIEW==='rg-'+v)).join('');
-  if(sec==='cc')sub=POWER_SUB.map(([h,l])=>link(h,l,current===h)).join('');
+  if(sec==='pw'){
+    const g=vlGame();
+    // Chọn trò bằng một ô chọn gọn thay cho 7 nút, để hàng menu ngắn và dễ dùng
+    const chips='<label class="gsel"><span class="sr">Chọn trò Vietlott</span><select id="vlGameSel">'
+      +VL_NAV.map(([k,l])=>'<option value="'+k+'"'+(k===g?' selected':'')+'>'+l+'</option>').join('')+'</select></label>';
+    let gs='';
+    if(g==='power')gs=adminOnly(PW_SUB).map(([h,l])=>{const hh=['may-thoi-gian','do-ve','tao-so'].includes(h)?'power655-'+h:h;return link(hh,l,current===hh||current===h,' data-pw="1"');}).join('');
+    else{
+      const x=VL_NAV.find(a=>a[0]===g);
+      gs='<a href="/'+x[3]+'">Kết quả</a>'+(x[4]?'<a class="tk" href="/thong-ke-'+x[3]+'">Thống kê</a>':'')
+        +[['may-thoi-gian','Máy thời gian'],['do-ve','Dò vé']].map(([h,l])=>link(g+'-'+h,l,CUR_VIEW===h)).join('');
+    }
+    sub=chips+'<span class="sep"></span>'+gs;
+  }
+  if(sec==='mb'||sec==='mn'||sec==='mt')sub=RG_SUB.map(([v,l])=>link(sec+'-'+v,l,CUR_VIEW==='rg-'+(v==='phan-tich'?'du-bao':v))).join('');
+  if(sec==='cc')sub=adminOnly(POWER_SUB).map(([h,l])=>link(h,l,current===h)).join('');
   if(sec==='kq')sub=link('kq','Kết quả theo ngày',true)+'<span class="sep"></span>'+RG_NAMES.map(([r,n])=>link(r+'-ket-qua','Tra cứu '+n,false)).join('')+link('ket-qua','Tra cứu Power 6/55',false,' data-pw="1"');
   const st=$('#subtabs');if(st)st.innerHTML=sub;
   if(typeof moveInk==='function'){$('#tabs').appendChild(inkEl);requestAnimationFrame(moveInk);}
@@ -1168,7 +1284,7 @@ function renderTop(){
   if(!RES.length)return;
   if(CUR_REGION!=='power'){$('#topNext').innerHTML=rgTopText(CUR_REGION);return;}
   const sc=drawSchedule();const p=countdownParts(sc.inst-Date.now());
-  $('#topNext').innerHTML='Kỳ <b>'+kyStr(sc.id)+'</b> quay sau <b>'+(p.d?p.d+' ngày ':'')+pad(p.h)+':'+pad(p.m)+':'+pad(p.s)+'</b>';
+  $('#topNext').innerHTML='⏰ Power 6/55 kỳ <b>'+kyStr(sc.id)+'</b> quay sau <b>'+(p.d?p.d+' ngày ':'')+pad(p.h)+':'+pad(p.m)+':'+pad(p.s)+'</b>';
   if(current==='trang-chu'){
     $('#hNextId').textContent=kyStr(sc.id);
     paintCount(p);
@@ -1197,10 +1313,10 @@ renderers['trang-chu']=function(){
   const sc=drawSchedule();
   $('#hStale').innerHTML=sc.missing.length?'<p class="notice" style="margin-top:16px">Chưa có kết quả '+(sc.missing.length===1?'kỳ '+kyStr(sc.missing[0].id):sc.missing.length+' kỳ gần nhất ('+kyStr(sc.missing[0].id)+' đến '+kyStr(sc.missing[sc.missing.length-1].id)+')')+' trong dữ liệu của trang. Chủ trang có thể thêm ở mục Quản trị.</p>':'';
   const hc=hotCold(100);
-  $('#hHot').innerHTML=ballsHTML(hc.hot,{size:'sm'});
-  $('#hHotNote').textContent='Mỗi số: '+hc.hot.map(n=>pad(n)+' ('+hc.c[n]+' lần)').join(', ')+'. Trung bình kỳ vọng là khoảng 11 lần.';
-  $('#hCold').innerHTML=ballsHTML(hc.cold,{size:'sm'});
-  $('#hColdNote').textContent=hc.cold.map(n=>pad(n)+' ('+hc.gap(n)+' kỳ)').join(', ')+'. Số lâu chưa ra không “đến lượt” ra.';
+  $('#hHot').innerHTML=ballsHTML(hc.hot,{size:'sm',cnt:n=>hc.c[n]+' lần'});
+  $('#hHotNote').textContent='Số lần ra trong 100 kỳ gần nhất; trung bình mỗi số khoảng 11 lần.';
+  $('#hCold').innerHTML=ballsHTML(hc.cold,{size:'sm',cnt:n=>hc.gap(n)+' kỳ'});
+  $('#hColdNote').textContent='Số kỳ đã qua kể từ lần gần nhất ra. Số lâu chưa ra không “đến lượt” ra.';
   renderTop();
 };
 
@@ -1238,7 +1354,10 @@ renderers['thong-ke']=function(){
   $('#tkBars').innerHTML=bars+'<div class="avgline" style="bottom:'+(exp/top*100)+'%"></div>';
   $('#tkBars').style.position='relative';
   let labs='';for(let i=1;i<=55;i++)labs+='<span>'+pad(i)+'</span>';$('#tkBarLabels').innerHTML=labs;
-  $('#tkFreqNote').textContent=intf(N)+' kỳ, từ '+dmy(R[0].t)+' đến '+dmy(R[N-1].t)+'. Mỗi số kỳ vọng ra khoảng '+dec(exp)+' lần. Nhiều nhất: '+hi.map(n=>pad(n)+' ('+c[n]+')').join(', ')+'. Ít nhất: '+lo.slice().reverse().map(n=>pad(n)+' ('+c[n]+')').join(', ')+'.';
+  const cf=n=>c[n]+' lần';
+  $('#tkFreqNote').innerHTML=esc(intf(N)+' kỳ, từ '+dmy(R[0].t)+' đến '+dmy(R[N-1].t)+'. Mỗi số kỳ vọng ra khoảng '+dec(exp)+' lần.')+
+    '<span class="bl-row"><span class="bl-lab">Nhiều nhất</span>'+ballsHTML(hi,{size:'sm',cnt:cf})+'</span>'+
+    '<span class="bl-row"><span class="bl-lab">Ít nhất</span>'+ballsHTML(lo.slice().reverse(),{size:'sm',cnt:cf})+'</span>';
   // gan (always vs full history)
   const hc=hotCold(100);const nums=[];for(let i=1;i<=55;i++)nums.push(i);
   const gan=nums.sort((a,b)=>hc.gap(b)-hc.gap(a)||a-b).slice(0,10);
@@ -1383,10 +1502,10 @@ function runTimeMachine(){
   const zeroY=H-(0-minP)/span*H;
   const tierOrder=['Jackpot 1','Jackpot 2','Giải Nhất','Giải Nhì','Giải Ba'];
   const tierTxt=tierOrder.filter(t=>tiers[t]).map(t=>t+': '+tiers[t]+' lần').join(', ')||'Chưa trúng giải nào';
-  const share='Nếu chơi bộ '+pick.map(pad).join(' ')+' mỗi kỳ Power 6/55 từ '+dmy(R[0].t)+', tôi đã chi '+vnd(cost)+' và trúng '+vnd(win)+' ('+tierTxt.toLowerCase()+'). Thử bộ số của bạn trên LuckyVision.';
+  const share='Nếu chơi bộ '+pick.map(pad).join(' ')+' mỗi kỳ Power 6/55 từ '+dmy(R[0].t)+', tôi đã chi '+vnd(cost)+' và trúng '+vnd(win)+' ('+tierTxt.toLowerCase()+'). Thử bộ số của bạn trên XS247.';
   $('#tmOut').innerHTML=
    '<div class="cols">'+
-    '<div class="ticket"><div class="t-head"><b>'+pick.map(pad).join(' ')+'</b><span>'+intf(R.length)+' kỳ, từ '+dmy(R[0].t)+' đến '+dmy(lastRes().t)+'</span></div>'+
+    '<div class="ticket"><div class="t-head"><span class="balls">'+ballsHTML(pick,{size:'sm'})+'</span><span>'+intf(R.length)+' kỳ, từ '+dmy(R[0].t)+' đến '+dmy(lastRes().t)+'</span></div>'+
       '<div class="cols" style="gap:10px"><div><div class="hint" style="margin:0">Tiền vé</div><div class="stat-big">'+vnd(cost)+'</div></div><div><div class="hint" style="margin:0">Tiền thưởng</div><div class="stat-big">'+vnd(win)+'</div></div></div>'+
       '<p style="margin:14px 0 4px;font-weight:700;color:'+(pl>=0?'var(--good)':'var(--bad)')+'">'+(pl>=0?'Lời ':'Lỗ ')+vnd(Math.abs(pl))+' ('+dec(win/cost*100)+'% số tiền quay về)</p>'+
       '<p class="hint" style="margin:0">'+tierTxt+'. Lần trùng nhiều nhất: '+best.g.m+' số, kỳ '+kyStr(best.r.id)+' ('+dmy(best.r.t)+').</p>'+
@@ -1415,6 +1534,8 @@ async function copyText(text,msgEl){
   try{if(navigator.clipboard){await navigator.clipboard.writeText(text);ok=true;}}catch(e){}
   if(!ok){try{const t=document.createElement('textarea');t.value=text;t.setAttribute('readonly','');t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');t.remove();}catch(e){}}
   if(msgEl)msgEl.textContent=ok?'Đã sao chép.':'Trình duyệt chặn sao chép, hãy chọn và sao chép thủ công.';
+  if(window.lvToast)lvToast(ok?'Đã sao chép':'Không sao chép được, hãy chọn và sao chép thủ công',ok?'ok':'err');
+  return ok;
 }
 
 // ===================== TAO BO SO =====================
@@ -1471,7 +1592,7 @@ function renderGs(){
   $('#gsOut').innerHTML=gsSets.map((d,i)=>{const p=popularity(d);const [lab,col]=popLabel(p.score);
     return '<div class="set-row"><div class="balls">'+ballsHTML(d,{size:'sm'})+'</div>'+
       '<div style="flex-basis:100%;font-size:.84rem;color:var(--paper-muted)">Tổng '+sumOf(d)+', '+oddCount(d)+' lẻ. Đụng hàng: <b style="color:var(--paper-ink)">'+lab+' ('+p.score+'/100)</b>'+(p.why.length?': '+p.why.join(', '):'')+'.<div class="meter"><i style="width:'+p.score+'%;background:'+col+'"></i></div>'+
-      '<div class="row" style="margin-top:8px"><button class="btn small" type="button" data-save="'+d.join(',')+'">Lưu vào sổ</button><button class="btn ghost small" type="button" data-sms="'+i+'">Sao chép tin nhắn SMS</button><span class="gsm" style="font-size:.8rem"></span></div></div></div>';}).join('');
+      '<div class="row" style="margin-top:8px">'+(IS_ADMIN?'<button class="btn small" type="button" data-save="'+d.join(',')+'">Lưu vào sổ</button>':'')+'<button class="btn ghost small" type="button" data-sms="'+i+'">Sao chép tin nhắn SMS</button><span class="gsm" style="font-size:.8rem"></span></div></div></div>';}).join('');
 }
 $('#gsOut').addEventListener('click',e=>{
   const s=e.target.closest('[data-save]');if(s){addPrediction(s.dataset.save.split(',').map(Number),s);return;}
@@ -1497,13 +1618,14 @@ $('#sdLock').addEventListener('click',()=>{addPrediction(sdSel.slice(),$('#sdLoc
 let writing=false;
 async function addPrediction(set,btn){
   const sc=drawSchedule();const key=String(sc.id);const d=set.slice().sort((a,b)=>a-b);
-  const msg=(t,cls)=>{if(current==='so-du-doan'){$('#sdMsg').className='msg '+(cls||'');$('#sdMsg').textContent=t;}else if(btn){btn.textContent=t;}};
+  const msg=(t,cls)=>{if(current==='so-du-doan'){$('#sdMsg').className='msg '+(cls||'');$('#sdMsg').textContent=t;}else{lvToast(t,cls==='bad'?'err':'ok');}};
   if(!validSet(d)){msg('Bộ số không hợp lệ.','bad');return;}
   if(Date.now()>=sc.inst){msg('Đã quá giờ khóa của kỳ này.','bad');return;}
   const list=(MYDOC.entries[key]||[]).slice();
   if(list.some(e=>e.n.join(',')===d.join(','))){msg('Bộ này đã có trong sổ kỳ '+kyStr(sc.id)+'.','bad');return;}
   if(list.length>=5){msg('Mỗi kỳ chỉ khóa tối đa 5 bộ.','bad');return;}
   if(writing)return;writing=true;
+  const restore=btn?lvBusy(btn,'Đang lưu…'):null;
   list.push({n:d,t:Date.now()});
   const next=Object.assign({},MYDOC,{entries:Object.assign({},MYDOC.entries,{[key]:list})});
   try{
@@ -1511,8 +1633,8 @@ async function addPrediction(set,btn){
     MYDOC=next;if(sdMode!=='db')saveLocal();
     msg('Đã khóa vào sổ kỳ '+kyStr(sc.id)+'.','good');
     if(btn&&btn.id==='sdLock'){sdSel=[];syncPick();}
-  }catch(e){msg('Chưa lưu được: '+(e&&e.message?e.message:'lỗi không rõ')+'.','bad');}
-  writing=false;
+  }catch(e){msg('Chưa lưu được: '+lvErr(e)+'','bad');}
+  finally{if(restore)restore();writing=false;}
   if(current==='so-du-doan')renderers['so-du-doan']();
 }
 function scoreDoc(doc){
@@ -1531,7 +1653,7 @@ renderers['so-du-doan']=async function(){
   $('#sdSummary').textContent=sc2.n?(sc2.n+' bộ đã chấm, TB trùng '+dec(sc2.avg,2)+', lời/lỗ giả định '+vnd(sc2.pl)):'Chưa có bộ nào được chấm';
   if(!keys.length){$('#sdMine').innerHTML='<p class="hint" style="text-align:center;margin:20px 0">Sổ còn trống. Chọn 6 số rồi bấm “Khóa bộ số”.</p>';}
   else $('#sdMine').innerHTML=keys.slice(0,12).map(k=>{const r=resById(k);const list=MYDOC.entries[String(k)]||[];
-    return '<div style="padding:10px 0;border-top:1.5px dashed #B9C0CA"><div class="row" style="justify-content:space-between"><b class="mono">Kỳ '+kyStr(k)+'</b>'+(r?'<span style="font-size:.8rem;color:var(--paper-muted)">KQ: '+r.n.map(pad).join(' ')+(r.s?' + '+pad(r.s):'')+'</span>':'<span class="pill wait">Chờ quay</span>')+'</div>'+
+    return '<div style="padding:10px 0;border-top:1.5px dashed #B9C0CA"><div class="row" style="justify-content:space-between"><b class="mono">Kỳ '+kyStr(k)+'</b>'+(r?'<span class="balls" style="font-size:.8rem;color:var(--paper-muted);align-items:center"><span>KQ:</span>'+ballsHTML(r.n,{sp:r.s,size:'sm'})+'</span>':'<span class="pill wait">Chờ quay</span>')+'</div>'+
       list.map(e=>{if(!r)return '<div class="balls" style="margin-top:8px">'+ballsHTML(e.n,{size:'xs'})+'</div>';const g=grade(e.n,r);return '<div class="row" style="margin-top:8px"><div class="balls">'+e.n.map(x=>'<span class="ball xs'+(r.n.includes(x)?' hit':' dim')+'">'+pad(x)+'</span>').join('')+'</div><span class="pill'+(g.tier?' win':'')+'">'+(g.tier||('Trùng '+g.m))+'</span></div>';}).join('')+'</div>';}).join('');
   if(sdMode==='db')renderBoard();
 };
@@ -1577,7 +1699,7 @@ function runCheck(){
     const tt=Object.keys(tally).map(t=>t+(cs.length>1?' × '+tally[t]:'')).join(', ');
     html+='<div class="set-row"><div class="balls">'+u.map(x=>'<span class="ball sm'+(r.n.includes(x)?' hit':' dim')+'">'+pad(x)+'</span>').join('')+'</div><div style="flex-basis:100%;font-size:.86rem">'+(u.length>6?'Bao '+u.length+' ('+intf(cs.length)+' bộ). ':'')+'Trùng '+overlap(u,r.n)+' số. '+(tt?'<b>'+tt+'</b>'+(w?', '+vnd(w):''):'Không trúng giải.')+'</div></div>';
   });
-  $('#dvHead').textContent='Kỳ '+kyStr(r.id)+': '+r.n.map(pad).join(' ')+(r.s?' + '+pad(r.s):'');
+  $('#dvHead').innerHTML=esc('Kỳ '+kyStr(r.id)+':')+' <span class="balls" style="display:inline-flex;vertical-align:middle">'+ballsHTML(r.n,{sp:r.s,size:'sm'})+'</span>';
   $('#dvOut').innerHTML=(html||'')+(html?'<div class="t-foot">Tổng giải cố định: <b>'+vnd(totalWin)+'</b>'+(totalJp?'. Có vé trúng Jackpot, hãy liên hệ Vietlott để lĩnh thưởng!':'')+'. Kết quả chỉ để tham khảo, hãy đối chiếu với Vietlott trước khi lĩnh thưởng.</div>':'');
   if(errs.length){msg.className='msg bad';msg.textContent=errs.join(' ');}else msg.textContent='';
 }
@@ -1706,7 +1828,9 @@ function rgTopText(r){
   const nd=nextDrawFor(r);if(!nd)return '';
   const p=countdownParts(nd.inst-Date.now());
   const who=r!=='mb'?' ('+nd.provs.map(x=>x.name).join(', ')+')':'';
-  return 'Kỳ tới <b>'+WD[new Date(nd.t).getUTCDay()]+' '+dmy(nd.t).slice(0,5)+', '+REG[r].timeLabel+'</b>'+esc(who)+', còn <b>'+(p.d?p.d+' ngày ':'')+pad(p.h)+':'+pad(p.m)+':'+pad(p.s)+'</b>';
+  // Ghi rõ miền nào, quay lúc nào, còn bao lâu: "⏰ Xổ số Miền Bắc quay lúc 18:15 hôm nay · còn 01:57:44"
+  const day=nd.t===vnToday()?'hôm nay':nd.t===vnToday()+DAY?'ngày mai':WD[new Date(nd.t).getUTCDay()]+' '+dmy(nd.t).slice(0,5);
+  return '⏰ Xổ số '+esc(rn(r))+esc(who)+' quay lúc <b>'+REG[r].timeLabel+' '+day+'</b> · còn <b>'+(p.d?p.d+' ngày ':'')+pad(p.h)+':'+pad(p.m)+':'+pad(p.s)+'</b>';
 }
 const rgSel={mn:null,mt:null};
 function defaultProv(r){const lt=latestDate(r);const p=REG[r].provs.find(x=>{const s=RGD[r][x.id];return s&&s.length&&s[s.length-1].t===lt;});return p?p.id:REG[r].provs[0].id;}
@@ -1720,7 +1844,7 @@ function rgPrelude(viewName){
   const r=CUR_REGION;const sec=$('.view[data-view="'+viewName+'"]');
   sec.querySelectorAll('[data-only]').forEach(el=>el.hidden=!el.dataset.only.split(' ').includes(r));
   const nd=sec.querySelector('.rg-nodata');const dt=sec.querySelector('.rg-data');
-  if(REG[r].nodata){if(dt)dt.hidden=true;if(nd){nd.hidden=false;nd.innerHTML=REG[r].nodataMsg||'<div class="card empty"><h2>Chưa có dữ liệu miền Trung</h2><p>LuckyVision chưa có nguồn dữ liệu kết quả miền Trung được phép sử dụng và đã kiểm tra chất lượng, nên chưa hiển thị kết quả, thống kê hay dự báo cho khu vực này.</p><p class="hint">Chủ trang có thể bổ sung khi có nguồn dữ liệu phù hợp. Trong lúc chờ, bạn có thể xem <a href="#mb-'+viewName.slice(3)+'">miền Bắc</a> hoặc <a href="#mn-'+viewName.slice(3)+'">miền Nam</a>.</p></div>';}return false;}
+  if(REG[r].nodata){if(dt)dt.hidden=true;if(nd){nd.hidden=false;nd.innerHTML=REG[r].nodataMsg||'<div class="card empty"><h2>Chưa có dữ liệu miền Trung</h2><p>XS247 chưa có nguồn dữ liệu kết quả miền Trung được phép sử dụng và đã kiểm tra chất lượng, nên chưa hiển thị kết quả, thống kê hay phân tích cho khu vực này.</p><p class="hint">Chủ trang có thể bổ sung khi có nguồn dữ liệu phù hợp. Trong lúc chờ, bạn có thể xem <a href="#mb-'+viewName.slice(3)+'">miền Bắc</a> hoặc <a href="#mn-'+viewName.slice(3)+'">miền Nam</a>.</p></div>';}return false;}
   if(dt)dt.hidden=false;if(nd)nd.hidden=true;return true;
 }
 function prizeTable(d,lo){
@@ -1728,7 +1852,7 @@ function prizeTable(d,lo){
   return '<table class="prize"><tbody>'+R.display.map(k=>'<tr'+(k==='db'?' class="db"':'')+'><th>'+TIER_NAME[k]+'</th><td>'+d.pr[k].map(tag).join('')+'</td></tr>').join('')+'</tbody></table>';
 }
 function lotoByHead(d){
-  const rows=[];for(let h=0;h<10;h++){const u=d.lo.filter(x=>Math.floor(x/10)===h).map(x=>x%10).sort((a,b)=>a-b);rows.push('<tr><th>'+h+'</th><td class="mono">'+(u.length?u.join(', '):'<span class="hint">–</span>')+'</td></tr>');}
+  const rows=[];for(let h=0;h<10;h++){const u=d.lo.filter(x=>Math.floor(x/10)===h).map(x=>x%10).sort((a,b)=>a-b);rows.push('<tr><th>'+h+'</th><td class="mono">'+(u.length?'<span class="balls">'+u.map(x=>'<span class="ball xs">'+x+'</span>').join('')+'</span>':'<span class="hint">–</span>')+'</td></tr>');}
   return '<table class="loto"><thead><tr><th>Đầu</th><th>Đuôi</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>';
 }
 function drawStatus(d){
@@ -1741,7 +1865,7 @@ renderers['rg-tong-quan']=function(){
   const r=CUR_REGION;const R=REG[r];
   $('#tqTitle').textContent='Xổ số '+rn(r);
   if(!rgPrelude('rg-tong-quan')){$('#tqLead').textContent='';
-    $('#tqBody').innerHTML=REG[r].nodataMsg||'<div class="card empty"><h2>Chưa có dữ liệu miền Trung</h2><p>LuckyVision chưa có nguồn dữ liệu kết quả miền Trung được phép sử dụng và đã kiểm tra chất lượng. Vì vậy trang chưa hiển thị kết quả, thống kê hay dự báo cho khu vực này.</p><p class="hint">Trong lúc chờ, bạn có thể xem <a href="#mb-tong-quan">miền Bắc</a> hoặc <a href="#mn-tong-quan">miền Nam</a>.</p></div>';return;}
+    $('#tqBody').innerHTML=REG[r].nodataMsg||'<div class="card empty"><h2>Chưa có dữ liệu miền Trung</h2><p>XS247 chưa có nguồn dữ liệu kết quả miền Trung được phép sử dụng và đã kiểm tra chất lượng. Vì vậy trang chưa hiển thị kết quả, thống kê hay phân tích cho khu vực này.</p><p class="hint">Trong lúc chờ, bạn có thể xem <a href="#mb-tong-quan">miền Bắc</a> hoặc <a href="#mn-tong-quan">miền Nam</a>.</p></div>';return;}
   const lt=latestDate(r);
   $('#tqLead').textContent='Quay lúc '+R.timeLabel+(r==='mb'?' hằng ngày':' theo lịch từng tỉnh')+'. Dữ liệu có đến ngày '+dmy(lt)+'.';
   let html='';
@@ -1760,13 +1884,13 @@ renderers['rg-tong-quan']=function(){
   const ganN=[...Array(100).keys()].map(n=>[n,gs.length-1-last[n]]).sort((a,b)=>b[1]-a[1]||a[0]-b[0]);
   html+='<div class="cols-3" style="margin-top:18px">'+
     '<div class="card"><h2>Dữ liệu</h2><div class="stat-big">'+intf(S.length)+'</div><p class="hint" style="margin:4px 0 0">kỳ quay'+(r!=='mb'?' của '+R.provs.length+' đài':'')+', từ '+dmy(S[0].t)+' đến '+dmy(lt)+'.</p></div>'+
-    '<div class="card"><h2>Về nhiều nhất '+R.trendDays+' ngày</h2><div class="balls">'+order.slice(0,5).map(n=>'<span class="ball sm lo">'+pad(n)+'</span>').join('')+'</div><p class="hint" style="margin:8px 0 0">'+order.slice(0,5).map(n=>pad(n)+': '+c[n]+' lần').join(', ')+'. '+intf(Rg.length)+' kỳ được phân tích.</p></div>'+
-    '<div class="card"><h2>Lô gan lâu nhất</h2><div class="balls">'+ganN.slice(0,5).map(([n])=>'<span class="ball sm dim">'+pad(n)+'</span>').join('')+'</div><p class="hint" style="margin:8px 0 0">'+(r!=='mb'?esc(provName(r,gp))+': ':'')+ganN.slice(0,5).map(([n,g])=>pad(n)+' ('+g+' kỳ)').join(', ')+'.</p></div>'+
+    '<div class="card"><h2>Về nhiều nhất '+R.trendDays+' ngày</h2><div class="balls">'+order.slice(0,5).map(n=>'<span class="bc"><span class="ball sm lo">'+pad(n)+'</span><span class="ball-cnt">'+c[n]+' lần</span></span>').join('')+'</div><p class="hint" style="margin:8px 0 0">'+intf(Rg.length)+' kỳ được phân tích.</p></div>'+
+    '<div class="card"><h2>Lô gan lâu nhất</h2><div class="balls">'+ganN.slice(0,5).map(([n,g])=>'<span class="bc"><span class="ball sm dim">'+pad(n)+'</span><span class="ball-cnt">'+g+' kỳ</span></span>').join('')+'</div>'+(r!=='mb'?'<p class="hint" style="margin:8px 0 0">'+esc(provName(r,gp))+'</p>':'')+'</div>'+
   '</div>';
   // latest prediction
   const nd=nextDrawFor(r);
   if(nd){const p=nd.provs[0];const s=series(r,p.id);const out=modelOutput(r,s,s.length,'roll',p.id+'-'+isoDate(nd.t));
-    html+='<div class="card" style="margin-top:18px"><h2>Dự báo tham khảo mới nhất</h2><p class="hint">'+esc(p.name)+', kỳ '+fullDate(nd.t)+'. Mô hình '+MODELS.find(m=>m.id==='roll').name+' phiên bản '+MODELS.find(m=>m.id==='roll').ver+', dữ liệu đầu vào '+out.n+' kỳ từ '+dmy(out.from)+' đến '+dmy(out.to)+'. Đây là xếp hạng thống kê, không phải xác suất trúng.</p><div class="balls">'+out.rank.slice(0,10).map(n=>'<span class="ball sm lo">'+pad(n)+'</span>').join('')+'</div><p style="margin:12px 0 0"><a href="#'+r+'-du-bao">Xem chi tiết dự báo và các mô hình khác</a>, hoặc <a href="#'+r+'-danh-gia">xem mô hình đã hoạt động ra sao</a>.</p></div>';}
+    html+='<div class="card" style="margin-top:18px"><h2>Phân tích tham khảo mới nhất</h2><p class="hint">'+esc(p.name)+', kỳ '+fullDate(nd.t)+'. Mô hình '+MODELS.find(m=>m.id==='roll').name+' phiên bản '+MODELS.find(m=>m.id==='roll').ver+', dữ liệu đầu vào '+out.n+' kỳ từ '+dmy(out.from)+' đến '+dmy(out.to)+'. Đây là xếp hạng thống kê, không phải xác suất trúng.</p><div class="balls">'+out.rank.slice(0,10).map(n=>'<span class="ball sm lo">'+pad(n)+'</span>').join('')+'</div><p style="margin:12px 0 0"><a href="#'+r+'-phan-tich">Xem chi tiết phân tích và các mô hình khác</a>, hoặc <a href="#'+r+'-danh-gia">xem mô hình đã hoạt động ra sao</a>.</p></div>';}
   $('#tqBody').innerHTML=html;
 };
 
@@ -1791,7 +1915,7 @@ renderers['rg-ket-qua']=function(){
   msg.textContent=(($('#rkDate').value||lo!=null)?intf(L.length)+' kỳ quay phù hợp'+(lo!=null?', lô '+pad(lo)+' được tô vàng':'')+'.':intf(L.length)+' kỳ quay của '+provName(r,p)+'.');
   if(!L.length)msg.textContent=$('#rkDate').value?'Không có kỳ quay nào'+(p!=='all'?' của '+provName(r,p):'')+' vào ngày '+dmy(Date.parse($('#rkDate').value+'T00:00:00Z'))+'.':'Không có kỳ quay nào phù hợp.';
   $('#rkList').innerHTML='<div class="rk-grid">'+sl.map(d=>'<div class="ticket"><div class="t-head"><b>'+esc(provName(r,d.prov))+'</b><span>'+fullDate(d.t)+'</span></div>'+prizeTable(d,lo)+
-    '<details class="det"><summary>Chi tiết kỳ quay</summary><dl><dt>Mã kỳ quay</dt><dd class="mono">'+esc(r+'-'+d.key)+'</dd><dt>Tỉnh/đài</dt><dd>'+esc(provName(r,d.prov))+'</dd><dt>Ngày quay</dt><dd>'+fullDate(d.t)+', '+REG[r].timeLabel+'</dd><dt>Nguồn</dt><dd>'+esc(d.src==='emb'?REG[r].source:'Quản trị viên LuckyVision')+'</dd><dt>Xác minh</dt><dd>'+esc(drawStatus(d))+'</dd></dl>'+lotoByHead(d)+'</details></div>').join('')+'</div>';
+    '<details class="det"><summary>Chi tiết kỳ quay</summary><dl><dt>Mã kỳ quay</dt><dd class="mono">'+esc(r+'-'+d.key)+'</dd><dt>Tỉnh/đài</dt><dd>'+esc(provName(r,d.prov))+'</dd><dt>Ngày quay</dt><dd>'+fullDate(d.t)+', '+REG[r].timeLabel+'</dd><dt>Nguồn</dt><dd>'+esc(d.src==='emb'?REG[r].source:'Quản trị viên XS247')+'</dd><dt>Xác minh</dt><dd>'+esc(drawStatus(d))+'</dd></dl>'+lotoByHead(d)+'</details></div>').join('')+'</div>';
   $('#rkPage').textContent='Trang '+(rkPage+1)+' / '+pages;$('#rkPrev').disabled=rkPage===0;$('#rkNext').disabled=rkPage>=pages-1;
 };
 ['rkProv','rkDate','rkLo'].forEach(id=>$('#'+id).addEventListener('input',()=>{rkPage=0;if(id==='rkProv')rgSel[CUR_REGION]=$('#rkProv').value;renderers['rg-ket-qua']();}));
@@ -1804,7 +1928,7 @@ $('#rkExport').addEventListener('click',async()=>{
   const lines=['ma_ky_quay,mien,tinh_dai,ngay_quay,giai,so,nguon'];
   rkLast.forEach(d=>REG[r].enc.forEach(([k])=>d.pr[k].forEach(x=>lines.push([r+'-'+d.key,REG[r].name,provName(r,d.prov),d.iso,TIER_NAME[k],'="'+x+'"',d.src==='emb'?'nguon-mo':'quan-tri'].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')))));
   const msg=$('#rkMsg');
-  try{const res=await DOWNLOADS.save({filename:'luckyvision-'+r+'-ket-qua.csv',data:'\ufeff'+lines.join('\n')});msg.className='msg good';msg.textContent=res&&res.status==='saved'?'Đã xuất '+intf(rkLast.length)+' kỳ quay ra tệp CSV.':'Đã gửi tệp CSV.';}
+  try{const res=await DOWNLOADS.save({filename:'xs247-'+r+'-ket-qua.csv',data:'\ufeff'+lines.join('\n')});msg.className='msg good';msg.textContent=res&&res.status==='saved'?'Đã xuất '+intf(rkLast.length)+' kỳ quay ra tệp CSV.':'Đã gửi tệp CSV.';}
   catch(e){msg.className='msg bad';msg.textContent=e&&e.code==='cancelled'?'Đã hủy xuất tệp.':'Không xuất được tệp CSV.';if(e&&e.code==='unavailable')$('#rkExport').hidden=true;}
 });
 
@@ -1903,23 +2027,23 @@ let rdModel='roll';let FORECASTS=[];let RG_ADMIN_DB=null;let RG_UID=null;
 (function(){$('#rdModel').innerHTML=MODELS.map(m=>'<button type="button" data-v="'+m.id+'">'+m.name+'</button>').join('');})();
 function rdTarget(r,p){const nd=nextDrawFor(r,[p]);return nd;}
 renderers['rg-du-bao']=function(){
-  const r=CUR_REGION;$('#rdTitle').textContent='Dự báo tham khảo '+rn(r);
+  const r=CUR_REGION;$('#rdTitle').textContent='Phân tích mô hình '+rn(r);
   if(!rgPrelude('rg-du-bao'))return;
   if(r!=='mb'&&$('#rdProv').dataset.ready!==r){const nd=nextDrawFor(r);fillProvSelect($('#rdProv'),r,null,(rgSel[r]&&rgSel[r]!=='all')?rgSel[r]:(nd?nd.provs[0].id:REG[r].provs[0].id));$('#rdProv').dataset.ready=r;}
   $$('#rdModel button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===rdModel)));
   const p=r==='mb'?'mb':$('#rdProv').value;const S=series(r,p);const nd=rdTarget(r,p);const M=MODELS.find(m=>m.id===rdModel);
-  if(!S.length||!nd){$('#rdMeta').innerHTML='<h2>Chưa có dự báo</h2><p class="hint">Chưa đủ dữ liệu để tạo dự báo cho đài này.</p>';$('#rdRank').innerHTML='';return;}
+  if(!S.length||!nd){$('#rdMeta').innerHTML='<h2>Chưa có phân tích</h2><p class="hint">Chưa đủ dữ liệu để phân tích cho đài này.</p>';$('#rdRank').innerHTML='';return;}
   const seed=p+'-'+isoDate(nd.t);const out=modelOutput(r,S,S.length,rdModel,seed);
   const pub=FORECASTS.find(f=>f.prov===p&&f.target===isoDate(nd.t)&&f.model===rdModel);
   const missing=missingDraws(r,p);
-  $('#rdMeta').innerHTML='<h2>Thông tin dự báo</h2><dl class="meta">'+
+  $('#rdMeta').innerHTML='<h2>Thông tin phân tích</h2><dl class="meta">'+
     '<dt>Khu vực / đài</dt><dd>'+esc(REG[r].name+', '+provName(r,p))+'</dd>'+
     '<dt>Kỳ quay mục tiêu</dt><dd>'+fullDate(nd.t)+', '+REG[r].timeLabel+'</dd>'+
     '<dt>Thời điểm tạo</dt><dd>'+(pub?new Date(pub.createdAt).toLocaleString('vi-VN')+' (đã công bố, mã '+esc(pub.id)+')':'Tính trực tiếp lúc '+new Date().toLocaleString('vi-VN')+', chưa công bố')+'</dd>'+
     '<dt>Mô hình</dt><dd>'+esc(M.name)+', phiên bản '+M.ver+'</dd>'+
     '<dt>Dữ liệu đầu vào</dt><dd>'+intf(out.n)+' kỳ quay, từ '+dmy(out.from)+' đến '+dmy(out.to)+'</dd>'+
     '<dt>Phương pháp</dt><dd>'+esc(M.method(r))+'</dd></dl>'+
-    (missing.length?'<p class="notice" style="margin-top:12px">Dữ liệu đang thiếu '+missing.length+' kỳ quay gần đây của đài này, nên dự báo dựa trên dữ liệu chưa đầy đủ.</p>':'')+
+    (missing.length?'<p class="notice" style="margin-top:12px">Dữ liệu đang thiếu '+missing.length+' kỳ quay gần đây của đài này, nên phân tích dựa trên dữ liệu chưa đầy đủ.</p>':'')+
     '<p class="hint" style="margin:12px 0 0">Điểm 0–100 là thứ hạng thống kê tương đối giữa 100 số, không phải xác suất trúng. Không có thông điệp nào ở đây là cam kết trúng thưởng.</p>';
   const show=pub?pub.top.map(Number):out.rank.slice(0,20);
   $('#rdTicketTitle').textContent='20 lô xếp hạng cao nhất';
@@ -1934,13 +2058,13 @@ function renderPubList(){
   const r=CUR_REGION;
   $('#rdPubAdmin').hidden=!(CAN_EDIT&&RG_ADMIN_DB);
   const L=FORECASTS.filter(f=>f.region===r).sort((a,b)=>b.target.localeCompare(a.target)||b.createdAt-a.createdAt).slice(0,60);
-  if(!RG_ADMIN_DB&&!FORECASTS.length){$('#rdPubList').innerHTML='<tr><td colspan="6" class="hint">Lịch sử dự báo cần mở trang trên Claude để đọc kho dữ liệu chung.</td></tr>';return;}
-  if(!L.length){$('#rdPubList').innerHTML='<tr><td colspan="6" class="hint">Chưa có dự báo nào được công bố cho khu vực này.</td></tr>';return;}
+  if(!RG_ADMIN_DB&&!FORECASTS.length){$('#rdPubList').innerHTML='<tr><td colspan="6" class="hint">Lịch sử phân tích cần mở trang trên Claude để đọc kho dữ liệu chung.</td></tr>';return;}
+  if(!L.length){$('#rdPubList').innerHTML='<tr><td colspan="6" class="hint">Chưa có phân tích nào được lưu cho khu vực này.</td></tr>';return;}
   $('#rdPubList').innerHTML=L.map(f=>{const d=findDraw(r,f.prov,f.target);const top=f.top.slice(0,10).map(Number);let ev;
-    if(d){const h=top.filter(n=>d.set.has(n));ev='<b>'+h.length+'/10</b> trùng'+(h.length?': '+h.map(pad).join(', '):'')+'<br><span class="hint" style="font-size:.78rem">Ngẫu nhiên kỳ vọng '+dec(d.set.size/10,1)+'/10</span>';}
+    if(d){const h=top.filter(n=>d.set.has(n));ev='<b>'+h.length+'/10</b> trùng'+(h.length?': <span class="balls" style="display:inline-flex;vertical-align:middle">'+ballsHTML(h,{size:'xs'})+'</span>':'')+'<br><span class="hint" style="font-size:.78rem">Ngẫu nhiên kỳ vọng '+dec(d.set.size/10,1)+'/10</span>';}
     else{const passed=drawInst(r,Date.parse(f.target+'T00:00:00Z'))<Date.now();ev='<span class="pill wait">'+(passed?'Chưa có kết quả xác minh':'Chờ quay')+'</span>';}
     const M=MODELS.find(m=>m.id===f.model)||{name:f.model};
-    return '<tr><td class="mono" style="font-size:.78rem">'+esc(f.id)+'</td><td>'+esc(provName(r,f.prov))+'<br>'+dmy(Date.parse(f.target+'T00:00:00Z'))+'</td><td>'+esc(M.name)+' v'+esc(f.version)+'</td><td>'+new Date(f.createdAt).toLocaleString('vi-VN')+'</td><td class="mono">'+top.map(pad).join(' ')+'</td><td>'+ev+'</td></tr>';}).join('');
+    return '<tr><td class="mono" style="font-size:.78rem">'+esc(f.id)+'</td><td>'+esc(provName(r,f.prov))+'<br>'+dmy(Date.parse(f.target+'T00:00:00Z'))+'</td><td>'+esc(M.name)+' v'+esc(f.version)+'</td><td>'+new Date(f.createdAt).toLocaleString('vi-VN')+'</td><td><div class="balls">'+ballsHTML(top,{size:'xs'})+'</div></td><td>'+ev+'</td></tr>';}).join('');
 }
 $('#rdPublish').addEventListener('click',async()=>{
   const r=CUR_REGION;const p=r==='mb'?'mb':$('#rdProv').value;const S=series(r,p);const nd=rdTarget(r,p);const msg=$('#rdPubMsg');msg.className='msg';
@@ -1956,7 +2080,7 @@ $('#rdPublish').addEventListener('click',async()=>{
       await ref.set(doc);made++;
       await audit('cong-bo-du-bao',id,null,M.name+' v'+M.ver+': '+doc.top.slice(0,10).join(' '));
     }
-    msg.className='msg good';msg.textContent=made?'Đã công bố '+made+' dự báo cho kỳ '+dmy(nd.t)+'.'+(skip?' '+skip+' mô hình đã có bản công bố trước đó nên giữ nguyên.':''):'Tất cả mô hình đã có bản công bố cho kỳ này; bản cũ được giữ nguyên.';
+    msg.className='msg good';msg.textContent=made?'Đã lưu '+made+' phân tích cho kỳ '+dmy(nd.t)+'.'+(skip?' '+skip+' mô hình đã có bản công bố trước đó nên giữ nguyên.':''):'Tất cả mô hình đã có bản công bố cho kỳ này; bản cũ được giữ nguyên.';
   }catch(e){msg.className='msg bad';msg.textContent='Không công bố được: '+(e&&e.message?e.message:'lỗi không rõ')+'.';}
   $('#rdPublish').disabled=false;
 });
@@ -1988,7 +2112,7 @@ function backtest(r,p,K){
   return rgCache[ck]={res,base};
 }
 renderers['rg-danh-gia']=function(){
-  const r=CUR_REGION;$('#reTitle').textContent='Đánh giá dự báo '+rn(r);
+  const r=CUR_REGION;$('#reTitle').textContent='Đánh giá mô hình '+rn(r);
   if(!rgPrelude('rg-danh-gia'))return;
   if(r!=='mb'&&$('#reProv').dataset.ready!==r){fillProvSelect($('#reProv'),r,'Tất cả đài (đánh giá từng đài rồi cộng gộp)','all');$('#reProv').dataset.ready=r;}
   $$('#reK button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===reK)));
@@ -2021,13 +2145,13 @@ renderers['rg-danh-gia']=function(){
   }
   const loN=R.enc.reduce((s,[,c])=>s+c,0);
   $('#reDefs').innerHTML='<dl class="meta">'+
-    '<dt>Mục tiêu dự báo</dt><dd>Tập các số 00–99 xuất hiện ở hai chữ số cuối của ít nhất một giải trong kỳ quay ('+loN+' giải mỗi kỳ, nên mỗi kỳ có khoảng '+dec(100*(1-Math.pow(0.99,loN)),0)+' số khác nhau). Mỗi đài được dự báo riêng, không trộn dữ liệu giữa các đài.</dd>'+
+    '<dt>Mục tiêu phân tích</dt><dd>Tập các số 00–99 xuất hiện ở hai chữ số cuối của ít nhất một giải trong kỳ quay ('+loN+' giải mỗi kỳ, nên mỗi kỳ có khoảng '+dec(100*(1-Math.pow(0.99,loN)),0)+' số khác nhau). Mỗi đài được phân tích riêng, không trộn dữ liệu giữa các đài.</dd>'+
     '<dt>Hit count</dt><dd>Tổng số lần một số trong K số được chọn có xuất hiện trong kỳ, cộng qua mọi kỳ được đánh giá.</dd>'+
     '<dt>Precision@K</dt><dd>Số trùng ÷ K, lấy trung bình qua các kỳ.</dd>'+
     '<dt>Recall@K</dt><dd>Số trùng ÷ số lượng số khác nhau thực sự về trong kỳ, lấy trung bình.</dd>'+
     '<dt>Hit rate</dt><dd>Tỉ lệ kỳ có ít nhất 1 số trong K số được chọn xuất hiện. Với K lớn, chỉ số này gần 100% kể cả khi chọn bừa, nên luôn đọc cùng dòng ngẫu nhiên.</dd>'+
     '<dt>Brier score</dt><dd>Trung bình (p − y)² trên 100 số, với p là xác suất ước lượng số đó có về và y = 1 nếu về, 0 nếu không. Càng thấp càng tốt. Chỉ áp dụng cho mô hình có xuất ra xác suất (Phân phối lịch sử); dòng ngẫu nhiên dùng cùng một xác suất cho mọi số.</dd>'+
-    '<dt>Chống rò rỉ dữ liệu</dt><dd>Khi dự báo cho kỳ quay ngày D, mô hình chỉ dùng các kỳ trước ngày D của cùng đài. Mô hình ngẫu nhiên dùng hạt giống cố định nên kết quả đánh giá tái lập được.</dd></dl>';
+    '<dt>Chống rò rỉ dữ liệu</dt><dd>Khi phân tích cho kỳ quay ngày D, mô hình chỉ dùng các kỳ trước ngày D của cùng đài. Mô hình ngẫu nhiên dùng hạt giống cố định nên kết quả đánh giá tái lập được.</dd></dl>';
 };
 $('#reK').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;reK=+b.dataset.v;renderers['rg-danh-gia']();});
 $('#reProv').addEventListener('change',()=>{renderers['rg-danh-gia']();});
@@ -2038,7 +2162,7 @@ async function audit(action,target,before,after){
   if(!RG_ADMIN_DB)return;
   try{await RG_ADMIN_DB.collection('audit').add({at:Date.now(),by:RG_UID||null,action,target,before:before==null?null:String(before),after:after==null?null:String(after)});}catch(e){}
 }
-const ACTION_NAME={'tao-ket-qua':'Tạo kết quả','sua-ket-qua':'Sửa kết quả','xac-minh-cong-bo':'Xác minh và công bố','yeu-cau-kiem-tra-lai':'Chuyển về chờ kiểm tra','cong-bo-du-bao':'Công bố dự báo'};
+const ACTION_NAME={'tao-ket-qua':'Tạo kết quả','sua-ket-qua':'Sửa kết quả','xac-minh-cong-bo':'Xác minh và công bố','yeu-cau-kiem-tra-lai':'Chuyển về chờ kiểm tra','cong-bo-du-bao':'Lưu phân tích'};
 function qtTypeChanged(){
   const t=$('#qtType').value;$('#qtProvWrap').hidden=!(t==='mn'||t==='mt');$('#qtIdWrap').hidden=t!=='power';$('#qtSpWrap').hidden=t!=='power';
   if((t==='mn'||t==='mt')&&$('#qtProv').dataset.ready!==t){fillProvSelect($('#qtProv'),t,null,REG[t].provs[0].id);$('#qtProv').dataset.ready=t;}
@@ -2155,6 +2279,184 @@ function initRegionalCaps(db,user){
   if(CUR_VIEW==='quan-tri'||CUR_VIEW==='rg-du-bao')rerender();
 }
 (async()=>{try{if(window.claude&&claude.use){const dl=await claude.use('downloads');if(dl){DOWNLOADS=dl;$('#rkExport').hidden=false;}}}catch(e){}})();
+
+
+// ===================== DÒ VÉ, MÁY THỜI GIAN CHO MEGA 6/45, LOTTO 5/35, MAX 3D, MAX 3D PRO =====================
+// Giá trị giải cho mỗi lần dự thưởng 10.000đ, theo thể lệ đăng trên vietlott.vn. Jackpot/Độc đắc thay đổi theo kỳ
+// nên không cộng vào lãi lỗ, chỉ đếm số lần trúng.
+const VL = {mega645: [], lotto535: [], max3d: [], max3dpro: []};
+const VL_TOOL_VIEWS = ['do-ve', 'may-thoi-gian'];
+const M3_GROUPS = [['db', 2], ['g1', 4], ['g2', 6], ['g3', 8]];
+const VL_GAMES = {
+  mega645: {name: 'Mega 6/45', kind: 'pick', k: 6, max: 45, ph: '05 12 23 34 40 45',
+    tiers: [['jp', 'Jackpot (6 số)', null], ['g1', 'Giải Nhất (5 số)', 1e7], ['g2', 'Giải Nhì (4 số)', 3e5], ['g3', 'Giải Ba (3 số)', 3e4]],
+    check(t, d) {
+      const m = t.n.filter(x => d.n.includes(x)).length;
+      const id = m === 6 ? 'jp' : m === 5 ? 'g1' : m === 4 ? 'g2' : m === 3 ? 'g3' : null;
+      return {hits: t.n.filter(x => d.n.includes(x)), wins: id ? [id] : []};
+    }},
+  lotto535: {name: 'Lotto 5/35', kind: 'pick', k: 5, max: 35, smax: 12, ph: '05 12 23 30 35 + 08',
+    tiers: [['dd', 'Độc đắc (5 số + số ĐB)', null], ['g1', 'Giải Nhất (5 số)', 1e7], ['g2', 'Giải Nhì (4 số + số ĐB)', 5e6], ['g3', 'Giải Ba (4 số)', 5e5],
+            ['g4', 'Giải Tư (3 số + số ĐB)', 1e5], ['g5', 'Giải Năm (3 số)', 3e4], ['kk', 'Khuyến khích (trùng số ĐB)', 1e4]],
+    check(t, d) {
+      const m = t.n.filter(x => d.n.includes(x)).length, s = t.s === d.s;
+      const id = m === 5 ? (s ? 'dd' : 'g1') : m === 4 ? (s ? 'g2' : 'g3') : m === 3 ? (s ? 'g4' : 'g5') : s ? 'kk' : null;
+      return {hits: t.n.filter(x => d.n.includes(x)), sHit: s, wins: id ? [id] : []};
+    }},
+  max3d: {name: 'Max 3D', kind: 'd3', count: 1, ph: '123',
+    tiers: [['db', 'Trùng 1 trong 2 số nhóm đầu', 1e6], ['g1', 'Trùng 1 trong 4 số nhóm hai', 3.5e5], ['g2', 'Trùng 1 trong 6 số nhóm ba', 2.1e5], ['g3', 'Trùng 1 trong 8 số nhóm cuối', 1e5]],
+    check(t, d) {
+      const wins = M3_GROUPS.map(([g]) => g).filter(g => d.g[g].includes(t.n[0]));
+      return {hits: wins.length ? [t.n[0]] : [], wins};  // trúng nhiều nhóm thì cộng tất cả
+    }},
+  max3dpro: {name: 'Max 3D Pro', kind: 'd3', count: 2, ph: '123 456',
+    tiers: [['db', 'Giải Đặc biệt (đúng thứ tự 2 số ĐB)', 2e9], ['pdb', 'Giải phụ Đặc biệt (ngược thứ tự)', 4e8], ['g1', 'Giải Nhất (2 trong 4 số giải Nhất)', 3e7],
+            ['g2', 'Giải Nhì (2 trong 6 số giải Nhì)', 1e7], ['g3', 'Giải Ba (2 trong 8 số giải Ba)', 4e6], ['g4', 'Giải Tư (2 trong 20 số)', 1e6],
+            ['g5', 'Giải Năm (1 số trùng số ĐB)', 1e5], ['g6', 'Giải Sáu (1 số trùng giải Nhất, Nhì, Ba)', 4e4]],
+    check(t, d) {
+      const [a, b] = t.n, g = d.g, all = [...g.db, ...g.g1, ...g.g2, ...g.g3], low = [...g.g1, ...g.g2, ...g.g3];
+      const both = arr => arr.includes(a) && arr.includes(b) && (a !== b || arr.filter(x => x === a).length >= 1);
+      const wins = [];
+      if (a === g.db[0] && b === g.db[1]) wins.push('db');
+      else if (a === g.db[1] && b === g.db[0] && g.db[0] !== g.db[1]) wins.push('pdb');
+      if (both(g.g1)) wins.push('g1');
+      if (both(g.g2)) wins.push('g2');
+      if (both(g.g3)) wins.push('g3');
+      if (both(all)) wins.push('g4');
+      if (g.db.includes(a) || g.db.includes(b)) wins.push('g5');
+      if (low.includes(a) || low.includes(b)) wins.push('g6');
+      return {hits: [a, b].filter(x => all.includes(x)), wins, double: a === b};  // cả hai số giống nhau: giải Nhất đến Sáu gấp đôi
+    }},
+};
+const VL_LEADS = {
+  'do-ve': 'Nhập vé (mỗi dòng một vé) và chọn kỳ quay để biết vé trúng giải nào. Giá trị giải theo thể lệ của Vietlott cho vé 10.000đ.',
+  'may-thoi-gian': 'Nếu kỳ nào cũng mua đúng vé này thì đã trúng gì, tốn bao nhiêu, nhận lại bao nhiêu? Jackpot và Độc đắc thay đổi theo kỳ nên chỉ đếm số lần trúng, không cộng vào lãi lỗ.',
+};
+function vlTierValue(game, id, res) {
+  const tier = VL_GAMES[game].tiers.find(x => x[0] === id); if (!tier || tier[2] == null) return null;
+  return tier[2] * (res.double && !['db', 'pdb'].includes(id) ? 2 : 1);
+}
+function vlParse(game, line) {
+  const G = VL_GAMES[game]; const s = String(line || '').trim(); if (!s) return null;
+  if (G.kind === 'd3') {
+    const toks = s.match(/\d+/g) || [];
+    if (toks.length !== G.count || toks.some(x => x.length !== 3)) return {err: G.count === 1 ? 'Vé Max 3D là một số có đúng 3 chữ số' : 'Vé Max 3D Pro gồm hai số, mỗi số đúng 3 chữ số'};
+    return {n: toks};
+  }
+  let main = s, sp = null;
+  if (s.includes('+')) { [main, sp] = s.split('+'); }
+  let nums = (main.match(/\d+/g) || []).map(Number);
+  if (G.smax && sp == null && nums.length === G.k + 1) sp = String(nums.pop());
+  const set = [...new Set(nums)];
+  if (set.length !== G.k || nums.length !== G.k || nums.some(x => x < 1 || x > G.max)) return {err: G.name + ': cần ' + G.k + ' số khác nhau từ 01 đến ' + G.max};
+  const out = {n: nums.sort((a, b) => a - b)};
+  if (G.smax) {
+    const sv = Number((String(sp || '').match(/\d+/) || [])[0]);
+    if (!(sv >= 1 && sv <= G.smax)) return {err: 'Lotto 5/35: thêm số đặc biệt từ 01 đến 12, ví dụ "05 12 23 30 35 + 08"'};
+    out.s = sv;
+  }
+  return out;
+}
+const pad2 = x => String(x).padStart(2, '0');
+function vlTicketText(game, t) { const G = VL_GAMES[game]; return G.kind === 'd3' ? t.n.join(' ') : t.n.map(pad2).join(' ') + (t.s ? ' + ' + pad2(t.s) : ''); }
+function vlDrawLabel(game, d) { return 'Kỳ ' + String(d.id).padStart(5, '0') + ', ' + fullDate(d.t); }
+function vlDrawHtml(game, d, res) {
+  const G = VL_GAMES[game];
+  if (G.kind === 'pick') {
+    const hit = new Set(res ? res.hits : []);
+    return '<div class="balls">' + d.n.map(x => '<span class="ball' + (hit.has(x) ? ' hit' : '') + '">' + pad2(x) + '</span>').join('') +
+      (d.s ? '<span class="plus">+</span><span class="ball sp' + (res && res.sHit ? ' hit' : '') + '">' + pad2(d.s) + '</span>' : '') + '</div>';
+  }
+  const hit = new Set(res ? res.hits : []);
+  const names = game === 'max3dpro' ? ['Đặc biệt', 'Giải Nhất', 'Giải Nhì', 'Giải Ba'] : ['Nhóm 2 số (1 triệu)', 'Nhóm 4 số (350.000đ)', 'Nhóm 6 số (210.000đ)', 'Nhóm 8 số (100.000đ)'];
+  return '<table class="prize m3"><tbody>' + M3_GROUPS.map(([g], i) => '<tr><th>' + names[i] + '</th><td>' +
+    d.g[g].map(x => '<span class="m3n' + (hit.has(x) ? ' hit' : '') + '">' + x + '</span>').join('') + '</td></tr>').join('') + '</tbody></table>';
+}
+const fmtVnd = v => v == null ? '–' : v.toLocaleString('vi-VN') + 'đ';
+
+const VL_TOOLS = {};
+VL_TOOLS['do-ve'] = function (pane, game) {
+  const G = VL_GAMES[game], L = VL[game];
+  if (!L.length) { pane.innerHTML = '<div class="card empty"><h2>Chưa có dữ liệu ' + G.name + '</h2><p>Chưa có kết quả ' + G.name + ' để dò.</p></div>'; pane.dataset.g = ''; return; }
+  if (pane.dataset.g !== game) {
+    pane.dataset.g = game;
+    const opts = L.slice(-120).reverse().map((d, i) => '<option value="' + (L.length - 1 - i) + '">' + vlDrawLabel(game, d) + '</option>').join('');
+    pane.innerHTML = '<div class="card"><div class="cols"><div><label class="fld" for="vdvDraw">Kỳ quay</label><select id="vdvDraw">' + opts + '</select>' +
+      '<label class="fld" for="vdvLines" style="margin-top:12px">Vé của bạn (mỗi dòng một vé)</label><textarea id="vdvLines" rows="4" placeholder="' + G.ph + '"></textarea>' +
+      '<p class="hint">' + (G.kind === 'd3' ? (G.count === 1 ? 'Mỗi vé là một số 3 chữ số.' : 'Mỗi vé gồm hai số 3 chữ số, viết cách nhau.') : (G.smax ? '5 số chính, dấu + rồi số đặc biệt.' : '6 số từ 01 đến 45.')) + '</p>' +
+      '<button class="btn" type="button" id="vdvGo">Dò vé</button></div><div id="vdvResult"></div></div><div id="vdvOut"></div></div>';
+    const show = () => { const d = L[+$('#vdvDraw').value]; $('#vdvResult').innerHTML = '<p class="fld" style="margin:0 0 8px">Kết quả ' + esc(vlDrawLabel(game, d)) + '</p>' + vlDrawHtml(game, d); };
+    $('#vdvDraw').addEventListener('change', () => { show(); $('#vdvOut').innerHTML = ''; });
+    $('#vdvGo').addEventListener('click', () => {
+      const d = L[+$('#vdvDraw').value]; let lastRes = null;
+      const rows = $('#vdvLines').value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 30).map(line => {
+        const t = vlParse(game, line);
+        if (t.err) return '<tr><td class="mono">' + esc(line) + '</td><td colspan="2" class="bad">' + esc(t.err) + '</td></tr>';
+        const r = G.check(t, d); lastRes = r;
+        const prizes = r.wins.map(id => { const v = vlTierValue(game, id, r); return '<b>' + esc(G.tiers.find(x => x[0] === id)[1]) + '</b>' + (v == null ? ' (giá trị theo kỳ)' : ': ' + fmtVnd(v)); });
+        const total = r.wins.reduce((s, id) => s + (vlTierValue(game, id, r) || 0), 0);
+        return '<tr><td class="mono">' + esc(vlTicketText(game, t)) + '</td><td>' + (prizes.length ? prizes.join('<br>') : '<span class="muted">Không trúng</span>') +
+          '</td><td class="mono">' + (prizes.length ? fmtVnd(total) : '0đ') + '</td></tr>';
+      });
+      $('#vdvResult').innerHTML = '<p class="fld" style="margin:0 0 8px">Kết quả ' + esc(vlDrawLabel(game, d)) + '</p>' + vlDrawHtml(game, d, lastRes);
+      $('#vdvOut').innerHTML = rows.length ? '<div class="tw" style="margin-top:14px"><table class="list"><thead><tr><th>Vé</th><th>Giải</th><th>Tiền thưởng</th></tr></thead><tbody>' + rows.join('') +
+        '</tbody></table></div><p class="hint">Giá trị theo thể lệ của Vietlott cho vé 10.000đ, chưa trừ thuế thu nhập. Hãy đối chiếu với Vietlott trước khi lĩnh thưởng.</p>' : '<p class="hint">Hãy nhập ít nhất một vé.</p>';
+    });
+    show();
+  }
+};
+VL_TOOLS['may-thoi-gian'] = function (pane, game) {
+  const G = VL_GAMES[game], L = VL[game];
+  if (!L.length) { pane.innerHTML = '<div class="card empty"><h2>Chưa có dữ liệu ' + G.name + '</h2><p>Chưa có kết quả ' + G.name + ' để tính.</p></div>'; pane.dataset.g = ''; return; }
+  if (pane.dataset.g === game) return;
+  pane.dataset.g = game;
+  const y0 = new Date(L[0].t).getUTCFullYear(), y1 = new Date(L[L.length - 1].t).getUTCFullYear();
+  let years = ''; for (let y = y0; y <= y1; y++) years += '<option value="' + y + '">' + (y === y0 ? 'Kỳ đầu tiên (' + dmy(L[0].t) + ')' : 'Đầu năm ' + y) + '</option>';
+  pane.innerHTML = '<div class="card"><div class="cols"><div><label class="fld" for="vtmNum">Vé của bạn</label><input id="vtmNum" placeholder="' + G.ph + '" autocomplete="off">' +
+    '<label class="fld" for="vtmFrom" style="margin-top:12px">Mua đều từ</label><select id="vtmFrom">' + years + '</select>' +
+    '<p style="margin-top:12px"><button class="btn" type="button" id="vtmGo">Tính lời lỗ</button></p><p class="msg" id="vtmMsg"></p></div>' +
+    '<div id="vtmSum"></div></div><div id="vtmOut"></div></div>';
+  $('#vtmGo').addEventListener('click', () => {
+    const t = vlParse(game, $('#vtmNum').value);
+    if (!t || t.err) { $('#vtmMsg').textContent = t ? t.err : 'Hãy nhập vé.'; $('#vtmMsg').className = 'msg bad'; return; }
+    $('#vtmMsg').textContent = '';
+    const from = Date.UTC(+$('#vtmFrom').value, 0, 1), draws = L.filter(d => d.t >= from || +$('#vtmFrom').value === y0);
+    const count = {}, big = [], pts = []; let won = 0, cost = 0;
+    for (const d of draws) {
+      const r = G.check(t, d); cost += 1e4; let v = 0;
+      for (const id of r.wins) { count[id] = (count[id] || 0) + 1; v += vlTierValue(game, id, r) || 0; }
+      won += v; pts.push(won - cost);
+      if (r.wins.length) big.push({d, r, v});
+    }
+    const net = won - cost;
+    $('#vtmSum').innerHTML = '<div class="tm-stats"><div><span>Số kỳ đã mua</span><b>' + draws.length.toLocaleString('vi-VN') + '</b></div>' +
+      '<div><span>Tiền vé</span><b>' + fmtVnd(cost) + '</b></div><div><span>Tiền thưởng</span><b>' + fmtVnd(won) + '</b></div>' +
+      '<div><span>' + (net >= 0 ? 'Lời' : 'Lỗ') + '</span><b class="' + (net >= 0 ? 'good' : 'bad') + '">' + fmtVnd(Math.abs(net)) + '</b></div>' +
+      '<div><span>Hoàn vốn</span><b>' + (cost ? Math.round(won / cost * 100) : 0) + '%</b></div></div>';
+    const tierRows = G.tiers.map(([id, n, v]) => '<tr><td>' + esc(n) + '</td><td>' + (count[id] || 0) + '</td><td>' + (v == null ? 'theo kỳ' : fmtVnd(v)) + '</td></tr>').join('');
+    const W = 600, H = 140, mn = Math.min(0, ...pts), mx = Math.max(0, ...pts), Y = v => H - 8 - (v - mn) / ((mx - mn) || 1) * (H - 16);
+    const line = pts.map((v, i) => (i / Math.max(1, pts.length - 1) * W).toFixed(1) + ',' + Y(v).toFixed(1)).join(' ');
+    big.sort((a, b) => b.v - a.v || b.d.t - a.d.t);
+    $('#vtmOut').innerHTML = '<div class="cols" style="margin-top:14px"><div><h3>Số lần trúng mỗi hạng</h3><div class="tw"><table class="list"><thead><tr><th>Hạng giải</th><th>Số lần</th><th>Mỗi lần</th></tr></thead><tbody>' + tierRows + '</tbody></table></div></div>' +
+      '<div><h3>Lời lỗ cộng dồn</h3><svg class="pl" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Lời lỗ cộng dồn theo thời gian"><line x1="0" x2="' + W + '" y1="' + Y(0) + '" y2="' + Y(0) + '" stroke="var(--line)" stroke-dasharray="4 4"/><polyline points="' + line + '" fill="none" stroke="' + (net >= 0 ? 'var(--good)' : 'var(--red)') + '" stroke-width="2.5"/></svg>' +
+      '<h3>Những lần trúng</h3>' + (big.length ? '<ul class="wins">' + big.slice(0, 12).map(x => '<li><span>' + esc(vlDrawLabel(game, x.d)) + '</span><b>' + x.r.wins.map(id => esc(G.tiers.find(y => y[0] === id)[1].replace(/ \(.*$/, ''))).join(' + ') + (x.v ? ', ' + fmtVnd(x.v) : '') + '</b></li>').join('') + '</ul>' : '<p class="hint">Chưa trúng lần nào.</p>') + '</div></div>' +
+      '<p class="hint">Tính trên ' + draws.length + ' kỳ có dữ liệu, mỗi kỳ một vé 10.000đ. Chưa trừ thuế thu nhập với giải lớn.</p>';
+  });
+};
+function vlLoad(raw) {
+  // raw: {mega645: [[id, ngày (số ngày từ 01/08/2017) hoặc 'yyyy-mm-dd', ...]]}
+  const T = x => typeof x === 'number' ? BASE_UTC + x * DAY : Date.parse(x + 'T00:00:00Z');
+  for (const g of ['mega645', 'lotto535']) VL[g] = (raw[g] || []).map(r => g === 'lotto535'
+    ? {id: r[0], t: T(r[1]), n: r.slice(2, 7).map(Number).sort((a, b) => a - b), s: Number(r[7])}
+    : {id: r[0], t: T(r[1]), n: r.slice(2, 8).map(Number).sort((a, b) => a - b)});
+  for (const g of ['max3d', 'max3dpro']) VL[g] = (raw[g] || []).map(r => {
+    const s = String(r[2]), out = {}; let i = 0;
+    for (const [k, c] of M3_GROUPS) { out[k] = []; for (let j = 0; j < c; j++) { out[k].push(s.slice(i, i + 3)); i += 3; } }
+    return {id: r[0], t: T(r[1]), g: out};
+  });
+  for (const g in VL) VL[g].sort((a, b) => a.t - b.t || a.id - b.id);
+}
+if (typeof VL_RAW !== 'undefined') vlLoad(VL_RAW);
 
 
 // ===================== GIAO DIEN V2: CHUYEN DONG =====================
@@ -2318,7 +2620,7 @@ function hubRender() {
   for (let h = 0; h < 10; h++) {
     lt += '<tr><th>' + h + '</th>' + draws.map(d => {
       const tails = d.lo.filter(x => Math.floor(x / 10) === h).sort((a, b) => a - b);
-      return '<td>' + (tails.length ? tails.map(x => q2 === x ? '<span class="h">' + (x % 10) + '</span>' : String(x % 10)).join(', ') : '–') + '</td>';
+      return '<td>' + (tails.length ? '<span class="balls">' + tails.map(x => '<span class="ball xs' + (q2 === x ? ' hit' : '') + '">' + (x % 10) + '</span>').join('') + '</span>' : '–') + '</td>';
     }).join('') + '</tr>';
   }
   $('#hubLoto').innerHTML = lt + '</tbody></table></div></div>';
@@ -2357,8 +2659,8 @@ function hubSched() {
   }).join('') || '<p class="hint">Không có kỳ quay.</p>';
   const rg = HUB.region === 'power' ? LAST_RG : HUB.region;
   $('#hubLinks').innerHTML = HUB.region === 'power'
-    ? '<a href="#thong-ke">Thống kê Power 6/55</a><a href="#dau-truong">Đấu trường dự đoán</a><a href="#may-thoi-gian">Máy thời gian</a><a href="#tao-so">Tạo bộ số</a>'
-    : '<a href="#' + rg + '-ket-qua">Tra cứu kết quả theo đài</a><a href="#' + rg + '-thong-ke">Thống kê lô tô, lô gan</a><a href="#' + rg + '-du-bao">Dự báo tham khảo</a><a href="#' + rg + '-danh-gia">Mô hình dự báo hoạt động ra sao</a>';
+    ? '<a href="#thong-ke">Thống kê Power 6/55</a><a href="#may-thoi-gian">Máy thời gian</a><a href="#tao-so">Tạo bộ số</a>'
+    : '<a href="#' + rg + '-ket-qua">Tra cứu kết quả theo đài</a><a href="#' + rg + '-thong-ke">Thống kê lô tô, lô gan</a><a href="#' + rg + '-phan-tich">Phân tích mô hình</a><a href="#' + rg + '-danh-gia">Hiệu quả các mô hình ra sao</a>';
 }
 function hubSetDate(t) { HUB.date = isoDate(t); hubRender(); }
 renderers['kq'] = function () {
@@ -2386,8 +2688,11 @@ $('#hubTicket').addEventListener('input', () => { if (!$('#hubTicket').value) { 
 
 // ===================== CONG CU CHO MOI LOAI XO SO =====================
 // Một ô chọn loại xổ số dùng chung; chọn loại nào thì công cụ chạy theo luật loại đó.
-const TOOL = {type: 'power', prov: {mn: 'tp-hcm', mt: 'da-nang'}};
-const TOOL_TYPES = [['power', 'Power 6/55'], ['mb', 'Miền Bắc'], ['mn', 'Miền Nam'], ['mt', 'Miền Trung']];
+const TOOL = {type: 'mb', prov: {mn: 'tp-hcm', mt: 'da-nang'}};  // mục Tiện ích mặc định Miền Bắc
+const TOOL_TYPES = [['power', 'Power 6/55'], ['mb', 'Miền Bắc'], ['mn', 'Miền Nam'], ['mt', 'Miền Trung'],
+  ['mega645', 'Mega 6/45', 1], ['lotto535', 'Lotto 5/35', 1], ['max3d', 'Max 3D', 1], ['max3dpro', 'Max 3D Pro', 1]];
+const isVL = t => t in VL_GAMES_LIST;
+const VL_GAMES_LIST = {mega645: 1, lotto535: 1, max3d: 1, max3dpro: 1};
 const TOOL_VIEWS = ['may-thoi-gian', 'do-ve', 'tao-so', 'so-du-doan', 'dau-truong'];
 // Giá trị giải cho vé 10.000đ (tham khảo theo thể lệ phổ biến; hãy đối chiếu với công ty xổ số).
 const PRIZE_VND = {
@@ -2398,7 +2703,7 @@ const PRIZE_VND = {
 const PRIZE_LABEL = {db: 'Đặc biệt', g1: 'Giải Nhất', g2: 'Giải Nhì', g3: 'Giải Ba', g4: 'Giải Tư', g5: 'Giải Năm', g6: 'Giải Sáu', g7: 'Giải Bảy', g8: 'Giải Tám'};
 const ticketLen = r => r === 'mb' ? 5 : 6;
 const XS_LEADS = {
-  'may-thoi-gian': 'Nhập dãy số vé bạn hay mua và chọn đài. LuckyVision tính nếu kỳ nào cũng mua đúng tờ vé đó thì đã trúng gì, tốn bao nhiêu, nhận lại bao nhiêu.',
+  'may-thoi-gian': 'Nhập dãy số vé bạn hay mua và chọn đài. XS247 tính nếu kỳ nào cũng mua đúng tờ vé đó thì đã trúng gì, tốn bao nhiêu, nhận lại bao nhiêu.',
   'do-ve': 'Nhập số trên vé (mỗi dòng một vé), chọn ngày và đài để biết vé trúng giải nào.',
   'tao-so': 'Gợi ý dãy số vé theo ý thích của bạn. Với vé số kiến thiết, giải thưởng không bị chia nên dãy số nào cũng có cơ hội và giá trị như nhau.',
   'so-du-doan': 'Khóa tối đa 5 số lô (2 số cuối) cho kỳ quay tới của một đài, trước giờ quay. Sau khi có kết quả, hệ thống tự chấm số lô trùng.',
@@ -2421,22 +2726,47 @@ function toolInit() {
     const sec = $('.view[data-view="' + v + '"]'); if (!sec || sec.querySelector('.tool-type')) return;
     const lead = sec.querySelector('p.lead'); if (lead) PW_LEADS[v] = lead.innerHTML;
     const bar = document.createElement('div'); bar.className = 'tool-type card';
-    bar.innerHTML = '<div class="tool-type-in"><span class="fld" style="margin:0">Loại xổ số</span><div class="seg tool-seg" role="group" aria-label="Loại xổ số">' +
-      TOOL_TYPES.map(([id, n]) => '<button type="button" data-t="' + id + '">' + n + '</button>').join('') + '</div>' +
+    // Một ô chọn gọn (nhóm Vietlott / Xổ số kiến thiết) thay cho hàng 9 nút
+    const types = TOOL_TYPES.filter(([id, n, vl]) => !vl || ['do-ve', 'may-thoi-gian'].includes(v));
+    const opt = ([id, n]) => '<option value="' + id + '">' + n + '</option>';
+    const vlTypes = types.filter(([id]) => id === 'power' || isVL(id)), xsTypes = types.filter(([id]) => !(id === 'power' || isVL(id)));
+    bar.innerHTML = '<div class="tool-type-in"><label class="fld" style="margin:0" for="tt-' + v + '">Loại xổ số</label>' +
+      '<select class="tool-type-sel" id="tt-' + v + '">' +
+      (vlTypes.length ? '<optgroup label="Vietlott">' + vlTypes.map(opt).join('') + '</optgroup>' : '') +
+      (xsTypes.length ? '<optgroup label="Xổ số kiến thiết">' + xsTypes.map(opt).join('') + '</optgroup>' : '') + '</select>' +
       '<label class="tool-prov" hidden><span class="sr">Tỉnh/đài</span><select class="tool-prov-sel"></select></label></div>';
     const pw = document.createElement('div'); pw.className = 'pw-pane';
     const xs = document.createElement('div'); xs.className = 'xs-pane'; xs.hidden = true;
+    const vlp = document.createElement('div'); vlp.className = 'vl-pane'; vlp.hidden = true;
     const kids = Array.from(sec.children).filter(c => c.tagName !== 'H1' && c !== lead);
     kids.forEach(c => pw.appendChild(c));
-    (lead || sec.querySelector('h1')).after(bar); bar.after(pw); pw.after(xs);
-    bar.querySelector('.tool-seg').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) { TOOL.type = b.dataset.t; toolRender(v); } });
+    (lead || sec.querySelector('h1')).after(bar); bar.after(pw); pw.after(xs); xs.after(vlp);
+    bar.querySelector('.tool-type-sel').addEventListener('change', e => { TOOL.type = e.target.value; toolRender(v); });
     bar.querySelector('.tool-prov-sel').addEventListener('change', e => { TOOL.prov[TOOL.type] = e.target.value; toolRender(v); });
   });
 }
 function toolRender(v) {
-  const sec = $('.view[data-view="' + v + '"]'); const t = TOOL.type;
+  const sec = $('.view[data-view="' + v + '"]');
+  if (isVL(TOOL.type) && !['do-ve', 'may-thoi-gian'].includes(v)) TOOL.type = 'power';
+  const t = TOOL.type;
+  // Giữ thanh menu và hash đồng bộ với ô "Loại xổ số" (đổi bằng replaceState, không kích hoạt hashchange)
+  if (current === v || (current && current.endsWith('-' + v))) {
+    const want = isVL(t) ? t + '-' + v : (t === 'power' && ['may-thoi-gian','do-ve','tao-so'].includes(v)) ? 'power655-' + v : v;
+    if (current !== want && history.replaceState) { history.replaceState(null, '', '#' + want); current = want; }
+  }
+  renderNav();
+  if (isVL(t)) {
+    document.body.dataset.region = t; CUR_REGION = 'power'; renderTop();
+    { const ts = sec.querySelector('.tool-type-sel'); if (ts) ts.value = t; }
+    sec.querySelector('.tool-prov').hidden = true;
+    sec.querySelector('.pw-pane').hidden = true; sec.querySelector('.xs-pane').hidden = true;
+    const vp = sec.querySelector('.vl-pane'); vp.hidden = false;
+    const lead = sec.querySelector('p.lead'); if (lead) lead.textContent = VL_LEADS[v];
+    VL_TOOLS[v](vp, t); return;
+  }
+  { const vp = sec.querySelector('.vl-pane'); if (vp) vp.hidden = true; }
   document.body.dataset.region = t; CUR_REGION = t; renderTop();
-  sec.querySelectorAll('.tool-seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === t)));
+  { const ts = sec.querySelector('.tool-type-sel'); if (ts) ts.value = t; }
   const provWrap = sec.querySelector('.tool-prov'), sel = sec.querySelector('.tool-prov-sel');
   const needProv = t === 'mn' || t === 'mt';
   provWrap.hidden = !needProv;
@@ -2490,7 +2820,7 @@ function xtmRun() {
   const poly = pts.map((v, i) => (i / (pts.length - 1 || 1) * W).toFixed(1) + ',' + (H - (v - mn) / sp * H).toFixed(1)).join(' ');
   const tierTxt = REG[r].display.slice().reverse().filter(k => tiers[k]).map(k => PRIZE_LABEL[k] + ' ' + tiers[k] + ' lần').join(', ') || 'chưa trúng giải nào';
   const where = p === 'all' ? 'mỗi đài của ' + rn(r) : provName(r, p);
-  const share = 'Nếu mua vé số ' + ticket + ' ở ' + where + ' mỗi kỳ từ ' + dmy(D[0].t) + ', tôi đã chi ' + vnd(cost) + ' và nhận ' + vnd(win) + ' (' + tierTxt + '). Thử số của bạn trên LuckyVision.';
+  const share = 'Nếu mua vé số ' + ticket + ' ở ' + where + ' mỗi kỳ từ ' + dmy(D[0].t) + ', tôi đã chi ' + vnd(cost) + ' và nhận ' + vnd(win) + ' (' + tierTxt + '). Thử số của bạn trên XS247.';
   $('#xtmOut').innerHTML = '<div class="cols"><div class="ticket"><div class="t-head"><b>Vé ' + ticket + '</b><span>' + esc(where) + ', ' + intf(D.length) + ' kỳ từ ' + dmy(D[0].t) + '</span></div>' +
     '<div class="cols" style="gap:10px"><div><div class="hint" style="margin:0">Tiền vé</div><div class="stat-big">' + vnd(cost) + '</div></div><div><div class="hint" style="margin:0">Tiền thưởng</div><div class="stat-big">' + vnd(win) + '</div></div></div>' +
     '<p style="margin:14px 0 4px;font-weight:700;color:' + (pl >= 0 ? 'var(--good)' : 'var(--bad)') + '">' + (pl >= 0 ? 'Lời ' : 'Lỗ ') + vnd(Math.abs(pl)) + ' (' + dec(win / cost * 100) + '% số tiền quay về)</p>' +
@@ -2622,11 +2952,12 @@ XS_TOOLS['so-du-doan'] = function (pane, r, p) {
     if (Date.now() >= nd.inst) { $('#xsdMsg').className = 'msg bad'; $('#xsdMsg').textContent = 'Đã quá giờ khóa của kỳ này.'; return; }
     const list = (MYDOC.lo[key] || []).slice();
     if (list.length >= 3) { $('#xsdMsg').className = 'msg bad'; $('#xsdMsg').textContent = 'Mỗi kỳ khóa tối đa 3 lần.'; return; }
+    const restore = lvBusy($('#xsdLock'), 'Đang lưu…'); if (!restore) return;
     list.push({n: xsPick.map(pad), t: Date.now()});
     const next = Object.assign({}, MYDOC, {lo: Object.assign({}, MYDOC.lo, {[key]: list})});
     try { if (sdMode === 'db') await DB.doc('predictions/' + MYID).set(next); MYDOC = next; if (sdMode !== 'db') saveLocal(); xsPick = []; XS_TOOLS['so-du-doan'](pane, r, p);
       $('#xsdMsg').className = 'msg good'; $('#xsdMsg').textContent = 'Đã khóa vào sổ.'; }
-    catch (err) { $('#xsdMsg').className = 'msg bad'; $('#xsdMsg').textContent = 'Chưa lưu được: ' + (err && err.message ? err.message : 'lỗi không rõ'); }
+    catch (err) { restore(); $('#xsdMsg').className = 'msg bad'; $('#xsdMsg').textContent = 'Chưa lưu được: ' + lvErr(err); }
   });
 };
 
@@ -2678,7 +3009,7 @@ document.addEventListener('click', e => {
   if (r) LAST_RG = r.getAttribute('href').slice(1, 3);
   if (a) TOOL.type = 'power';
   const c = e.target.closest('#tabs a[href="#may-thoi-gian"]');
-  if (c && TOOL.type === 'power') TOOL.type = (typeof LAST_RG !== 'undefined' ? LAST_RG : 'mb');
+  if (c && (TOOL.type === 'power' || isVL(TOOL.type))) TOOL.type = (typeof LAST_RG !== 'undefined' ? LAST_RG : 'mb');
 }, true);
 
 
@@ -2815,6 +3146,7 @@ function lvApply(d) {
   d.rg.mb.forEach(([iso, dg]) => add('mb', 'mb', iso, dg));
   for (const r of ['mn', 'mt']) for (const p in (d.rg[r] || {})) d.rg[r][p].forEach(([iso, dg]) => add(r, p, iso, dg));
   RG_DB = pub; buildRegional();
+  if (d.vl && typeof vlLoad === 'function') vlLoad(d.vl);
   // Miền chưa có kết quả nào trên máy chủ: hiện thông báo thay vì trang trống
   for (const r of ['mb', 'mn', 'mt']) {
     const has = Object.values(RGD[r] || {}).some(a => a.length);
@@ -2825,7 +3157,7 @@ function lvApply(d) {
   lvPowerGuard();
   LV_SRV.at = d.generated_at;
   const f = $('#footData');
-  if (f) f.textContent = 'Kết quả lấy từ máy chủ LuckyVision (đối chiếu nhiều nguồn trước khi công bố), cập nhật lúc ' +
+  if (f) f.textContent = 'Kết quả lấy từ máy chủ XS247 (đối chiếu nhiều nguồn trước khi công bố), cập nhật lúc ' +
     new Date(d.generated_at).toLocaleString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh'}) + '. Hãy đối chiếu với công ty xổ số trước khi lĩnh thưởng.';
 }
 async function lvFetch() {
@@ -2833,7 +3165,17 @@ async function lvFetch() {
   if (!r.ok) throw new Error('Máy chủ trả lỗi ' + r.status);
   lvApply(await r.json());
 }
+// Phát hiện quản trị viên: các mục Đấu trường và Sổ dự đoán chỉ mở khi /v1/auth/me trả về role === 'admin'.
+async function lvAdmin() {
+  try {
+    const r = await fetch('/v1/auth/me', {credentials: 'same-origin', cache: 'no-cache'});
+    if (r.ok) { const d = await r.json(); IS_ADMIN = !!(d && d.user && d.user.role === 'admin'); }
+  } catch (e) { IS_ADMIN = false; }
+  if (!IS_ADMIN && ADMIN_VIEWS.includes((location.hash || '').replace('#', '')) && history.replaceState) history.replaceState(null, '', '#kq');
+  try { route(); } catch (e) {}
+}
 async function lvBoard() {
+  if (!IS_ADMIN) return;
   try {
     const d = await (await fetch('/v1/predictions/board', {credentials: 'same-origin', cache: 'no-cache'})).json();
     BOARD = (d.items || []).map(x => ({id: x.id, name: x.name, data: x.data || {}}));
@@ -2868,7 +3210,7 @@ function lvBoot(start) {
   const go = () => lvFetch().then(() => {
     ov.remove();
     try { start(); } catch (e) { console.error('Lỗi khi hiển thị trang', e); }
-    lvAccount();
+    lvAdmin().then(lvAccount);
     // Tự cập nhật mỗi 5 phút khi trang đang mở
     setInterval(() => { if (document.visibilityState === 'visible') lvFetch().then(() => { if (typeof rerender === 'function') rerender(); }).catch(() => {}); }, 5 * 60e3);
   }).catch(err => {
@@ -2916,5 +3258,44 @@ postRoute();
 
 </script>
 <script src="/assets/lv-track.js" defer></script>
+<script src="/assets/lv-account.js" defer></script>
+<script>
+/* Tự tách số khi gõ vé Vietlott: "010203" -> "01 02 03" (Max 3D: nhóm 3 chữ số theo gợi ý của ô). */
+(() => {
+  const IDS = ['tmNums', 'dvLines', 'vdvLines', 'vtmNum'], NL = String.fromCharCode(10);
+  const size = el => { const t = (el.getAttribute('placeholder') || '').match(/\d+/); return t && t[0].length === 3 ? 3 : 2; };
+  // Số lượng số tối đa trên một vé (một dòng): Máy thời gian Power 6 số; dò vé Power cho phép vé bao tới 18 số;
+  // các ô theo từng trò lấy đúng số lượng trong ví dụ của ô (Mega 6, Lotto 5 + 1 số đặc biệt, Max 3D 1, Max 3D Pro 2).
+  const maxNums = el => el.id === 'tmNums' ? 6 : el.id === 'dvLines' ? 18
+    : (((el.getAttribute('placeholder') || '').split(NL)[0].match(/\d+/g)) || []).length || 6;
+  const cap = (v, n, k) => v.split(NL).map(line => {
+    let left = n * k;   // giữ tối đa k số (n chữ số mỗi số), bỏ phần gõ dư
+    return line.replace(/\d/g, d => (left-- > 0 ? d : ''));
+  }).join(NL);
+  const fmt = (v, n) => v.split(NL).map(line => line.replace(/\d+/g, run => {
+    if (run.length <= n) return run;
+    const parts = []; for (let i = 0; i < run.length; i += n) parts.push(run.slice(i, i + n)); return parts.join(' ');
+  })).join(NL);
+  document.addEventListener('input', e => {
+    const el = e.target; if (!el || !IDS.includes(el.id)) return;
+    if (e.inputType && !/^insert/.test(e.inputType)) return;          // không can thiệp khi xóa
+    if (el.selectionStart !== el.value.length) return;                // chỉ khi đang gõ ở cuối, tránh nhảy con trỏ
+    const n = size(el), k = maxNums(el), before = el.value;
+    let v = fmt(cap(el.value, n, k), n);
+    const last = v.split(NL).pop(), m = last.match(/(\d+)$/), full = (last.match(/\d/g) || []).length >= n * k;
+    if (m && m[1].length === n && !full && e.data && /\d/.test(e.data)) v += ' ';   // đủ một số thì tự thêm khoảng cách
+    if (cap(before, n, k) !== before) {   // gõ dư: báo nhẹ bằng viền đỏ trong giây lát
+      el.style.borderColor = 'var(--bad, #C0392B)'; clearTimeout(el._capT);
+      el._capT = setTimeout(() => { el.style.borderColor = ''; }, 700);
+      el.title = 'Vé này tối đa ' + k + ' số';
+    }
+    if (v !== el.value) { el.value = v; el.setSelectionRange(v.length, v.length); }
+  });
+  document.addEventListener('blur', e => {
+    const el = e.target; if (!el || !IDS.includes(el.id)) return;
+    const n = size(el), v = fmt(cap(el.value, n, maxNums(el)), n).replace(/[ \t]+$/gm, ''); if (v !== el.value) el.value = v;
+  }, true);
+})();
+</script>
 </body>
 </html>

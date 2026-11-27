@@ -1,0 +1,2 @@
+{% if picker %}<form class="vl-pick" action="" onsubmit="return false"><label for="vlPick">Trò chơi</label>
+<select id="vlPick" onchange="location.href=this.value">{% for href, name, on in picker %}<option value="{{ href }}"{% if on %} selected{% endif %}>{{ name }}</option>{% endfor %}</select></form>{% endif %}

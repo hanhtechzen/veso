@@ -1,4 +1,4 @@
-from luckyvision.domain.reconcile import Candidate, diff, reconcile
+from xs247.domain.reconcile import Candidate, diff, reconcile
 
 A = {"db": ["111111"], "g8": ["12"]}
 B = {"db": ["111112"], "g8": ["12"]}
@@ -35,6 +35,31 @@ def test_latest_per_source_counts():
 
 def test_manual_not_counted_as_source():
     assert reconcile([c(1, "a", A), c(2, "manual", A, prio=1)]).outcome == "waiting"
+
+
+def test_min_sources_one_two_differing_groups_is_conflict():
+    # Với min_sources=1, hai nguồn đầy đủ nhưng khác nhau KHÔNG được tự công bố bản nào
+    d = reconcile([c(1, "a", A), c(2, "b", B, prio=20)], min_sources=1)
+    assert d.outcome == "conflict"
+    assert d.candidate_id is None
+    assert d.differences == [{"prize": "db", "position": 0, "a": "111111", "b": "111112"}]
+
+
+def test_min_sources_one_single_source_is_verified():
+    d = reconcile([c(1, "a", A)], min_sources=1)
+    assert d.outcome == "verified" and d.candidate_id == 1 and d.sources == ["a"]
+
+
+def test_min_sources_one_agreeing_sources_verified():
+    d = reconcile([c(1, "a", A, prio=20), c(2, "b", A, prio=10)], min_sources=1)
+    assert d.outcome == "verified" and d.candidate_id == 2 and d.sources == ["a", "b"]
+
+
+def test_manual_candidate_excluded_even_with_min_sources_one():
+    assert reconcile([c(1, "manual", A, prio=1)], min_sources=1).outcome == "waiting"
+    # bản nhập tay khác nội dung không tạo xung đột
+    d = reconcile([c(1, "a", A), c(2, "manual", B, prio=1)], min_sources=1)
+    assert d.outcome == "verified" and d.candidate_id == 1 and d.sources == ["a"]
 
 
 def test_diff_handles_length():

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chơi thử miễn phí | XS247</title>
+<meta property="og:site_name" content="XS247">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/be-vietnam-pro-vietnamese-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css">
+<script src="/assets/lv-loading.js"></script>
+<link rel="stylesheet" href="/assets/lv-header.css">
+<style>
+:root{--bg:#EEF1F6;--surface:#fff;--surface-2:#F4F6F9;--ink:#141B2D;--muted:#5B6578;--line:#E0E5EC;--red:#D12A2A;--good:#1F7A4C;--gold:#F2B01E;--focus:#2356C9;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0A0F1C;--surface:#121A2B;--surface-2:#1A2336;--ink:#E8ECF4;--muted:#98A3B9;--line:#263049;--good:#5CC48D;--focus:#7FA6FF;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.55 "Be Vietnam Pro",system-ui,sans-serif}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+[hidden]{display:none!important}
+main{max-width:860px;margin:0 auto;padding:22px 16px 48px}
+h1{font-size:1.7rem;letter-spacing:-.02em;margin:0 0 4px}
+h2{font-size:1.1rem;margin:0 0 8px}
+h3{font-size:1rem;margin:16px 0 8px}
+.lead{color:var(--muted);margin:0 0 16px;max-width:72ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+.notice{background:#FFF4D6;border:1px solid var(--gold);border-radius:12px;padding:12px 14px;font-size:.95rem;color:#5c4400;margin-bottom:16px;font-weight:600}
+@media (prefers-color-scheme:dark){.notice{background:#3A311B;color:#F5DFA0}}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.row>div{flex:1;min-width:200px}
+label,.lbl{display:block;font-weight:600;font-size:.86rem;margin-bottom:5px}
+select,input{padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface-2);width:100%}
+.btn{border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:700;padding:10px 18px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.sec{background:var(--surface-2);color:var(--ink);border:1.5px solid var(--line)}
+.btn.sm{padding:5px 12px;font-size:.85rem}
+.btn[disabled]{opacity:.5;cursor:wait}
+.counter{display:inline-block;font-weight:700;background:var(--surface-2);border-radius:999px;padding:4px 12px;font-size:.9rem}
+.msg{min-height:1.3em;font-size:.92rem;color:var(--red);margin:8px 0 0}
+.msg.ok{color:var(--good)}
+.digits{font:700 1.4rem "IBM Plex Mono",monospace;letter-spacing:.25em;text-align:center;max-width:280px}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(2.6rem,1fr));gap:6px;margin-bottom:10px}
+.pick button{padding:8px 0;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);font-weight:700;cursor:pointer}
+.pick button[aria-pressed=true]{background:var(--red);border-color:var(--red);color:#fff}
+.nums{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.ball{min-width:2.3em;height:2.3em;padding:0 .4em;border-radius:999px;display:grid;place-items:center;font:800 .95rem "Be Vietnam Pro",sans-serif;background:var(--surface-2);border:1.5px solid var(--line)}
+.tk{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--surface)}
+@keyframes lvflash{0%,60%{background:rgba(46,160,90,.28)}100%{background:var(--surface)}}
+.tk.flash{animation:lvflash 2s ease-out}
+.tk.win{border-color:var(--gold);background:rgba(242,176,30,.12)}
+.tk .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.meta{font-size:.82rem;color:var(--muted)}
+.pill{font-size:.78rem;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.pill.win{background:var(--gold);color:#3a2a00}
+.acts{display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.acts a{font-size:.88rem}
+.sr{position:absolute;left:-9999px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:12px}
+.tile{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.tile b{display:block;font-size:1.5rem;line-height:1.2}
+.tile span{font-size:.82rem;color:var(--muted)}
+.bars{display:grid;gap:6px;margin:6px 0 10px}
+.bar{display:grid;grid-template-columns:3.2rem 1fr 2.4rem;gap:8px;align-items:center;font-size:.9rem}
+.bar .num{font:700 .95rem "IBM Plex Mono",monospace}
+.bar .trk{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.bar .fill{display:block;height:100%;background:var(--red);border-radius:999px}
+.bar .cnt{text-align:right;color:var(--muted)}
+.aicard{margin-top:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.aicard #aiText{white-space:pre-wrap;overflow-wrap:anywhere}
+.stline{margin:6px 0}
+
+/* Vé đã có kết quả: hàng số trúng thưởng và hàng vé của bạn, số trùng tô nổi */
+.cmp{display:grid;gap:8px;margin:10px 0}
+.cmp-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.cmp-lab{min-width:96px;font-size:.8rem;font-weight:700;color:var(--muted)}
+.cmp .ball.hit{background:linear-gradient(135deg,#1F9D55,#12733E)!important;color:#fff!important;border-color:#12733E!important;box-shadow:0 0 0 3px rgba(31,157,85,.22)}
+.cmp .ball.spc:not(.hit){background:#FFC233!important;color:#3A2A00!important;border-color:#E0A100!important}
+.cmp .ball.miss{opacity:.45;filter:grayscale(.6)}
+.cmp-plus{font-weight:800;color:var(--muted)}
+.dgs{display:flex;gap:4px}
+.dg{display:grid;place-items:center;width:30px;height:36px;border-radius:8px;font:800 1.1rem "Be Vietnam Pro",sans-serif;background:var(--surface-2);border:1.5px solid var(--line);color:var(--muted)}
+.dg.hit{background:linear-gradient(135deg,#1F9D55,#12733E);color:#fff;border-color:#12733E}
+.dbn{font:800 1.05rem "Be Vietnam Pro",sans-serif;letter-spacing:.06em;color:#D7263D}
+@media (max-width:480px){.cmp-lab{min-width:100%}}
+</style>
+<link rel="stylesheet" href="/assets/lv-colors.css">
+</head>
+<body>
+<header class="top" id="lvHeader" data-section="ct" data-sub=""></header>
+<script src="/nav.js"></script>
+<main>
+  <h1>Chơi thử miễn phí</h1>
+  <p class="lead">Chọn một kỳ quay sắp tới, nhập bộ số của bạn và để hệ thống dò vé khi có kết quả.</p>
+  <div class="notice" role="note">Vé thử, không mất tiền, không có giá trị đổi thưởng; chỉ để trải nghiệm dò vé.</div>
+  <p class="meta" style="margin:-6px 0 16px">Có vé giấy? <a href="/do-ve-anh.html">Dò vé bằng ảnh</a>.</p>
+
+  <div id="guest" class="card" hidden>
+    <h2>Đăng nhập để chơi thử</h2>
+    <p class="lead">Bạn cần có tài khoản để lưu vé thử và xem kết quả dò vé sau mỗi kỳ quay. Mỗi ngày tạo tối đa 10 vé.</p>
+    <a class="btn" id="loginBtn" href="/dang-nhap">Đăng nhập</a>
+  </div>
+
+  <div id="app" hidden>
+    <div class="card">
+      <div class="row" style="align-items:center;margin-bottom:6px"><h2 style="margin:0">Tạo vé thử</h2><span class="counter" id="counter" role="status"></span></div>
+      <form id="form" novalidate>
+        <div class="row">
+          <div><label for="game">Loại vé</label><select id="game"><optgroup label="Xổ số kiến thiết"><option value="mb">Miền Bắc</option><option value="mn">Miền Nam</option><option value="mt">Miền Trung</option></optgroup><optgroup label="Vietlott"><option value="power655">Power 6/55</option><option value="mega645">Mega 6/45</option><option value="lotto535">Lotto 5/35</option><option value="max3d">Max 3D</option><option value="max3dpro">Max 3D Pro</option></optgroup></select></div>
+          <div><label for="draw">Kỳ quay</label><select id="draw"></select></div>
+        </div>
+        <div id="xsBox">
+          <label for="digits" id="digLbl">Số vé</label>
+          <input id="digits" class="digits" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="------">
+        </div>
+        <div id="vlBox" hidden>
+          <div class="lbl">Chọn 6 số <span class="meta" id="vlCount"></span></div>
+          <div class="pick" id="pick"></div>
+        </div>
+        <div id="l5Box" hidden>
+          <div class="lbl">Chọn 5 số <span class="meta" id="l5Count"></span></div>
+          <div class="pick" id="pick5"></div>
+          <div class="lbl">Số đặc biệt <span class="meta" id="spCount"></span></div>
+          <div class="pick" id="pickSp"></div>
+        </div>
+        <div id="m3Box" hidden>
+          <div class="row" style="margin-bottom:6px">
+            <div style="min-width:140px"><label for="m3a" id="m3aLbl">Số vé (3 chữ số)</label><input id="m3a" class="digits" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="---"></div>
+            <div style="min-width:140px" id="m3bWrap" hidden><label for="m3b">Số thứ hai</label><input id="m3b" class="digits" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="---"></div>
+          </div>
+          <p class="meta" id="m3Note" style="margin:0 0 10px" hidden>Hai số nhập đúng thứ tự để trúng giải Đặc biệt. Hai số có thể giống nhau.</p>
+        </div>
+        <div class="acts">
+          <button type="button" class="btn sec" id="rand">Chọn ngẫu nhiên</button>
+          <button type="submit" class="btn" id="submit">Tạo vé thử</button>
+        </div>
+        <p class="msg" id="fmsg" role="status"></p>
+      </form>
+    </div>
+
+    <div class="card" id="statsCard">
+      <h2>Thống kê của tôi</h2>
+      <div id="stats"><p class="meta">Đang tải…</p></div>
+      <div id="aiBox" hidden>
+        <div class="acts"><button type="button" class="btn sec" id="aiBtn">Nhận xét của AI về cách chơi</button></div>
+        <p class="meta" style="margin:6px 0 0">Tối đa 3 lần mỗi ngày. AI chỉ nhận xét thói quen chơi, không đưa ra bất kỳ con số nào cho bạn.</p>
+        <p class="msg" id="aiMsg" role="status"></p>
+        <div id="aiOut" class="aicard" hidden><div id="aiText"></div><p class="meta" id="aiDisc" style="margin:8px 0 0"></p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Vé của tôi</h2>
+      <div id="tickets"><p class="meta">Đang tải…</p></div>
+    </div>
+  </div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const GAMES = {xs: 'Vé 3 miền', power655: 'Power 6/55', mega645: 'Mega 6/45', lotto535: 'Lotto 5/35', max3d: 'Max 3D', max3dpro: 'Max 3D Pro'};
+const MAXN = {power655: 55, mega645: 45, lotto535: 35};
+const SPMAX = 12;
+const SLOTN = {'13:00': 'Kỳ trưa', '21:00': 'Kỳ tối'};
+const isM3 = g => g === 'max3d' || g === 'max3dpro';
+const ERR = {invalid_ticket: 'Vé chưa hợp lệ. Hãy kiểm tra lại các số đã nhập.', draw_closed: 'Kỳ quay này đã đóng nhận vé. Hãy chọn kỳ khác.', daily_limit: 'Bạn đã dùng hết 10 vé thử hôm nay. Hãy quay lại vào ngày mai.'};
+let DRAWS = [], TICKETS = [], PROV = {}, REMAIN = null, SEL = new Set(), SP = null;
+
+async function api(path, opt = {}) {
+  const o = {credentials: 'same-origin', cache: 'no-store', ...opt};
+  if (opt.method && opt.method !== 'GET') o.headers = {'X-LV-CSRF': '1', ...(opt.body ? {'Content-Type': 'application/json'} : {})};
+  const r = await fetch(path, o);
+  let d = null; try { d = await r.json(); } catch (e) {}
+  if (!r.ok) { const err = new Error(); err.status = r.status; err.code = d?.error?.code || d?.code || d?.detail?.code; err.msg = d?.error?.message || ''; throw err; }
+  return d;
+}
+ERR.draw_not_found = 'Kỳ quay này không còn nhận vé. Hãy chọn kỳ khác.';
+const friendly = e => {
+  if (e.code === 'invalid_ticket') return e.msg || ERR.invalid_ticket;
+  if (ERR[e.code]) return ERR[e.code];
+  if (e.status === 429 && !e.code) return ERR.daily_limit;
+  if (e.status === 422) return e.msg || ERR.invalid_ticket;
+  return window.lvErr(e, e.status, {error: {code: e.code, message: e.msg}});
+};
+const dmy = iso => { const [y, m, d] = String(iso).split('-'); return `${d}/${m}/${y}`; };
+const hm = t => t ? new Date(t).toLocaleString('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit'}) : '';
+const provName = c => PROV[c]?.name || c;
+
+function setCounter() { $('#counter').textContent = REMAIN == null ? '' : `Còn ${REMAIN}/10 vé hôm nay` + (REMAIN < 10 ? ' (vé đã hủy vẫn tính vào lượt của ngày)' : ''); $('#submit').disabled = REMAIN === 0; }
+
+const GAME = () => ['mb', 'mn', 'mt'].includes($('#game').value) ? 'xs' : $('#game').value;
+const SELR = () => $('#game').value;
+function openDraws() { const g = GAME(), r = SELR(), now = Date.now();
+  return DRAWS.filter(d => d.game === g && (g !== 'xs' || d.region === r) && (!d.closes_at || new Date(d.closes_at).getTime() > now))
+    .sort((a, b) => (a.scheduled_at || a.draw_date).localeCompare(b.scheduled_at || b.draw_date) || String(pName(a)).localeCompare(String(pName(b)), 'vi')); }
+const WDN = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+const vnTime = iso => new Date(iso).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh'});
+const drawKey = d => d ? [d.game, pCode(d) || '', d.draw_date, d.slot || ''].join('|') : '';
+function fillDraws() {
+  const prevKey = KEY, keepSel = new Set(SEL), keepSp = SP;
+  const list = openDraws();
+  // Gom theo ngày quay; mỗi dòng là một đài (miền Bắc chỉ một đài nên ghi giờ quay)
+  const days = {}; list.forEach((d, i) => (days[d.draw_date] = days[d.draw_date] || []).push([d, i]));
+  $('#draw').innerHTML = list.length ? Object.entries(days).map(([day, arr]) => {
+    const [y, m, dd] = day.split('-'), wd = WDN[new Date(day + 'T00:00:00+07:00').getDay()];
+    return `<optgroup label="${wd} ${dd}/${m}/${y}">` + arr.map(([d, i]) => `<option value="${i}">${d.game === 'xs' && d.region !== 'mb' ? esc(pName(d)) : (d.game === 'xs' ? 'Xổ số miền Bắc' : d.game === 'lotto535' ? esc(SLOTN[d.slot] || GAMES.lotto535) : esc(GAMES[d.game] || d.game))}${d.game === 'lotto535' && d.slot ? ' · quay ' + esc(d.slot) : d.scheduled_at ? ' · quay ' + vnTime(d.scheduled_at) : ''}${d.closes_at ? ' · nhận vé đến ' + vnTime(d.closes_at) : ''}</option>`).join('') + '</optgroup>';
+  }).join('') : '<option value="">Chưa có kỳ quay đang mở</option>';
+  const at = prevKey ? list.findIndex(d => drawKey(d) === prevKey) : -1;
+  if (at >= 0) $('#draw').value = String(at);
+  fillInput();
+  if (at >= 0) { keepSel.forEach(n => SEL.add(n)); SP = keepSp; if (GAME() === 'lotto535') drawL5(); else if (!isM3(GAME()) && GAME() !== 'xs') drawSel(); }
+  KEY = drawKey(curDraw());
+}
+let KEY = '';
+const curDraw = () => openDraws()[+$('#draw').value] || null;
+function pCode(d) { return d.province && typeof d.province === 'object' ? d.province.code : (d.province ?? null); }
+function pName(d) { return (d.province && typeof d.province === 'object' ? d.province.name : d.province_name) || pCode(d); }
+function tCode(t) { return t.province_code || (typeof t.province === 'object' && t.province ? t.province.code : t.province); }
+function digitLen() { const d = curDraw(); return d && d.region === 'mb' ? 5 : 6; }
+function fillInput() {
+  const g = GAME(); SEL = new Set(); SP = null;
+  $('#xsBox').hidden = g !== 'xs'; $('#vlBox').hidden = !(g === 'power655' || g === 'mega645');
+  $('#l5Box').hidden = g !== 'lotto535'; $('#m3Box').hidden = !isM3(g);
+  if (g === 'lotto535') {
+    $('#pick5').innerHTML = Array.from({length: 35}, (_, i) => `<button type="button" aria-pressed="false" data-n="${i + 1}">${i + 1}</button>`).join('');
+    $('#pickSp').innerHTML = Array.from({length: SPMAX}, (_, i) => `<button type="button" aria-pressed="false" data-n="${i + 1}">${i + 1}</button>`).join('');
+    drawL5();
+  } else if (isM3(g)) {
+    const two = g === 'max3dpro'; $('#m3bWrap').hidden = !two; $('#m3Note').hidden = !two;
+    $('#m3aLbl').textContent = two ? 'Số thứ nhất' : 'Số vé (3 chữ số)'; $('#m3b').value = $('#m3b').value.slice(0, 3);
+  } else if (g === 'xs') { const n = digitLen(); $('#digits').maxLength = n; $('#digits').placeholder = '-'.repeat(n); $('#digits').value = $('#digits').value.slice(0, n); $('#digLbl').textContent = `Số vé (${n} chữ số)`; }
+  else { const m = MAXN[g]; $('#pick').innerHTML = Array.from({length: m}, (_, i) => `<button type="button" aria-pressed="false" data-n="${i + 1}">${i + 1}</button>`).join(''); drawSel(); }
+}
+function drawL5() {
+  document.querySelectorAll('#pick5 button').forEach(b => b.setAttribute('aria-pressed', SEL.has(+b.dataset.n)));
+  document.querySelectorAll('#pickSp button').forEach(b => b.setAttribute('aria-pressed', SP === +b.dataset.n));
+  $('#l5Count').textContent = `(đã chọn ${SEL.size}/5)`; $('#spCount').textContent = SP ? `(đã chọn ${SP})` : '(chọn 1 số từ 1 đến 12)';
+}
+$('#pick5').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const n = +b.dataset.n;
+  if (SEL.has(n)) SEL.delete(n); else if (SEL.size < 5) SEL.add(n); drawL5(); });
+$('#pickSp').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const n = +b.dataset.n;
+  SP = SP === n ? null : n; drawL5(); });
+['#m3a', '#m3b'].forEach(s => $(s).addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3); }));
+const rand3 = () => String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+function drawSel() { document.querySelectorAll('#pick button').forEach(b => b.setAttribute('aria-pressed', SEL.has(+b.dataset.n))); $('#vlCount').textContent = `(đã chọn ${SEL.size}/6)`; }
+$('#pick').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const n = +b.dataset.n;
+  if (SEL.has(n)) SEL.delete(n); else if (SEL.size < 6) SEL.add(n); drawSel(); });
+$('#digits').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, digitLen()); });
+$('#game').addEventListener('change', () => { KEY = ''; fillDraws(); });
+$('#draw').addEventListener('change', () => { fillInput(); KEY = drawKey(curDraw()); });
+$('#rand').addEventListener('click', () => {
+  const g = GAME();
+  if (g === 'xs') { const n = digitLen(); $('#digits').value = Array.from({length: n}, () => Math.floor(Math.random() * 10)).join(''); }
+  else if (g === 'lotto535') { SEL = new Set(); while (SEL.size < 5) SEL.add(1 + Math.floor(Math.random() * 35)); SP = 1 + Math.floor(Math.random() * SPMAX); drawL5(); }
+  else if (isM3(g)) { $('#m3a').value = rand3(); $('#m3b').value = g === 'max3dpro' ? rand3() : ''; }
+  else { SEL = new Set(); const m = MAXN[g]; while (SEL.size < 6) SEL.add(1 + Math.floor(Math.random() * m)); drawSel(); }
+});
+
+$('#form').addEventListener('submit', async e => {
+  e.preventDefault(); const msg = $('#fmsg'); msg.className = 'msg'; msg.textContent = '';
+  const d = curDraw(), g = GAME();
+  if (!d) { msg.textContent = 'Chưa có kỳ quay đang mở để chọn.'; return; }
+  let numbers;
+  if (g === 'xs') { const v = $('#digits').value; if (v.length !== digitLen()) { msg.textContent = `Hãy nhập đủ ${digitLen()} chữ số.`; return; } numbers = [v]; }
+  else if (g === 'lotto535') {
+    if (SEL.size !== 5) { msg.textContent = `Hãy chọn đủ 5 số (bạn mới chọn ${SEL.size}).`; return; }
+    if (!SP) { msg.textContent = 'Hãy chọn 1 số đặc biệt từ 1 đến 12.'; return; }
+    numbers = [...[...SEL].sort((a, b) => a - b), SP];
+  }
+  else if (isM3(g)) {
+    const vals = g === 'max3dpro' ? [$('#m3a').value, $('#m3b').value] : [$('#m3a').value];
+    const names = g === 'max3dpro' ? ['số thứ nhất', 'số thứ hai'] : ['số vé'];
+    for (let i = 0; i < vals.length; i++) if (!/^\d{3}$/.test(vals[i])) { msg.textContent = `Hãy nhập đủ 3 chữ số cho ${names[i]}.`; return; }
+    numbers = vals;
+  }
+  else { if (SEL.size !== 6) { msg.textContent = 'Hãy chọn đủ 6 số.'; return; } numbers = [...SEL].sort((a, b) => a - b); }
+  if (g === 'lotto535' && !d.slot) { msg.textContent = 'Chưa xác định được kỳ trưa hay tối. Hãy chọn lại kỳ quay.'; return; }
+  const done = window.lvBusy($('#submit'), 'Đang tạo vé…'); if (!done) return;
+  let r = null;
+  try {
+    const body = {game: g, province: pCode(d), draw_date: d.draw_date, numbers};
+    if (g === 'lotto535') body.slot = d.slot;
+    r = await api('/v1/play/tickets', {method: 'POST', body: JSON.stringify(body)});
+  } catch (err) {
+    msg.textContent = friendly(err); window.lvToast(msg.textContent, 'err');
+    if (err.code === 'daily_limit') REMAIN = 0;
+    done(); setCounter(); return;
+  }
+  const label = g === 'xs' ? provName(pCode(d)) : (GAMES[g] || g), dd = dmy(d.draw_date).slice(0, 5);
+  msg.className = 'msg ok'; msg.textContent = 'Đã tạo vé thử. Chúc bạn may mắn!';
+  window.lvToast(`Đã tạo vé thử ${label} kỳ ${dd}`, 'ok');
+  // Xóa số đã nhập (mọi loại vé) để tạo vé tiếp
+  $('#digits').value = ''; $('#m3a').value = ''; $('#m3b').value = ''; SEL = new Set(); SP = null;
+  if (g === 'lotto535') drawL5(); else if (!['xs'].includes(g) && !isM3(g)) drawSel();
+  await safeRefresh();
+  done(); setCounter();
+  const id = r && (r.ticket?.id ?? r.id);
+  const el = id != null && [...document.querySelectorAll('#tickets .tk')].find(x => x.dataset.id === String(id));
+  if (el) { el.scrollIntoView({behavior: 'smooth', block: 'center'}); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 2100); }
+});
+['#game', '#draw', '#digits', '#m3a', '#m3b'].forEach(s => $(s).addEventListener('input', clearMsg));
+['#game', '#draw'].forEach(s => $(s).addEventListener('change', clearMsg));
+['#pick', '#pick5', '#pickSp'].forEach(s => $(s).addEventListener('click', clearMsg));
+$('#rand').addEventListener('click', clearMsg);
+function clearMsg() { const m = $('#fmsg'); m.className = 'msg'; m.textContent = ''; }
+// Làm mới danh sách riêng biệt: lỗi tải lại không được ghi đè thông báo thành công
+async function safeRefresh() {
+  try { await refresh(); return; } catch (e) {}
+  window.lvToast('Vé đã tạo, đang tải lại danh sách…', 'info');
+  await new Promise(r => setTimeout(r, 1200));
+  try { await refresh(); } catch (e) { window.lvToast('Chưa tải lại được danh sách. Hãy tải lại trang.', 'err'); }
+}
+
+function resultLink(t) {
+  if (t.game === 'power655') return '/vietlott-power-655';
+  if (t.game === 'mega645') return '/vietlott';
+  if (t.game === 'lotto535') return '/vietlott-lotto-535';
+  if (t.game === 'max3d') return '/vietlott-max-3d';
+  if (t.game === 'max3dpro') return '/vietlott-max-3d-pro';
+  const r = t.region || PROV[tCode(t)]?.region; if (!r) return '';
+  const [y, m, d] = String(t.draw_date).split('-');
+  return `/xs${r}-${d}-${m}-${y}`;
+}
+function ticketHtml(t, kind) {
+  const win = kind === 'done' && Array.isArray(t.result) && t.result.length;
+  const canCancel = kind === 'wait' && t.closes_at && new Date(t.closes_at).getTime() > Date.now();
+  // Đã có kết quả: hiện kiểu Vietlott — một hàng số trúng thưởng của kỳ, một hàng vé của bạn (số trùng được tô nổi)
+  const dr = kind === 'done' ? t.draw_result : null;
+  let nums = (t.numbers || []).map(n => `<span class="ball">${esc(n)}</span>`).join('');
+  let board = '';
+  if (dr && t.game === 'lotto535' && (dr.main || []).length) {
+    const tn = (t.numbers || []).map(Number), myMain = tn.slice(0, 5), mySp = tn.slice(5);
+    const dm = (dr.main || []).map(Number), ds = (dr.special || []).map(Number);
+    const row = (lab, html) => `<div class="cmp-row"><span class="cmp-lab">${lab}</span><div class="nums">${html}</div></div>`;
+    board = row('Kết quả kỳ', dm.map(n => `<span class="ball${myMain.includes(n) ? ' hit' : ''}">${n}</span>`).join('') +
+        (ds.length ? '<span class="cmp-plus">+</span>' + ds.map(n => `<span class="ball spc${mySp.includes(n) ? ' hit' : ''}">${n}</span>`).join('') : '')) +
+      row('Vé của bạn', myMain.map(n => `<span class="ball ${dm.includes(n) ? 'hit' : 'miss'}">${n}</span>`).join('') +
+        (mySp.length ? '<span class="cmp-plus">+</span>' + mySp.map(n => `<span class="ball spc ${ds.includes(n) ? 'hit' : 'miss'}">${n}</span>`).join('') : ''));
+    nums = '';
+  } else if (dr && isM3(t.game) && (dr.db || dr.g1 || dr.g2 || dr.g3)) {
+    const mine = (t.numbers || []).map(String);
+    const groups = [['ĐB', dr.db], ['Nhất', dr.g1], ['Nhì', dr.g2], ['Ba', dr.g3]];
+    const drawnAll = new Set(groups.flatMap(([, a]) => (a || []).map(String)));
+    const chip = (n, hit) => `<span class="ball${hit ? ' hit' : ' miss'}" style="font-family:'IBM Plex Mono',monospace;letter-spacing:.04em">${esc(n)}</span>`;
+    board = `<div class="cmp-row"><span class="cmp-lab">Vé của bạn</span><div class="nums">${mine.map(n => chip(n, drawnAll.has(n))).join('')}</div></div>` +
+      groups.filter(([, a]) => (a || []).length).map(([lab, a]) =>
+        `<div class="cmp-row"><span class="cmp-lab">${lab}</span><div class="nums">${a.map(n => `<span class="ball${mine.includes(String(n)) ? ' hit' : ''}" style="font-family:'IBM Plex Mono',monospace;letter-spacing:.04em">${esc(n)}</span>`).join('')}</div></div>`).join('');
+    nums = '';
+  } else if (dr && t.game !== 'xs' && (dr.main || []).length) {
+    const drawn = new Set([...(dr.main || []), ...(dr.special || [])].map(Number));
+    const main = new Set((dr.main || []).map(Number)), sp = new Set((dr.special || []).map(Number));
+    const mine = new Set((t.numbers || []).map(Number));
+    const row = (lab, html) => `<div class="cmp-row"><span class="cmp-lab">${lab}</span><div class="nums">${html}</div></div>`;
+    board = row('Kết quả kỳ', (dr.main || []).map(n => `<span class="ball${mine.has(+n) ? ' hit' : ''}">${esc(n)}</span>`).join('') +
+        ((dr.special || []).length ? '<span class="cmp-plus">+</span>' + dr.special.map(n => `<span class="ball spc${mine.has(+n) ? ' hit' : ''}">${esc(n)}</span>`).join('') : '')) +
+      row('Vé của bạn', (t.numbers || []).map(n => `<span class="ball ${main.has(+n) ? 'hit' : sp.has(+n) ? 'hit spc' : 'miss'}">${esc(n)}</span>`).join(''));
+    nums = '';
+  } else if (dr && t.game === 'xs') {
+    const tk = String((t.numbers || [''])[0]), names = {};
+    (t.result || []).forEach(p => { names[p.code] = p.name || p.code; });
+    const best = Math.max(0, ...(dr.hits || []).map(h => String(h.number).length));
+    const digits = [...tk].map((c, i) => `<span class="dg${i >= tk.length - best ? ' hit' : ''}">${esc(c)}</span>`).join('');
+    board = `<div class="cmp-row"><span class="cmp-lab">Vé của bạn</span><div class="dgs">${digits}</div></div>` +
+      ((dr.hits || []).length ? `<div class="cmp-row"><span class="cmp-lab">Số trùng</span><div class="nums">${dr.hits.map(h =>
+        `<span class="pill win">${esc(names[h.code] || h.code)}: ${esc(h.number)}</span>`).join(' ')}</div></div>` : '') +
+      (dr.db ? `<div class="cmp-row"><span class="cmp-lab">Giải ĐB kỳ này</span><b class="dbn">${esc(dr.db)}</b></div>` : '');
+    nums = '';
+  }
+  const status = kind === 'cancel' ? '<span class="pill">Đã hủy</span>' : kind === 'wait' ? '<span class="pill">Chờ quay</span>'
+    : win ? t.result.map(p => `<span class="pill win">Trúng ${esc(p.name || p.code)}</span>`).join(' ') : '<span class="pill">Không trúng</span>';
+  const link = resultLink(t);
+  return `<div class="tk${win ? ' win' : ''}" data-id="${esc(t.id)}"><div class="top"><b>${esc(GAMES[t.game] || t.game)}${t.game === 'xs' ? ' · ' + esc(provName(tCode(t))) : ''}${t.game === 'lotto535' && SLOTN[t.slot] ? ' · ' + SLOTN[t.slot] : ''}</b><span class="meta">Kỳ ${dmy(t.draw_date)}</span></div>
+    ${board ? `<div class="cmp">${board}</div>` : `<div class="nums">${nums}</div>`}<div>${status}</div>
+    <div class="acts">${canCancel ? `<button type="button" class="btn sec sm" data-cancel="${esc(t.id)}">Hủy vé</button><span class="meta">Hủy được đến ${hm(t.closes_at)}</span>` : ''}${kind === 'done' && link ? `<a href="${link}">Xem kết quả kỳ này</a>` : ''}</div></div>`;
+}
+function renderTickets() {
+  const wait = [], done = [], cancel = [];
+  TICKETS.forEach(t => (t.cancelled_at ? cancel : t.result == null ? wait : done).push(t));
+  const sec = (title, arr, kind) => arr.length ? `<h3>${title} (${arr.length})</h3>${arr.map(t => ticketHtml(t, kind)).join('')}` : '';
+  $('#tickets').innerHTML = TICKETS.length ? sec('Chờ quay', wait, 'wait') + sec('Đã có kết quả', done, 'done') + sec('Đã hủy', cancel, 'cancel') : '<p class="meta">Bạn chưa có vé thử nào.</p>';
+}
+$('#tickets').addEventListener('click', async e => {
+  const b = e.target.closest('[data-cancel]'); if (!b) return;
+  if (!confirm('Hủy vé thử này?')) return;
+  const done = window.lvBusy(b, 'Đang hủy…'); if (!done) return;
+  let ok = false;
+  try { await api('/v1/play/tickets/' + encodeURIComponent(b.dataset.cancel), {method: 'DELETE'}); ok = true; }
+  catch (err) { done(); window.lvToast(err.code === 'draw_closed' ? 'Kỳ quay đã đóng, không thể hủy vé.' : friendly(err), 'err'); return; }
+  window.lvToast('Đã hủy vé thử', 'ok');
+  await safeRefresh();
+});
+
+const num0 = v => Number.isFinite(+v) ? +v : 0;
+const pct = v => Math.round(num0(v) * 100);
+function bars(list) {
+  const arr = (Array.isArray(list) ? list : []).filter(x => x && x.number != null).slice(0, 5);
+  const max = Math.max(1, ...arr.map(x => num0(x.count)));
+  return `<div class="bars">${arr.map(x => `<div class="bar"><span class="num">${esc(x.number)}</span><span class="trk"><span class="fill" style="width:${Math.max(4, num0(x.count) / max * 100)}%"></span></span><span class="cnt">${num0(x.count)}x</span></div>`).join('')}</div>`;
+}
+function prizeNames() {
+  const m = {}; TICKETS.forEach(t => (Array.isArray(t.result) ? t.result : []).forEach(p => { if (p && p.code && p.name) m[p.code] = p.name; })); return m;
+}
+function renderStats(s) {
+  const box = $('#stats');
+  if (!s || !num0(s.total)) { box.innerHTML = '<p class="meta">Chưa có dữ liệu. Hãy tạo vài vé thử, thống kê sẽ hiện ở đây.</p>'; $('#aiBox').hidden = !s || !num0(s.total) ? true : false; return; }
+  $('#aiBox').hidden = false;
+  const tile = (v, l) => `<div class="tile"><b>${num0(v)}</b><span>${l}</span></div>`;
+  let h = `<div class="tiles">${tile(s.total, 'Tổng vé')}${tile(s.checked, 'Đã có kết quả')}${tile(s.won, 'Vé trúng')}${tile(s.pending, 'Đang chờ')}</div>`;
+  const ew = Math.round(num0(s.expected_wins) * 10) / 10;
+  h += `<p class="stline"><b>Vé trúng thực tế: ${num0(s.won)}</b> · Theo xác suất, trung bình khoảng ${ew.toLocaleString('vi-VN')} vé</p><p class="meta" style="margin:0 0 8px">Kết quả xổ số hoàn toàn ngẫu nhiên, mỗi vé có cơ hội như nhau; chênh lệch với con số trung bình là bình thường.</p>`;
+  const t2 = Array.isArray(s.top_tail2) ? s.top_tail2 : [], tp = Array.isArray(s.top_pick) ? s.top_pick : [];
+  if (t2.length || tp.length) {
+    h += '<h3>Số bạn hay chọn</h3>';
+    if (t2.length) h += `<div class="lbl">Vé 3 miền (2 số cuối)</div>${bars(t2)}`;
+    if (tp.length) h += `<div class="lbl">Vietlott</div>${bars(tp)}`;
+  }
+  h += `<p class="stline">Tỷ lệ chọn lại bộ số cũ: ${pct(s.repeat_rate)}%</p>`;
+  if (s.birthday_share != null) h += `<p class="stline">${pct(s.birthday_share)}% số ≤ 31 (thường gặp khi chọn theo ngày sinh)</p>`;
+  const pr = s.prizes && typeof s.prizes === 'object' ? Object.entries(s.prizes) : [];
+  if (pr.length) { const nm = prizeNames(); h += `<h3>Giải đã trúng</h3><div class="nums">${pr.map(([c, n]) => `<span class="pill win">${esc(nm[c] || c)}: ${num0(n)}</span>`).join('')}</div>`; }
+  box.innerHTML = h;
+}
+async function loadStats() {
+  try { renderStats((await api('/v1/play/stats')).stats); }
+  catch (e) { $('#stats').innerHTML = '<p class="msg">' + esc(friendly(e)) + '</p>'; $('#aiBox').hidden = true; }
+}
+const AIERR = {ai_daily_limit: 'Bạn đã dùng hết 3 lượt nhận xét hôm nay', ai_disabled: 'Tính năng nhận xét AI chưa được bật', not_enough_tickets: 'Cần ít nhất 3 vé để có nhận xét'};
+$('#aiBtn').addEventListener('click', async () => {
+  const b = $('#aiBtn'), m = $('#aiMsg'); m.className = 'msg'; m.textContent = '';
+  const done = window.lvBusy(b, 'AI đang nhận xét…'); if (!done) return;
+  $('#aiOut').hidden = true;
+  try {
+    const r = await api('/v1/play/stats/ai', {method: 'POST'});
+    $('#aiText').textContent = r.comment || ''; $('#aiDisc').textContent = r.disclaimer || ''; $('#aiOut').hidden = false;
+  } catch (e) {
+    const t = AIERR[e.code] || (e.status === 429 ? AIERR.ai_daily_limit : e.status === 503 ? AIERR.ai_disabled : e.status === 422 ? AIERR.not_enough_tickets : (e.msg || window.lvErr(e, e.status, {error: {code: e.code, message: e.msg}})));
+    m.textContent = t; window.lvToast(t, 'err');
+  } finally { done(); }
+});
+
+async function refresh() {
+  const [dr, tk] = await Promise.all([api('/v1/play/draws'), api('/v1/play/tickets')]);
+  DRAWS = dr.draws || []; REMAIN = dr.remaining_today ?? null; TICKETS = tk.tickets || [];
+  setCounter(); if ($('#game').value) fillDraws(); renderTickets(); await loadStats();
+}
+
+(async () => {
+  $('#loginBtn').href = '/dang-nhap?next=' + encodeURIComponent(location.pathname);
+  try {
+    const r = await fetch('/v1/user/me', {credentials: 'same-origin', cache: 'no-store'});
+    const me = r.ok ? await r.json().catch(() => null) : null;
+    if (!me || !me.user) { $('#guest').hidden = false; return; }
+  } catch (e) { $('#guest').hidden = false; return; }
+  $('#app').hidden = false;
+  try { ((await (await fetch('/v1/provinces')).json()).items || []).forEach(p => PROV[p.code] = p); } catch (e) {}
+  try { await refresh(); }
+  catch (e) { $('#tickets').innerHTML = '<p class="msg">' + esc(friendly(e)) + '</p>'; fillDraws(); }
+})();
+</script>
+<script src="/assets/lv-colors.js"></script>
+<script src="/assets/lv-track.js" defer></script>
+<script src="/assets/lv-account.js" defer></script>
+</body>
+</html>
